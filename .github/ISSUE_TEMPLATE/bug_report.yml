@@ -1,0 +1,38 @@
+name: Bug report
+description: Incorrect results, crashes or unexpected behaviour
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Security vulnerabilities must not be reported here. See SECURITY.md.
+        Remove personal data from messages and headers before attaching them.
+  - type: input
+    id: version
+    attributes:
+      label: Version
+      description: Output of `mailauthprobe version`
+    validations:
+      required: true
+  - type: textarea
+    id: command
+    attributes:
+      label: Command
+      description: The exact command you ran.
+      render: shell
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual result
+      description: Output, preferably with `--json`.
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected result
+      description: What should have happened, with a reference to the relevant RFC section if applicable.
+    validations:
+      required: true

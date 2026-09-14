@@ -1,0 +1,26 @@
+name: New check
+description: Propose a new finding or protocol check
+labels: [enhancement]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: What should be detected?
+    validations:
+      required: true
+  - type: textarea
+    id: reference
+    attributes:
+      label: Standard or evidence
+      description: RFC section, provider documentation or real-world impact.
+    validations:
+      required: true
+  - type: dropdown
+    id: category
+    attributes:
+      label: Category
+      options:
+        - standard-violation
+        - security-weakness
+        - hardening
+        - informational
