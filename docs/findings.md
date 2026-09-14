@@ -116,6 +116,27 @@ finding.
 | `MAIL-DMARC-036` | info | informational | SPF passed but is not aligned with From |
 | `MAIL-DMARC-037` | info | informational | DKIM passed but is not aligned with From |
 
+## mta-sts
+
+| ID | Default severity | Category | Title |
+|----|------------------|----------|-------|
+| `MAIL-MTASTS-001` | low | hardening | MTA-STS not deployed |
+| `MAIL-MTASTS-002` | high | standard-violation | Invalid MTA-STS TXT record |
+| `MAIL-MTASTS-003` | high | standard-violation | MTA-STS policy cannot be fetched |
+| `MAIL-MTASTS-004` | high | standard-violation | MTA-STS policy host certificate is invalid |
+| `MAIL-MTASTS-005` | high | standard-violation | MTA-STS policy URL redirects |
+| `MAIL-MTASTS-006` | medium | standard-violation | MTA-STS policy is not served as text/plain |
+| `MAIL-MTASTS-007` | high | standard-violation | MTA-STS policy is invalid |
+| `MAIL-MTASTS-008` | low | hardening | MTA-STS policy in testing mode |
+| `MAIL-MTASTS-009` | medium | security-weakness | MTA-STS policy mode is none |
+| `MAIL-MTASTS-010` | low | hardening | MTA-STS max_age shorter than one day |
+| `MAIL-MTASTS-011` | high | standard-violation | MX hosts not covered by the MTA-STS policy |
+| `MAIL-MTASTS-012` | low | informational | MTA-STS policy host certificate expires soon |
+| `MAIL-MTASTS-013` | medium | standard-violation | MTA-STS policy published without a TXT record |
+| `MAIL-MTASTS-014` | pass | informational | MTA-STS is enforced |
+| `MAIL-MTASTS-015` | info | informational | MTA-STS policy uses LF line endings |
+| `MAIL-MTASTS-016` | medium | standard-violation | MTA-STS policy is too large |
+
 ## received
 
 | ID | Default severity | Category | Title |

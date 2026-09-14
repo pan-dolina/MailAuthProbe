@@ -991,3 +991,148 @@ var (
 		References: []string{RFC8601},
 	})
 )
+
+// MTA-STS rules.
+var (
+	MTASTSMissing = register(Rule{
+		ID:             "MAIL-MTASTS-001",
+		Component:      ComponentMTASTS,
+		Category:       CategoryHardening,
+		Severity:       SeverityLow,
+		Title:          "MTA-STS not deployed",
+		Recommendation: "Publish an MTA-STS policy (start with mode: testing and TLS-RPT) so that senders require authenticated TLS when delivering to your MX hosts.",
+		References:     []string{RFC8461},
+	})
+	MTASTSInvalidRecord = register(Rule{
+		ID:             "MAIL-MTASTS-002",
+		Component:      ComponentMTASTS,
+		Category:       CategoryViolation,
+		Severity:       SeverityHigh,
+		Title:          "Invalid MTA-STS TXT record",
+		Recommendation: "Publish exactly one record of the form \"v=STSv1; id=20260914T000000;\" at _mta-sts.<domain>.",
+		References:     []string{RFC8461 + "#section-3.1"},
+	})
+	MTASTSFetchFailed = register(Rule{
+		ID:             "MAIL-MTASTS-003",
+		Component:      ComponentMTASTS,
+		Category:       CategoryViolation,
+		Severity:       SeverityHigh,
+		Title:          "MTA-STS policy cannot be fetched",
+		Recommendation: "Serve the policy at https://mta-sts.<domain>/.well-known/mta-sts.txt with HTTP 200, or remove the TXT record.",
+		References:     []string{RFC8461 + "#section-3.3"},
+	})
+	MTASTSCertificate = register(Rule{
+		ID:             "MAIL-MTASTS-004",
+		Component:      ComponentMTASTS,
+		Category:       CategoryViolation,
+		Severity:       SeverityHigh,
+		Title:          "MTA-STS policy host certificate is invalid",
+		Recommendation: "Install a publicly trusted certificate valid for mta-sts.<domain>. Senders discard policies fetched over an invalid certificate.",
+		References:     []string{RFC8461 + "#section-3.3"},
+	})
+	MTASTSRedirect = register(Rule{
+		ID:             "MAIL-MTASTS-005",
+		Component:      ComponentMTASTS,
+		Category:       CategoryViolation,
+		Severity:       SeverityHigh,
+		Title:          "MTA-STS policy URL redirects",
+		Recommendation: "Serve the policy directly; senders must not follow HTTP redirects when fetching MTA-STS policies.",
+		References:     []string{RFC8461 + "#section-3.3"},
+	})
+	MTASTSContentType = register(Rule{
+		ID:             "MAIL-MTASTS-006",
+		Component:      ComponentMTASTS,
+		Category:       CategoryViolation,
+		Severity:       SeverityMedium,
+		Title:          "MTA-STS policy is not served as text/plain",
+		Recommendation: "Configure the web server to return Content-Type: text/plain for mta-sts.txt.",
+		References:     []string{RFC8461 + "#section-3.2"},
+	})
+	MTASTSInvalidPolicy = register(Rule{
+		ID:             "MAIL-MTASTS-007",
+		Component:      ComponentMTASTS,
+		Category:       CategoryViolation,
+		Severity:       SeverityHigh,
+		Title:          "MTA-STS policy is invalid",
+		Recommendation: "The policy needs version: STSv1, mode (enforce, testing or none), max_age and at least one mx line.",
+		References:     []string{RFC8461 + "#section-3.2"},
+	})
+	MTASTSTesting = register(Rule{
+		ID:             "MAIL-MTASTS-008",
+		Component:      ComponentMTASTS,
+		Category:       CategoryHardening,
+		Severity:       SeverityLow,
+		Title:          "MTA-STS policy in testing mode",
+		Recommendation: "After TLS-RPT reports show no failures, switch to mode: enforce.",
+		References:     []string{RFC8461 + "#section-5"},
+	})
+	MTASTSModeNone = register(Rule{
+		ID:             "MAIL-MTASTS-009",
+		Component:      ComponentMTASTS,
+		Category:       CategoryWeakness,
+		Severity:       SeverityMedium,
+		Title:          "MTA-STS policy mode is none",
+		Recommendation: "mode: none is meant for retiring MTA-STS. Use testing or enforce to protect inbound mail.",
+		References:     []string{RFC8461 + "#section-8.3"},
+	})
+	MTASTSShortMaxAge = register(Rule{
+		ID:             "MAIL-MTASTS-010",
+		Component:      ComponentMTASTS,
+		Category:       CategoryHardening,
+		Severity:       SeverityLow,
+		Title:          "MTA-STS max_age shorter than one day",
+		Recommendation: "Use a max_age of weeks (for example 1209600) once the policy is stable.",
+		References:     []string{RFC8461 + "#section-3.2"},
+	})
+	MTASTSMXMismatch = register(Rule{
+		ID:             "MAIL-MTASTS-011",
+		Component:      ComponentMTASTS,
+		Category:       CategoryViolation,
+		Severity:       SeverityHigh,
+		Title:          "MX hosts not covered by the MTA-STS policy",
+		Recommendation: "Add mx lines for every MX host. In enforce mode senders refuse to deliver to hosts that do not match the policy.",
+		References:     []string{RFC8461 + "#section-4.1"},
+	})
+	MTASTSCertExpiring = register(Rule{
+		ID:             "MAIL-MTASTS-012",
+		Component:      ComponentMTASTS,
+		Category:       CategoryInformational,
+		Severity:       SeverityLow,
+		Title:          "MTA-STS policy host certificate expires soon",
+		Recommendation: "Renew the certificate for mta-sts.<domain> before it expires.",
+		References:     []string{RFC8461 + "#section-3.3"},
+	})
+	MTASTSPolicyWithoutRecord = register(Rule{
+		ID:             "MAIL-MTASTS-013",
+		Component:      ComponentMTASTS,
+		Category:       CategoryViolation,
+		Severity:       SeverityMedium,
+		Title:          "MTA-STS policy published without a TXT record",
+		Recommendation: "Publish the _mta-sts TXT record; without it the policy is never used.",
+		References:     []string{RFC8461 + "#section-3.1"},
+	})
+	MTASTSValid = register(Rule{
+		ID:        "MAIL-MTASTS-014",
+		Component: ComponentMTASTS,
+		Category:  CategoryInformational,
+		Severity:  SeverityPass,
+		Title:     "MTA-STS is enforced",
+	})
+	MTASTSLineEndings = register(Rule{
+		ID:         "MAIL-MTASTS-015",
+		Component:  ComponentMTASTS,
+		Category:   CategoryInformational,
+		Severity:   SeverityInfo,
+		Title:      "MTA-STS policy uses LF line endings",
+		References: []string{RFC8461 + "#section-3.2"},
+	})
+	MTASTSPolicyTooLarge = register(Rule{
+		ID:             "MAIL-MTASTS-016",
+		Component:      ComponentMTASTS,
+		Category:       CategoryViolation,
+		Severity:       SeverityMedium,
+		Title:          "MTA-STS policy is too large",
+		Recommendation: "Keep the policy to the defined keys; senders may refuse large policies.",
+		References:     []string{RFC8461 + "#section-3.2"},
+	})
+)
