@@ -119,6 +119,21 @@ MailAuthProbe. Newest entries at the bottom of each section.
 - CI runs the tools with `go run module@version`; versions are pinned and
   module checksums are verified against sum.golang.org.
 
+## Release engineering
+
+- Release archives are produced by `scripts/build-release.sh` rather than a
+  release framework: the whole pipeline is ~100 lines of shell plus a small
+  Go program for deterministic tar.gz/zip creation, and it can be run and
+  checked locally.
+- Reproducibility: `-trimpath`, `-buildid=`, `CGO_ENABLED=0`, version,
+  commit and date injected from git (commit date, not build time), and
+  archive entries with fixed owner, mode and `SOURCE_DATE_EPOCH` mtime.
+  `-buildvcs=false` because the same information is injected explicitly and
+  VCS stamping would record whether unrelated untracked files exist.
+- `scripts/verify-reproducible.sh` builds twice, the second time with an empty
+  module and build cache, and compares SHA256SUMS. First local run (Go
+  1.27.1, darwin/arm64 host, all five targets): identical checksums.
+
 ## Fuzzing
 
 _No fuzzing campaigns yet._
