@@ -62,6 +62,9 @@ type Message struct {
 	Body []byte `json:"-"`
 	// HasBody is false when the input contained only a header section.
 	HasBody bool `json:"has_body"`
+	// BodyAvailable is false when the message was parsed with HeadersOnly:
+	// the body, if any, is not the real message body.
+	BodyAvailable bool `json:"body_available"`
 	// HeaderSize is the size of the header section in bytes.
 	HeaderSize int      `json:"header_size"`
 	Size       int      `json:"size"`
@@ -140,6 +143,7 @@ func ParseBytes(data []byte, opts Options) (*Message, error) {
 	if opts.HeadersOnly {
 		return m, nil
 	}
+	m.BodyAvailable = true
 	parseMIME(m, limits)
 	return m, nil
 }

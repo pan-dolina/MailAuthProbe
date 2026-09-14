@@ -44,6 +44,12 @@ MailAuthProbe. Newest entries at the bottom of each section.
   stack) instead of relying on the lookup limit, so the report can show the
   actual cycle. Including the same domain twice on different branches is
   legal and is not reported as a loop.
+- DKIM verification is implemented on the standard library rather than
+  using go-msgauth (ADR 0003). To check it independently, a throw-away
+  program outside the module signed messages with each implementation and
+  verified them with the other: 4 canonicalization modes x RSA/Ed25519 x 4
+  body shapes, in both directions, 64 combinations, all passing. go-msgauth
+  v0.7.0 was used for this check only.
 - The message parser keeps each header field's raw bytes (`Header.Raw`)
   next to the unfolded value. DKIM canonicalization must operate on the bytes
   that were signed; reconstructing them from parsed values loses folding and
