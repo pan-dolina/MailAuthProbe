@@ -14,8 +14,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/marcindolinski/mailauthprobe/internal/dnsresolver"
-	"github.com/marcindolinski/mailauthprobe/internal/mailparser"
+	"github.com/pan-dolina/mailauthprobe/internal/dnsresolver"
+	"github.com/pan-dolina/mailauthprobe/internal/mailparser"
 )
 
 // MaxSignatures bounds the number of DKIM-Signature fields verified per

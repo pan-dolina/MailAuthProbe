@@ -7,9 +7,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/marcindolinski/mailauthprobe/internal/dkim"
-	"github.com/marcindolinski/mailauthprobe/internal/dnsresolver/dnstest"
-	"github.com/marcindolinski/mailauthprobe/internal/mailparser"
+	"github.com/pan-dolina/mailauthprobe/internal/dkim"
+	"github.com/pan-dolina/mailauthprobe/internal/dnsresolver/dnstest"
+	"github.com/pan-dolina/mailauthprobe/internal/mailparser"
 )
 
 func loadFixture(t *testing.T, name string) (*mailparser.Message, *dnstest.Zone) {

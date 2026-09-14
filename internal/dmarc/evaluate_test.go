@@ -5,7 +5,7 @@ import (
 	"slices"
 	"testing"
 
-	"github.com/marcindolinski/mailauthprobe/internal/dnsresolver/dnstest"
+	"github.com/pan-dolina/mailauthprobe/internal/dnsresolver/dnstest"
 )
 
 func TestEvaluateMessage(t *testing.T) {

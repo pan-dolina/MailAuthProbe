@@ -1,4 +1,4 @@
-module github.com/marcindolinski/mailauthprobe
+module github.com/pan-dolina/mailauthprobe
 
 go 1.26.0
 

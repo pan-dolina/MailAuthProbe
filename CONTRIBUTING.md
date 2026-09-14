@@ -18,7 +18,7 @@ cases from real-world mail and fixes are all welcome.
 Requirements: Go 1.26 or newer, Git, and a POSIX shell for the scripts.
 
 ```sh
-git clone https://github.com/marcindolinski/mailauthprobe
+git clone https://github.com/pan-dolina/MailAuthProbe
 cd mailauthprobe
 go test ./...
 ```

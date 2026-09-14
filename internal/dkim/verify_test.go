@@ -11,10 +11,10 @@ import (
 	"testing"
 	"time"
 
-	"github.com/marcindolinski/mailauthprobe/internal/dkim"
-	"github.com/marcindolinski/mailauthprobe/internal/dkim/dkimtest"
-	"github.com/marcindolinski/mailauthprobe/internal/dnsresolver/dnstest"
-	"github.com/marcindolinski/mailauthprobe/internal/mailparser"
+	"github.com/pan-dolina/mailauthprobe/internal/dkim"
+	"github.com/pan-dolina/mailauthprobe/internal/dkim/dkimtest"
+	"github.com/pan-dolina/mailauthprobe/internal/dnsresolver/dnstest"
+	"github.com/pan-dolina/mailauthprobe/internal/mailparser"
 )
 
 var (

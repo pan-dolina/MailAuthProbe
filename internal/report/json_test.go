@@ -10,8 +10,8 @@ import (
 	"slices"
 	"testing"
 
-	"github.com/marcindolinski/mailauthprobe/internal/analyzer"
-	"github.com/marcindolinski/mailauthprobe/internal/report"
+	"github.com/pan-dolina/mailauthprobe/internal/analyzer"
+	"github.com/pan-dolina/mailauthprobe/internal/report"
 )
 
 type schemaDoc struct {

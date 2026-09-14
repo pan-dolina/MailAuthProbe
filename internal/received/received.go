@@ -14,7 +14,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/marcindolinski/mailauthprobe/internal/mailparser"
+	"github.com/pan-dolina/mailauthprobe/internal/mailparser"
 )
 
 // Provenance of an extracted value.

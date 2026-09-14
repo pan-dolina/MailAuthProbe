@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/marcindolinski/mailauthprobe/internal/dnsresolver"
-	"github.com/marcindolinski/mailauthprobe/internal/findings"
+	"github.com/pan-dolina/mailauthprobe/internal/dnsresolver"
+	"github.com/pan-dolina/mailauthprobe/internal/findings"
 )
 
 // Node is one record in the SPF dependency tree.

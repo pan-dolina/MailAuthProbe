@@ -19,7 +19,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/marcindolinski/mailauthprobe/internal/dnsresolver/dnstest"
+	"github.com/pan-dolina/mailauthprobe/internal/dnsresolver/dnstest"
 )
 
 var update = flag.Bool("update", false, "rewrite golden files in testdata/golden")
@@ -48,7 +48,7 @@ func run(m *testing.M) int {
 		binary += ".exe"
 	}
 	build := exec.Command("go", "build", "-trimpath",
-		"-ldflags", "-X github.com/marcindolinski/mailauthprobe/internal/version.Version=v0.0.0-functional",
+		"-ldflags", "-X github.com/pan-dolina/mailauthprobe/internal/version.Version=v0.0.0-functional",
 		"-o", binary, "./cmd/mailauthprobe")
 	build.Dir = root
 	build.Stdout, build.Stderr = os.Stdout, os.Stderr

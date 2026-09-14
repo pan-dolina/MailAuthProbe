@@ -7,7 +7,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/marcindolinski/mailauthprobe/internal/dnsresolver"
+	"github.com/pan-dolina/mailauthprobe/internal/dnsresolver"
 )
 
 const testZone = `

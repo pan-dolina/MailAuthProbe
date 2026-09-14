@@ -14,8 +14,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/marcindolinski/mailauthprobe/internal/dnsresolver"
-	"github.com/marcindolinski/mailauthprobe/internal/netutil"
+	"github.com/pan-dolina/mailauthprobe/internal/dnsresolver"
+	"github.com/pan-dolina/mailauthprobe/internal/netutil"
 )
 
 // MaxPolicySize caps the policy body. RFC 8461 policies are a few hundred
@@ -140,7 +140,7 @@ func (f *HTTPFetcher) Fetch(ctx context.Context, domain string) (*Response, erro
 	if err != nil {
 		return resp, &FetchError{Kind: FetchNetwork, Err: err}
 	}
-	req.Header.Set("User-Agent", "MailAuthProbe (+https://github.com/marcindolinski/mailauthprobe)")
+	req.Header.Set("User-Agent", "MailAuthProbe (+https://github.com/pan-dolina/MailAuthProbe)")
 	httpResp, err := client.Do(req)
 	if err != nil {
 		// On a verification failure the presented certificate is still

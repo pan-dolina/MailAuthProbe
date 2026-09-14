@@ -9,16 +9,16 @@ import (
 	"path"
 	"strings"
 
-	"github.com/marcindolinski/mailauthprobe/internal/arc"
-	"github.com/marcindolinski/mailauthprobe/internal/authres"
-	"github.com/marcindolinski/mailauthprobe/internal/dkim"
-	"github.com/marcindolinski/mailauthprobe/internal/dmarc"
-	"github.com/marcindolinski/mailauthprobe/internal/dnsresolver"
-	"github.com/marcindolinski/mailauthprobe/internal/findings"
-	"github.com/marcindolinski/mailauthprobe/internal/mailparser"
-	"github.com/marcindolinski/mailauthprobe/internal/received"
-	"github.com/marcindolinski/mailauthprobe/internal/report"
-	"github.com/marcindolinski/mailauthprobe/internal/spf"
+	"github.com/pan-dolina/mailauthprobe/internal/arc"
+	"github.com/pan-dolina/mailauthprobe/internal/authres"
+	"github.com/pan-dolina/mailauthprobe/internal/dkim"
+	"github.com/pan-dolina/mailauthprobe/internal/dmarc"
+	"github.com/pan-dolina/mailauthprobe/internal/dnsresolver"
+	"github.com/pan-dolina/mailauthprobe/internal/findings"
+	"github.com/pan-dolina/mailauthprobe/internal/mailparser"
+	"github.com/pan-dolina/mailauthprobe/internal/received"
+	"github.com/pan-dolina/mailauthprobe/internal/report"
+	"github.com/pan-dolina/mailauthprobe/internal/spf"
 )
 
 // spfQueryBudget bounds the DNS queries of the SPF checks for one message

@@ -7,8 +7,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/marcindolinski/mailauthprobe/internal/dnsresolver/dnstest"
-	"github.com/marcindolinski/mailauthprobe/internal/mailparser"
+	"github.com/pan-dolina/mailauthprobe/internal/dnsresolver/dnstest"
+	"github.com/pan-dolina/mailauthprobe/internal/mailparser"
 )
 
 func FuzzParseKeyRecord(f *testing.F) {

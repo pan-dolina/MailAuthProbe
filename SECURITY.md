@@ -14,7 +14,7 @@ only the most recent release is supported.
 Please do **not** open a public issue for security problems.
 
 Report vulnerabilities privately through GitHub's
-[private vulnerability reporting](https://github.com/marcindolinski/mailauthprobe/security/advisories/new)
+[private vulnerability reporting](https://github.com/pan-dolina/MailAuthProbe/security/advisories/new)
 ("Report a vulnerability" on the Security tab).
 
 Include, where possible:

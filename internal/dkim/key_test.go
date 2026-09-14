@@ -13,8 +13,8 @@ import (
 	"sync"
 	"testing"
 
-	"github.com/marcindolinski/mailauthprobe/internal/dnsresolver/dnstest"
-	"github.com/marcindolinski/mailauthprobe/internal/findings"
+	"github.com/pan-dolina/mailauthprobe/internal/dnsresolver/dnstest"
+	"github.com/pan-dolina/mailauthprobe/internal/findings"
 )
 
 // Keys generated with openssl for sizes the Go runtime refuses to generate.

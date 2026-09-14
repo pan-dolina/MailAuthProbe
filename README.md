@@ -30,7 +30,7 @@ Findings
 ## Installation
 
 Download an archive for your platform from the
-[releases page](https://github.com/marcindolinski/mailauthprobe/releases),
+[releases page](https://github.com/pan-dolina/MailAuthProbe/releases),
 verify it (see [release verification](docs/release-verification.md)) and put
 the `mailauthprobe` binary on your `PATH`. Release binaries are available for
 Linux (amd64, arm64), macOS (amd64, arm64) and Windows (amd64).
@@ -38,7 +38,7 @@ Linux (amd64, arm64), macOS (amd64, arm64) and Windows (amd64).
 To build from source (Go 1.26 or newer):
 
 ```sh
-go install github.com/marcindolinski/mailauthprobe/cmd/mailauthprobe@latest
+go install github.com/pan-dolina/mailauthprobe/cmd/mailauthprobe@latest
 ```
 
 ## Usage

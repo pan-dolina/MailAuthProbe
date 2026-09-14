@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://github.com/marcindolinski/mailauthprobe/docs/schema/report-v1.schema.json",
+  "$id": "https://github.com/pan-dolina/MailAuthProbe/docs/schema/report-v1.schema.json",
   "title": "MailAuthProbe report, schema version 1",
   "description": "Output of mailauthprobe --json. Consumers must ignore unknown properties: new fields may be added without changing schema_version.",
   "type": "object",

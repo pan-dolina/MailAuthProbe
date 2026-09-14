@@ -10,12 +10,12 @@ import (
 	"strings"
 	"time"
 
-	"github.com/marcindolinski/mailauthprobe/internal/dnsresolver"
-	"github.com/marcindolinski/mailauthprobe/internal/findings"
-	"github.com/marcindolinski/mailauthprobe/internal/mailparser"
-	"github.com/marcindolinski/mailauthprobe/internal/mtasts"
-	"github.com/marcindolinski/mailauthprobe/internal/report"
-	"github.com/marcindolinski/mailauthprobe/internal/version"
+	"github.com/pan-dolina/mailauthprobe/internal/dnsresolver"
+	"github.com/pan-dolina/mailauthprobe/internal/findings"
+	"github.com/pan-dolina/mailauthprobe/internal/mailparser"
+	"github.com/pan-dolina/mailauthprobe/internal/mtasts"
+	"github.com/pan-dolina/mailauthprobe/internal/report"
+	"github.com/pan-dolina/mailauthprobe/internal/version"
 )
 
 // DefaultQueryBudget is the maximum number of DNS queries per scan.

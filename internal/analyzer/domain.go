@@ -3,14 +3,14 @@ package analyzer
 import (
 	"context"
 
-	"github.com/marcindolinski/mailauthprobe/internal/dkim"
-	"github.com/marcindolinski/mailauthprobe/internal/dmarc"
-	"github.com/marcindolinski/mailauthprobe/internal/dnsresolver"
-	"github.com/marcindolinski/mailauthprobe/internal/mtasts"
-	"github.com/marcindolinski/mailauthprobe/internal/mx"
-	"github.com/marcindolinski/mailauthprobe/internal/report"
-	"github.com/marcindolinski/mailauthprobe/internal/spf"
-	"github.com/marcindolinski/mailauthprobe/internal/tlsrpt"
+	"github.com/pan-dolina/mailauthprobe/internal/dkim"
+	"github.com/pan-dolina/mailauthprobe/internal/dmarc"
+	"github.com/pan-dolina/mailauthprobe/internal/dnsresolver"
+	"github.com/pan-dolina/mailauthprobe/internal/mtasts"
+	"github.com/pan-dolina/mailauthprobe/internal/mx"
+	"github.com/pan-dolina/mailauthprobe/internal/report"
+	"github.com/pan-dolina/mailauthprobe/internal/spf"
+	"github.com/pan-dolina/mailauthprobe/internal/tlsrpt"
 )
 
 // Domain audits the mail configuration of domain.

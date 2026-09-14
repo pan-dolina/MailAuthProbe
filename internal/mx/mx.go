@@ -9,9 +9,9 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/marcindolinski/mailauthprobe/internal/dnsresolver"
-	"github.com/marcindolinski/mailauthprobe/internal/findings"
-	"github.com/marcindolinski/mailauthprobe/internal/netutil"
+	"github.com/pan-dolina/mailauthprobe/internal/dnsresolver"
+	"github.com/pan-dolina/mailauthprobe/internal/findings"
+	"github.com/pan-dolina/mailauthprobe/internal/netutil"
 )
 
 // MaxHosts bounds the number of MX hosts whose addresses are resolved.

@@ -3,17 +3,17 @@
 package report
 
 import (
-	"github.com/marcindolinski/mailauthprobe/internal/arc"
-	"github.com/marcindolinski/mailauthprobe/internal/authres"
-	"github.com/marcindolinski/mailauthprobe/internal/dkim"
-	"github.com/marcindolinski/mailauthprobe/internal/dmarc"
-	"github.com/marcindolinski/mailauthprobe/internal/findings"
-	"github.com/marcindolinski/mailauthprobe/internal/mailparser"
-	"github.com/marcindolinski/mailauthprobe/internal/mtasts"
-	"github.com/marcindolinski/mailauthprobe/internal/mx"
-	"github.com/marcindolinski/mailauthprobe/internal/received"
-	"github.com/marcindolinski/mailauthprobe/internal/spf"
-	"github.com/marcindolinski/mailauthprobe/internal/tlsrpt"
+	"github.com/pan-dolina/mailauthprobe/internal/arc"
+	"github.com/pan-dolina/mailauthprobe/internal/authres"
+	"github.com/pan-dolina/mailauthprobe/internal/dkim"
+	"github.com/pan-dolina/mailauthprobe/internal/dmarc"
+	"github.com/pan-dolina/mailauthprobe/internal/findings"
+	"github.com/pan-dolina/mailauthprobe/internal/mailparser"
+	"github.com/pan-dolina/mailauthprobe/internal/mtasts"
+	"github.com/pan-dolina/mailauthprobe/internal/mx"
+	"github.com/pan-dolina/mailauthprobe/internal/received"
+	"github.com/pan-dolina/mailauthprobe/internal/spf"
+	"github.com/pan-dolina/mailauthprobe/internal/tlsrpt"
 )
 
 // SchemaVersion identifies the JSON report format. It changes only for

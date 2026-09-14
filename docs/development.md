@@ -7,7 +7,7 @@ MailAuthProbe. Newest entries at the bottom of each section.
 
 - Toolchain: Go 1.27 locally; `go.mod` declares `go 1.26.0` so the previous
   stable release can still build the project.
-- Module path: `github.com/marcindolinski/mailauthprobe`.
+- Module path: `github.com/pan-dolina/mailauthprobe`.
 
 ## Dependency decisions
 

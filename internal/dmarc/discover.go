@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/marcindolinski/mailauthprobe/internal/dnsresolver"
+	"github.com/pan-dolina/mailauthprobe/internal/dnsresolver"
 )
 
 // Discovery is the outcome of DMARC policy discovery for a domain.

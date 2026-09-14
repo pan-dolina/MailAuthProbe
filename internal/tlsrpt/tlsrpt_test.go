@@ -5,8 +5,8 @@ import (
 	"slices"
 	"testing"
 
-	"github.com/marcindolinski/mailauthprobe/internal/dnsresolver/dnstest"
-	"github.com/marcindolinski/mailauthprobe/internal/findings"
+	"github.com/pan-dolina/mailauthprobe/internal/dnsresolver/dnstest"
+	"github.com/pan-dolina/mailauthprobe/internal/findings"
 )
 
 func TestParse(t *testing.T) {

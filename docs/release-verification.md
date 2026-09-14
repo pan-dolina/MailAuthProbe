@@ -34,7 +34,7 @@ Requires [cosign](https://docs.sigstore.dev/cosign/system_config/installation/) 
 ```sh
 cosign verify-blob \
   --bundle SHA256SUMS.sigstore.json \
-  --certificate-identity "https://github.com/marcindolinski/mailauthprobe/.github/workflows/release.yml@refs/tags/v0.1.0" \
+  --certificate-identity "https://github.com/pan-dolina/MailAuthProbe/.github/workflows/release.yml@refs/tags/v0.1.0" \
   --certificate-oidc-issuer https://token.actions.githubusercontent.com \
   SHA256SUMS
 ```
@@ -49,8 +49,8 @@ Requires the [GitHub CLI](https://cli.github.com/).
 
 ```sh
 gh attestation verify mailauthprobe_0.1.0_linux_amd64.tar.gz \
-  --repo marcindolinski/mailauthprobe \
-  --signer-workflow marcindolinski/mailauthprobe/.github/workflows/release.yml \
+  --repo pan-dolina/MailAuthProbe \
+  --signer-workflow pan-dolina/MailAuthProbe/.github/workflows/release.yml \
   --source-ref refs/tags/v0.1.0 \
   --deny-self-hosted-runners
 ```
@@ -65,7 +65,7 @@ Release builds are reproducible. The script uses the Go toolchain named in
 stated in the release notes):
 
 ```sh
-git clone https://github.com/marcindolinski/mailauthprobe
+git clone https://github.com/pan-dolina/MailAuthProbe
 cd mailauthprobe
 git checkout v0.1.0
 VERSION=v0.1.0 scripts/build-release.sh

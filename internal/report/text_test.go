@@ -9,9 +9,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/marcindolinski/mailauthprobe/internal/analyzer"
-	"github.com/marcindolinski/mailauthprobe/internal/dnsresolver/dnstest"
-	"github.com/marcindolinski/mailauthprobe/internal/report"
+	"github.com/pan-dolina/mailauthprobe/internal/analyzer"
+	"github.com/pan-dolina/mailauthprobe/internal/dnsresolver/dnstest"
+	"github.com/pan-dolina/mailauthprobe/internal/report"
 )
 
 func zone(t *testing.T) *dnstest.Zone {

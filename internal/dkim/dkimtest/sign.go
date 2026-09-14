@@ -19,8 +19,8 @@ import (
 	"hash"
 	"strings"
 
-	"github.com/marcindolinski/mailauthprobe/internal/dkim"
-	"github.com/marcindolinski/mailauthprobe/internal/mailparser"
+	"github.com/pan-dolina/mailauthprobe/internal/dkim"
+	"github.com/pan-dolina/mailauthprobe/internal/mailparser"
 )
 
 // Options describe the signature to create.

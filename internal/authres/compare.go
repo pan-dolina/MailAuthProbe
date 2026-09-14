@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/marcindolinski/mailauthprobe/internal/findings"
+	"github.com/pan-dolina/mailauthprobe/internal/findings"
 )
 
 // ComputedDKIM is an independently verified signature.

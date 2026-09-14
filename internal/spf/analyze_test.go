@@ -7,8 +7,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/marcindolinski/mailauthprobe/internal/dnsresolver/dnstest"
-	"github.com/marcindolinski/mailauthprobe/internal/findings"
+	"github.com/pan-dolina/mailauthprobe/internal/dnsresolver/dnstest"
+	"github.com/pan-dolina/mailauthprobe/internal/findings"
 )
 
 func analyze(t *testing.T, zone string, domain string) (*Analysis, error) {

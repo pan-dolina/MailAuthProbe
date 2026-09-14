@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/marcindolinski/mailauthprobe/internal/findings"
-	"github.com/marcindolinski/mailauthprobe/internal/netutil"
+	"github.com/pan-dolina/mailauthprobe/internal/findings"
+	"github.com/pan-dolina/mailauthprobe/internal/netutil"
 )
 
 // MaxHops bounds the number of Received headers analysed.

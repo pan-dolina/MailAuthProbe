@@ -9,8 +9,8 @@ import (
 	"net/url"
 	"strings"
 
-	"github.com/marcindolinski/mailauthprobe/internal/dnsresolver"
-	"github.com/marcindolinski/mailauthprobe/internal/findings"
+	"github.com/pan-dolina/mailauthprobe/internal/dnsresolver"
+	"github.com/pan-dolina/mailauthprobe/internal/findings"
 )
 
 // Record is a parsed TLS-RPT record.

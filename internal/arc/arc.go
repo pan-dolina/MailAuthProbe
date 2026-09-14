@@ -9,8 +9,8 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/marcindolinski/mailauthprobe/internal/findings"
-	"github.com/marcindolinski/mailauthprobe/internal/mailparser"
+	"github.com/pan-dolina/mailauthprobe/internal/findings"
+	"github.com/pan-dolina/mailauthprobe/internal/mailparser"
 )
 
 // MaxInstances is the largest instance number allowed by RFC 8617.

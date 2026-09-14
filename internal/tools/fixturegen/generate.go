@@ -12,7 +12,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/marcindolinski/mailauthprobe/internal/dkim/dkimtest"
+	"github.com/pan-dolina/mailauthprobe/internal/dkim/dkimtest"
 )
 
 // File is a generated fixture.

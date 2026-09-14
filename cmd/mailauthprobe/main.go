@@ -7,7 +7,7 @@ import (
 	"os"
 	"os/signal"
 
-	"github.com/marcindolinski/mailauthprobe/internal/cli"
+	"github.com/pan-dolina/mailauthprobe/internal/cli"
 )
 
 func main() {

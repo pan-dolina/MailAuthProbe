@@ -17,7 +17,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/marcindolinski/mailauthprobe/internal/dnsresolver/dnstest"
+	"github.com/pan-dolina/mailauthprobe/internal/dnsresolver/dnstest"
 )
 
 func TestParseRecord(t *testing.T) {

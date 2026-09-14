@@ -6,8 +6,8 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/marcindolinski/mailauthprobe/internal/dnsresolver"
-	"github.com/marcindolinski/mailauthprobe/internal/findings"
+	"github.com/pan-dolina/mailauthprobe/internal/dnsresolver"
+	"github.com/pan-dolina/mailauthprobe/internal/findings"
 )
 
 // SelectorAssessment is the audit result for one selector.

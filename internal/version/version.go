@@ -12,7 +12,7 @@ import (
 
 // Values injected at link time, for example:
 //
-//	-X github.com/marcindolinski/mailauthprobe/internal/version.Version=v0.1.0
+//	-X github.com/pan-dolina/mailauthprobe/internal/version.Version=v0.1.0
 var (
 	Version = ""
 	Commit  = ""

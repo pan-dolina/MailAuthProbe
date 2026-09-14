@@ -13,11 +13,11 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/marcindolinski/mailauthprobe/internal/analyzer"
-	"github.com/marcindolinski/mailauthprobe/internal/dnsresolver"
-	"github.com/marcindolinski/mailauthprobe/internal/findings"
-	"github.com/marcindolinski/mailauthprobe/internal/netutil"
-	"github.com/marcindolinski/mailauthprobe/internal/report"
+	"github.com/pan-dolina/mailauthprobe/internal/analyzer"
+	"github.com/pan-dolina/mailauthprobe/internal/dnsresolver"
+	"github.com/pan-dolina/mailauthprobe/internal/findings"
+	"github.com/pan-dolina/mailauthprobe/internal/netutil"
+	"github.com/pan-dolina/mailauthprobe/internal/report"
 )
 
 type messageFlags struct {

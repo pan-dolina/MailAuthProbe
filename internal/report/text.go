@@ -7,9 +7,9 @@ import (
 	"time"
 	"unicode/utf8"
 
-	"github.com/marcindolinski/mailauthprobe/internal/findings"
-	"github.com/marcindolinski/mailauthprobe/internal/mailparser"
-	"github.com/marcindolinski/mailauthprobe/internal/spf"
+	"github.com/pan-dolina/mailauthprobe/internal/findings"
+	"github.com/pan-dolina/mailauthprobe/internal/mailparser"
+	"github.com/pan-dolina/mailauthprobe/internal/spf"
 )
 
 // TextOptions control human-readable rendering.

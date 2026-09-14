@@ -8,7 +8,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/marcindolinski/mailauthprobe/internal/dnsresolver"
+	"github.com/pan-dolina/mailauthprobe/internal/dnsresolver"
 )
 
 // Limits bound the work done while evaluating SPF.

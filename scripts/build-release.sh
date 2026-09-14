@@ -36,7 +36,7 @@ if [ -n "$(git status --porcelain --untracked-files=no)" ]; then
   echo "warning: working tree has uncommitted changes; the build is not reproducible from the commit" >&2
 fi
 
-pkg="github.com/marcindolinski/mailauthprobe/internal/version"
+pkg="github.com/pan-dolina/mailauthprobe/internal/version"
 ldflags="-s -w -buildid= -X ${pkg}.Version=${VERSION} -X ${pkg}.Commit=${COMMIT} -X ${pkg}.Date=${DATE}"
 
 rm -rf "$DIST"

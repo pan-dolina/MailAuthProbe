@@ -210,7 +210,7 @@ jobs:
 
           ## Verifying this release
 
-          See [docs/release-verification.md](https://github.com/marcindolinski/mailauthprobe/blob/main/docs/release-verification.md).
+          See [docs/release-verification.md](https://github.com/pan-dolina/MailAuthProbe/blob/main/docs/release-verification.md).
           NOTES
           echo "Built with $(go version | cut -d' ' -f3)." >> release-notes.md
           prerelease=""
