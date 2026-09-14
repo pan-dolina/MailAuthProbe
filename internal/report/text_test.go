@@ -46,6 +46,21 @@ func render(t *testing.T, rep *report.Report, opts report.TextOptions) string {
 	return buf.String()
 }
 
+func TestTextDomainProviderSelectors(t *testing.T) {
+	rep := analyzer.Domain(context.Background(), "hosted.example", analyzer.Options{Resolver: zone(t)})
+	const guessed, absent = "google._domainkey.hosted.example: RSA 2048 bits (Google Workspace default)", "s1._domainkey.hosted.example: no key record (SendGrid default)"
+	out := render(t, rep, report.TextOptions{})
+	if !strings.Contains(out, "provider Google Workspace (MX aspmx.l.google.com)") || !strings.Contains(out, guessed) {
+		t.Errorf("output lacks detected provider or guessed key:\n%s", out)
+	}
+	if strings.Contains(out, absent) {
+		t.Errorf("absent provider defaults shown without --verbose:\n%s", out)
+	}
+	if out := render(t, rep, report.TextOptions{Verbose: true}); !strings.Contains(out, absent) {
+		t.Errorf("verbose output lacks absent provider defaults:\n%s", out)
+	}
+}
+
 func TestTextDomain(t *testing.T) {
 	rep := analyzer.Domain(context.Background(), "test.example", analyzer.Options{Resolver: zone(t), DKIMSelectors: []string{"s2026"}})
 	out := render(t, rep, report.TextOptions{})

@@ -1,0 +1,77 @@
+MailAuthProbe domain: hosted.example
+
+MX
+      1  aspmx.l.google.com               192.0.2.27
+
+SPF
+  v=spf1 include:_spf.hosted.example include:amazonses.com -all
+  DNS lookups: 5/10, void lookups: 0/2
+  Dependency tree:
+  hosted.example (2 lookup(s), 5 with includes)
+  ├─ include:_spf.hosted.example (2 lookup(s), 3 with includes)
+  │  ├─ include:_spf.google.com (0 lookup(s))
+  │  └─ include:sendgrid.net (1 lookup(s))
+  │     └─ include:mail.zendesk.com (0 lookup(s))
+  └─ include:amazonses.com (0 lookup(s))
+
+DMARC
+  _dmarc.hosted.example: v=DMARC1; p=reject; rua=mailto:dmarc@hosted.example
+  policy reject, subdomains reject, pct 100, adkim=r, aspf=r
+
+DKIM
+  provider Google Workspace (MX aspmx.l.google.com)
+  provider Amazon SES (SPF include amazonses.com)
+  provider SendGrid (SPF include sendgrid.net)
+  google._domainkey.hosted.example: RSA 2048 bits (Google Workspace default)
+  s1._domainkey.hosted.example: no key record (SendGrid default)
+  s2._domainkey.hosted.example: no key record (SendGrid default)
+
+MTA-STS
+  not deployed
+
+TLS-RPT
+  not configured
+
+Findings
+  LOW      MAIL-MTASTS-001  MTA-STS not deployed
+           hosted.example does not publish MTA-STS; senders may deliver mail over unauthenticated or
+           plaintext connections.
+           → Publish an MTA-STS policy (start with mode: testing and TLS-RPT) so that senders
+             require authenticated TLS when delivering to your MX hosts.
+           https://www.rfc-editor.org/rfc/rfc8461
+  INFO     MAIL-DKIM-016  DKIM selectors taken from provider defaults
+           hosted.example: DKIM keys were found under the documented default selectors of Google
+           Workspace (google). Other selectors cannot be enumerated from DNS and were not audited.
+           No DKIM key was found under the documented default selectors of SendGrid (s1, s2); the
+           domain may use custom selectors, or DKIM signing may not be enabled for it there. Amazon
+           SES (Easy DKIM) generates random selectors for each domain; they are shown in the SES
+           console.
+           https://www.rfc-editor.org/rfc/rfc6376#section-3.1
+  INFO     MAIL-MX-013  MX hosts are reachable over IPv4 only
+           hosted.example: None of the MX hosts publish AAAA records; IPv6-only senders cannot
+           deliver mail.
+           https://www.rfc-editor.org/rfc/rfc5321#section-5.1
+  INFO     MAIL-MX-014  Single MX host
+           hosted.example: All mail is handled by a single MX host (aspmx.l.google.com). Consider a
+           backup exchanger if the provider does not already offer redundancy behind that name.
+           https://www.rfc-editor.org/rfc/rfc5321#section-5.1
+  INFO     MAIL-TLSRPT-001  TLS-RPT not configured
+           hosted.example does not request SMTP TLS reports, so TLS delivery failures to its MX
+           hosts go unnoticed.
+           https://www.rfc-editor.org/rfc/rfc8460#section-3
+  PASS     MAIL-DKIM-012  DKIM key record is valid
+           google._domainkey.hosted.example: Valid RSA key (2048 bits) for selector "google".
+           │ v=DKIM1; k=rsa; p=MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA+lBF89/3lPYb2gLGaDdeppr63HMOxmUY17MmoiIYc9MYeIne5ZRa+EL2UaQFkVtsl7fitmnDwrGaOFAxPSARuuWOWRjgOTHvM7QTNFgJ2y7HEy+pWQ/TXunhXfMQI0QLAPnt4RPEir9VDqm2Shv8vlO7Ur5+aGUI/lqq+Io9UOkuVM8YWnEB6Bf9OACmk1MY+WPVveGbvpGECBy0xkUMj5guQ1TlqvaC6Q+9FSsdt6bx3XPTYEJhBN43kGCbG18b09dG9BflDlYQ8B9K4U6TpyLWZmoDeqYJ6zRctSmtg6erlfY27oxRrcrTGnK6OfEB/u9Pw1Oz8CemzBC3/SyNsQIDAQAB
+  PASS     MAIL-DMARC-017  DMARC policy is enforced
+           DMARC is enforced for hosted.example with p=reject.
+           │ v=DMARC1; p=reject; rua=mailto:dmarc@hosted.example
+  PASS     MAIL-MX-015  MX records are valid
+           hosted.example: 1 MX host(s) resolve to public addresses.
+           │ aspmx.l.google.com
+  PASS     MAIL-SPF-022  SPF record is valid
+           hosted.example: The SPF record is valid and needs 5 of 10 DNS lookups.
+           │ v=spf1 include:_spf.hosted.example include:amazonses.com -all
+
+Summary
+  0 critical, 0 high, 0 medium, 1 low, 4 info, 4 pass
+  18 DNS queries

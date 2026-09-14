@@ -17,6 +17,7 @@ internal/
   dmarc/                   DMARC records, policy discovery, alignment, evaluation
   mtasts/                  MTA-STS TXT record and HTTPS policy
   tlsrpt/                  TLS-RPT record
+  mailprovider/            hosted mail provider detection and documented DKIM selectors
   mailparser/              RFC 5322 header section and MIME structure, with limits
   received/                Received header parsing and hop chain modelling
   authres/                 Authentication-Results and Received-SPF parsing, comparison

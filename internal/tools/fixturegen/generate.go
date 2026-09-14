@@ -311,6 +311,20 @@ _dmarc.test.example.             TXT   "v=DMARC1; p=reject; rua=mailto:dmarc@tes
 ` + rsaSelector + `._domainkey.test.example.   TXT   "` + rsaRecord + `"
 ` + edSelector + `._domainkey.test.example.  TXT   "` + edRecord + `"
 
+; hosted.example: hosted mail. Google Workspace (MX and SPF), SendGrid and
+; Amazon SES (SPF); the only DKIM key is under Google's default selector.
+; Zendesk appears only inside SendGrid's record and must not be detected.
+hosted.example.                  MX    1 aspmx.l.google.com.
+aspmx.l.google.com.              A     192.0.2.27
+hosted.example.                  TXT   "v=spf1 include:_spf.hosted.example include:amazonses.com -all"
+_spf.hosted.example.             TXT   "v=spf1 include:_spf.google.com include:sendgrid.net -all"
+_spf.google.com.                 TXT   "v=spf1 ip4:192.0.2.64/26 ~all"
+sendgrid.net.                    TXT   "v=spf1 ip4:192.0.2.128/26 include:mail.zendesk.com ~all"
+mail.zendesk.com.                TXT   "v=spf1 ip4:192.0.2.192/26 -all"
+amazonses.com.                   TXT   "v=spf1 ip4:198.51.100.0/26 -all"
+_dmarc.hosted.example.           TXT   "v=DMARC1; p=reject; rua=mailto:dmarc@hosted.example"
+google._domainkey.hosted.example. TXT  "` + rsaRecord + `"
+
 ; evil.example: attacker-controlled domain with valid SPF and DKIM
 evil.example.                    TXT   "v=spf1 ip4:203.0.113.0/24 -all"
 s1._domainkey.evil.example.      TXT   "` + rsaRecord + `"

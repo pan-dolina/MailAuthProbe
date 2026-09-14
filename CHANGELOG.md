@@ -7,6 +7,12 @@ JSON `schema_version` are part of the public interface.
 
 ## [Unreleased]
 
+### Added
+
+- `domain` command: without `--dkim-selector`, hosted mail providers are
+  detected from MX hosts and SPF includes, and the DKIM selectors documented
+  by those providers are audited (MAIL-DKIM-016).
+
 ## [0.1.0] - 2026-09-14
 
 First public release.

@@ -742,6 +742,15 @@ var (
 		Recommendation: "Publish the key as a DER SubjectPublicKeyInfo (the output of \"openssl rsa -pubout -outform DER\").",
 		References:     []string{RFC6376 + "#section-3.6.1"},
 	})
+	DKIMSelectorsGuessed = register(Rule{
+		ID:             "MAIL-DKIM-016",
+		Component:      ComponentDKIM,
+		Category:       CategoryInformational,
+		Severity:       SeverityInfo,
+		Title:          "DKIM selectors taken from provider defaults",
+		Recommendation: "Pass --dkim-selector to audit selectors other than the provider defaults.",
+		References:     []string{RFC6376 + "#section-3.1"},
+	})
 )
 
 // Received chain rules.

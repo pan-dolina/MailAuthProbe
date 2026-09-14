@@ -352,6 +352,7 @@ func TestGolden(t *testing.T) {
 		golden{"domain-test.example.json", []string{"domain", "test.example", "--dkim-selector", "s2026", "--json"}},
 		golden{"domain-test.example.txt", []string{"domain", "test.example", "--dkim-selector", "s2026"}},
 		golden{"domain-lookups.example.txt", []string{"domain", "lookups.example"}},
+		golden{"domain-hosted.example.txt", []string{"domain", "hosted.example", "--verbose"}},
 	)
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {

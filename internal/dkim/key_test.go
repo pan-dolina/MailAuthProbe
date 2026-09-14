@@ -181,7 +181,7 @@ flaky._domainkey.example.com.    SERVFAIL
 	}
 	for _, tt := range tests {
 		t.Run(tt.selector, func(t *testing.T) {
-			a, err := Assess(context.Background(), zone, "example.com", []string{tt.selector})
+			a, err := Assess(context.Background(), zone, "example.com", []string{tt.selector}, nil)
 			if (err != nil) != tt.wantErr {
 				t.Fatalf("err = %v", err)
 			}
@@ -201,7 +201,7 @@ flaky._domainkey.example.com.    SERVFAIL
 }
 
 func TestAssessWithoutSelector(t *testing.T) {
-	a, err := Assess(context.Background(), dnstest.NewZone(), "example.com", nil)
+	a, err := Assess(context.Background(), dnstest.NewZone(), "example.com", nil, nil)
 	if err != nil || len(a.Findings) != 1 || a.Findings[0].ID != findings.DKIMNoSelector.ID {
 		t.Fatalf("findings = %+v, err = %v", a.Findings, err)
 	}
@@ -209,7 +209,7 @@ func TestAssessWithoutSelector(t *testing.T) {
 
 func TestAssessDeduplicatesSelectors(t *testing.T) {
 	zone := dnstest.MustParseZone("s._domainkey.example.com. TXT \"v=DKIM1; p=\"")
-	a, _ := Assess(context.Background(), zone, "example.com", []string{"s", " S ", ""})
+	a, _ := Assess(context.Background(), zone, "example.com", []string{"s", " S ", ""}, nil)
 	if len(a.Selectors) != 1 || len(zone.Queries()) != 1 {
 		t.Errorf("selectors = %d, queries = %d", len(a.Selectors), len(zone.Queries()))
 	}

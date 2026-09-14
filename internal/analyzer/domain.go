@@ -2,10 +2,12 @@ package analyzer
 
 import (
 	"context"
+	"strings"
 
 	"github.com/pan-dolina/mailauthprobe/internal/dkim"
 	"github.com/pan-dolina/mailauthprobe/internal/dmarc"
 	"github.com/pan-dolina/mailauthprobe/internal/dnsresolver"
+	"github.com/pan-dolina/mailauthprobe/internal/mailprovider"
 	"github.com/pan-dolina/mailauthprobe/internal/mtasts"
 	"github.com/pan-dolina/mailauthprobe/internal/mx"
 	"github.com/pan-dolina/mailauthprobe/internal/report"
@@ -28,7 +30,12 @@ func Domain(ctx context.Context, domain string, opts Options) *report.Report {
 	d.MX, mxErr = mx.Assess(ctx, s.resolver, domain)
 	d.SPF, spfErr = (&spf.Analyzer{Resolver: dnsresolver.WithBudget(s.resolver, spfQueryBudget)}).Analyze(ctx, domain)
 	d.DMARC, dmarcErr = dmarc.Assess(ctx, s.resolver, domain)
-	d.DKIM, dkErr = dkim.Assess(ctx, s.resolver, domain, s.opts.DKIMSelectors)
+	var mxHosts []string
+	for _, h := range d.MX.Hosts {
+		mxHosts = append(mxHosts, h.Name)
+	}
+	providers := mailprovider.Detect(mxHosts, spfTargets(d.SPF, domain))
+	d.DKIM, dkErr = dkim.Assess(ctx, s.resolver, domain, s.opts.DKIMSelectors, providers)
 
 	s.add(d.MX.Findings...)
 	s.add(d.SPF.Findings...)
@@ -39,10 +46,6 @@ func Domain(ctx context.Context, domain string, opts Options) *report.Report {
 	s.dnsError("dmarc", dmarcErr)
 	s.dnsError("dkim", dkErr)
 
-	var mxHosts []string
-	for _, h := range d.MX.Hosts {
-		mxHosts = append(mxHosts, h.Name)
-	}
 	fetcher := s.opts.Fetcher
 	if fetcher == nil {
 		fetcher = &mtasts.HTTPFetcher{Resolver: s.resolver, Timeout: s.opts.HTTPTimeout}
@@ -59,4 +62,32 @@ func Domain(ctx context.Context, domain string, opts Options) *report.Report {
 	s.dnsError("tls-rpt", err)
 
 	return s.finish(ctx)
+}
+
+// spfTargets returns the include and redirect targets that the SPF policy of
+// domain delegates to. Records of the domain and its subdomains are followed;
+// records of other domains are listed but not descended into, so that a
+// provider's own includes do not make its sub-processors look like providers
+// of the audited domain.
+func spfTargets(a *spf.Analysis, domain string) []string {
+	var out []string
+	var walk func(n *spf.Node)
+	walk = func(n *spf.Node) {
+		for _, c := range n.Children {
+			out = append(out, c.Domain)
+			if inDomain(c.Domain, domain) {
+				walk(c)
+			}
+		}
+	}
+	if a != nil && a.Tree != nil {
+		walk(a.Tree)
+	}
+	return out
+}
+
+func inDomain(name, domain string) bool {
+	name = strings.ToLower(dnsresolver.Trim(name))
+	domain = strings.ToLower(dnsresolver.Trim(domain))
+	return name == domain || strings.HasSuffix(name, "."+domain)
 }

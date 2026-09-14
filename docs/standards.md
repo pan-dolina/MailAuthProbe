@@ -119,5 +119,6 @@ ambiguous points are interpreted, and what is out of scope.
 - DANE for SMTP (RFC 7672) and STARTTLS certificate checks on MX hosts.
 - SMTP connections of any kind.
 - BIMI.
-- Brute-forcing DKIM selectors.
+- Brute-forcing DKIM selectors. Only the selectors that detected hosted
+  providers document for their customers are tried (`internal/mailprovider`).
 - Processing DMARC aggregate or failure reports.

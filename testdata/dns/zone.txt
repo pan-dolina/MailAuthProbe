@@ -16,6 +16,20 @@ _dmarc.test.example.             TXT   "v=DMARC1; p=reject; rua=mailto:dmarc@tes
 s2026._domainkey.test.example.   TXT   "v=DKIM1; k=rsa; p=MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA+lBF89/3lPYb2gLGaDdeppr63HMOxmUY17MmoiIYc9MYeIne5ZRa+EL2UaQFkVtsl7fitmnDwrGaOFAxPSARuuWOWRjgOTHvM7QTNFgJ2y7HEy+pWQ/TXunhXfMQI0QLAPnt4RPEir9VDqm2Shv8vlO7Ur5+aGUI/lqq+Io9UOkuVM8YWnEB6Bf9OACmk1MY+WPVveGbvpGECBy0xkUMj5guQ1TlqvaC6Q+9FSsdt6bx3XPTYEJhBN43kGCbG18b09dG9BflDlYQ8B9K4U6TpyLWZmoDeqYJ6zRctSmtg6erlfY27oxRrcrTGnK6OfEB/u9Pw1Oz8CemzBC3/SyNsQIDAQAB"
 ed2026._domainkey.test.example.  TXT   "v=DKIM1; k=ed25519; p=h6//u2wg4Rs3ZatRFRqMVv+HAU0hwSmu6zBGXTdIi6g="
 
+; hosted.example: hosted mail. Google Workspace (MX and SPF), SendGrid and
+; Amazon SES (SPF); the only DKIM key is under Google's default selector.
+; Zendesk appears only inside SendGrid's record and must not be detected.
+hosted.example.                  MX    1 aspmx.l.google.com.
+aspmx.l.google.com.              A     192.0.2.27
+hosted.example.                  TXT   "v=spf1 include:_spf.hosted.example include:amazonses.com -all"
+_spf.hosted.example.             TXT   "v=spf1 include:_spf.google.com include:sendgrid.net -all"
+_spf.google.com.                 TXT   "v=spf1 ip4:192.0.2.64/26 ~all"
+sendgrid.net.                    TXT   "v=spf1 ip4:192.0.2.128/26 include:mail.zendesk.com ~all"
+mail.zendesk.com.                TXT   "v=spf1 ip4:192.0.2.192/26 -all"
+amazonses.com.                   TXT   "v=spf1 ip4:198.51.100.0/26 -all"
+_dmarc.hosted.example.           TXT   "v=DMARC1; p=reject; rua=mailto:dmarc@hosted.example"
+google._domainkey.hosted.example. TXT  "v=DKIM1; k=rsa; p=MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA+lBF89/3lPYb2gLGaDdeppr63HMOxmUY17MmoiIYc9MYeIne5ZRa+EL2UaQFkVtsl7fitmnDwrGaOFAxPSARuuWOWRjgOTHvM7QTNFgJ2y7HEy+pWQ/TXunhXfMQI0QLAPnt4RPEir9VDqm2Shv8vlO7Ur5+aGUI/lqq+Io9UOkuVM8YWnEB6Bf9OACmk1MY+WPVveGbvpGECBy0xkUMj5guQ1TlqvaC6Q+9FSsdt6bx3XPTYEJhBN43kGCbG18b09dG9BflDlYQ8B9K4U6TpyLWZmoDeqYJ6zRctSmtg6erlfY27oxRrcrTGnK6OfEB/u9Pw1Oz8CemzBC3/SyNsQIDAQAB"
+
 ; evil.example: attacker-controlled domain with valid SPF and DKIM
 evil.example.                    TXT   "v=spf1 ip4:203.0.113.0/24 -all"
 s1._domainkey.evil.example.      TXT   "v=DKIM1; k=rsa; p=MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA+lBF89/3lPYb2gLGaDdeppr63HMOxmUY17MmoiIYc9MYeIne5ZRa+EL2UaQFkVtsl7fitmnDwrGaOFAxPSARuuWOWRjgOTHvM7QTNFgJ2y7HEy+pWQ/TXunhXfMQI0QLAPnt4RPEir9VDqm2Shv8vlO7Ur5+aGUI/lqq+Io9UOkuVM8YWnEB6Bf9OACmk1MY+WPVveGbvpGECBy0xkUMj5guQ1TlqvaC6Q+9FSsdt6bx3XPTYEJhBN43kGCbG18b09dG9BflDlYQ8B9K4U6TpyLWZmoDeqYJ6zRctSmtg6erlfY27oxRrcrTGnK6OfEB/u9Pw1Oz8CemzBC3/SyNsQIDAQAB"

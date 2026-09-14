@@ -8,19 +8,36 @@ import (
 
 	"github.com/pan-dolina/mailauthprobe/internal/dnsresolver"
 	"github.com/pan-dolina/mailauthprobe/internal/findings"
+	"github.com/pan-dolina/mailauthprobe/internal/mailprovider"
 )
+
+// MaxGuessedSelectors bounds the number of provider default selectors tried
+// for one domain.
+const MaxGuessedSelectors = 16
+
+// NoKeyRecord is the SelectorAssessment error for a selector without a key
+// record.
+const NoKeyRecord = "no key record"
 
 // SelectorAssessment is the audit result for one selector.
 type SelectorAssessment struct {
-	Selector string     `json:"selector"`
-	Name     string     `json:"name"`
+	Selector string `json:"selector"`
+	Name     string `json:"name"`
+	// Provider is set when the selector was not given by the user but taken
+	// from the documented defaults of a detected mail provider.
+	Provider string     `json:"provider,omitempty"`
 	Records  []string   `json:"records,omitempty"`
 	Key      *KeyRecord `json:"key,omitempty"`
 	Error    string     `json:"error,omitempty"`
 }
 
+// Published reports whether a key record exists for the selector.
+func (s SelectorAssessment) Published() bool { return len(s.Records) > 0 }
+
 // Assessment is the DKIM part of a domain audit.
 type Assessment struct {
+	// Providers lists the mail providers detected for the domain.
+	Providers []mailprovider.Match `json:"providers,omitempty"`
 	Selectors []SelectorAssessment `json:"selectors"`
 	Findings  []findings.Finding   `json:"-"`
 }
@@ -30,16 +47,17 @@ func KeyName(selector, domain string) string {
 	return selector + "._domainkey." + strings.TrimSuffix(domain, ".")
 }
 
-// Assess audits the key records of the given selectors. DKIM selectors
-// cannot be discovered from DNS, so without selectors only an informational
-// finding is produced.
-func Assess(ctx context.Context, r dnsresolver.Resolver, domain string, selectors []string) (*Assessment, error) {
+// Assess audits the key records of the given selectors.
+//
+// DKIM selectors cannot be enumerated from DNS. Without selectors, the
+// selectors documented by the detected providers are tried instead; a
+// missing key under such a guessed selector is not a finding by itself,
+// because the domain may use custom selectors.
+func Assess(ctx context.Context, r dnsresolver.Resolver, domain string, selectors []string, providers []mailprovider.Match) (*Assessment, error) {
 	domain = dnsresolver.Trim(domain)
-	a := &Assessment{Selectors: []SelectorAssessment{}}
+	a := &Assessment{Providers: providers, Selectors: []SelectorAssessment{}}
 	if len(selectors) == 0 {
-		a.Findings = append(a.Findings, findings.DKIMNoSelector.New(domain,
-			"DKIM keys are published under selector names that cannot be enumerated from DNS. Pass --dkim-selector to audit specific keys, or analyse a signed message to discover the selectors in use."))
-		return a, nil
+		return a, a.guess(ctx, r, domain)
 	}
 	var infraErr error
 	seen := map[string]bool{}
@@ -49,7 +67,7 @@ func Assess(ctx context.Context, r dnsresolver.Resolver, domain string, selector
 			continue
 		}
 		seen[sel] = true
-		sa, fs, err := assessSelector(ctx, r, domain, sel)
+		sa, fs, err := assessSelector(ctx, r, domain, sel, "")
 		a.Selectors = append(a.Selectors, sa)
 		a.Findings = append(a.Findings, fs...)
 		if err != nil {
@@ -59,22 +77,91 @@ func Assess(ctx context.Context, r dnsresolver.Resolver, domain string, selector
 	return a, infraErr
 }
 
-func assessSelector(ctx context.Context, r dnsresolver.Resolver, domain, sel string) (SelectorAssessment, []findings.Finding, error) {
+const selectorAdvice = "Pass --dkim-selector to audit specific keys, or analyse a signed message to discover the selectors in use."
+
+// guess tries the default selectors of the detected providers.
+func (a *Assessment) guess(ctx context.Context, r dnsresolver.Resolver, domain string) error {
+	var infraErr error
+	seen := map[string]bool{}
+	tried := 0
+	for _, p := range a.Providers {
+		for _, sel := range p.DKIMSelectors {
+			if seen[sel] || tried == MaxGuessedSelectors {
+				continue
+			}
+			seen[sel] = true
+			tried++
+			sa, fs, err := assessSelector(ctx, r, domain, sel, p.Provider)
+			a.Selectors = append(a.Selectors, sa)
+			a.Findings = append(a.Findings, fs...)
+			if err != nil {
+				infraErr = err
+			}
+		}
+	}
+
+	var found, missing, notes []string
+	for _, p := range a.Providers {
+		if p.DKIMNote != "" {
+			notes = append(notes, p.DKIMNote+".")
+		}
+		var published, absent []string
+		failed := false
+		for _, sa := range a.Selectors {
+			switch {
+			case sa.Provider != p.Provider:
+			case sa.Published():
+				published = append(published, sa.Selector)
+			case sa.Error == NoKeyRecord:
+				absent = append(absent, sa.Selector)
+			default:
+				failed = true
+			}
+		}
+		switch {
+		case len(published) > 0:
+			found = append(found, fmt.Sprintf("%s (%s)", p.Provider, strings.Join(published, ", ")))
+		case len(absent) > 0 && !failed:
+			missing = append(missing, fmt.Sprintf("%s (%s)", p.Provider, strings.Join(absent, ", ")))
+		}
+	}
+
+	var desc []string
+	if len(missing) > 0 {
+		desc = append(desc, fmt.Sprintf("No DKIM key was found under the documented default selectors of %s; the domain may use custom selectors, or DKIM signing may not be enabled for it there.", strings.Join(missing, ", ")))
+	}
+	desc = append(desc, notes...)
+	if len(found) > 0 {
+		desc = append([]string{fmt.Sprintf("DKIM keys were found under the documented default selectors of %s. Other selectors cannot be enumerated from DNS and were not audited.", strings.Join(found, ", "))}, desc...)
+		a.Findings = append(a.Findings, findings.DKIMSelectorsGuessed.New(domain, strings.Join(desc, " ")))
+		return infraErr
+	}
+	desc = append([]string{"DKIM keys are published under selector names that cannot be enumerated from DNS."}, desc...)
+	desc = append(desc, selectorAdvice)
+	a.Findings = append(a.Findings, findings.DKIMNoSelector.New(domain, strings.Join(desc, " ")))
+	return infraErr
+}
+
+func assessSelector(ctx context.Context, r dnsresolver.Resolver, domain, sel, provider string) (SelectorAssessment, []findings.Finding, error) {
 	name := KeyName(sel, domain)
-	sa := SelectorAssessment{Selector: sel, Name: name}
+	sa := SelectorAssessment{Selector: sel, Name: name, Provider: provider}
 	var fs []findings.Finding
 	add := func(f findings.Finding) { fs = append(fs, f) }
 
 	if !dnsresolver.ValidDomain(name) {
 		sa.Error = "invalid selector"
-		add(findings.DKIMKeyNotFound.New(name, fmt.Sprintf("%q is not a valid DKIM selector name.", sel)))
+		if provider == "" {
+			add(findings.DKIMKeyNotFound.New(name, fmt.Sprintf("%q is not a valid DKIM selector name.", sel)))
+		}
 		return sa, fs, nil
 	}
 	txts, err := r.LookupTXT(ctx, name)
 	switch {
 	case dnsresolver.IsNXDomain(err) || (err == nil && len(txts) == 0):
-		sa.Error = "no key record"
-		add(findings.DKIMKeyNotFound.New(name, fmt.Sprintf("No DKIM key record exists at %s. Messages signed with selector %q cannot be verified.", name, sel)))
+		sa.Error = NoKeyRecord
+		if provider == "" {
+			add(findings.DKIMKeyNotFound.New(name, fmt.Sprintf("No DKIM key record exists at %s. Messages signed with selector %q cannot be verified.", name, sel)))
+		}
 		return sa, fs, nil
 	case err != nil:
 		sa.Error = err.Error()

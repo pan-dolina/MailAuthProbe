@@ -77,6 +77,18 @@ MailAuthProbe. Newest entries at the bottom of each section.
   between runs. The cache now shares in-flight lookups.
 - Owner names in answers are compared case-insensitively: servers and
   forwarders using 0x20 case randomisation return names in mixed case.
+- DKIM selectors for domain audits (after 0.1.0). Selectors cannot be
+  enumerated, but most hosted services tell customers to publish fixed names
+  (`google`, `selector1`/`selector2`, `s1`/`s2`, ...). `internal/mailprovider`
+  maps MX suffixes and exact SPF include targets to those documented names.
+  Rejected: a generic dictionary of common selectors, which is brute-forcing
+  under another name and produces results that depend on luck. SPF includes
+  are only followed inside the audited domain, so a provider's own includes
+  (SendGrid including another service) do not add providers. Amazon SES MX
+  endpoints are not matched because `amazonaws.com` also covers arbitrary EC2
+  hosts. A missing key under a guessed selector is not a finding by itself;
+  it is mentioned in MAIL-DKIM-001/016 because the domain may use custom
+  selectors. Explicit `--dkim-selector` values disable guessing.
 
 ## Problems and fixes
 

@@ -7,6 +7,7 @@ import (
 	"time"
 	"unicode/utf8"
 
+	"github.com/pan-dolina/mailauthprobe/internal/dkim"
 	"github.com/pan-dolina/mailauthprobe/internal/findings"
 	"github.com/pan-dolina/mailauthprobe/internal/mailparser"
 	"github.com/pan-dolina/mailauthprobe/internal/spf"
@@ -333,18 +334,39 @@ func (t *textWriter) domain(d *Domain) {
 	}
 	if d.DKIM != nil {
 		t.heading("DKIM")
-		if len(d.DKIM.Selectors) == 0 {
-			t.printf("  no selectors checked (use --dkim-selector)\n")
+		for _, p := range d.DKIM.Providers {
+			t.printf("  provider %s (%s)\n", p.Provider, p.Evidence)
 		}
+		shown, guessed := 0, 0
 		for _, s := range d.DKIM.Selectors {
+			origin := styled("")
+			if s.Provider != "" {
+				guessed++
+				// Most provider defaults are absent on any given domain; list
+				// them only on request.
+				if s.Error == dkim.NoKeyRecord && !t.opts.Verbose {
+					continue
+				}
+				origin = t.style(ansiDim, " ("+s.Provider+" default)")
+			}
+			shown++
 			switch {
 			case s.Key != nil && s.Key.Revoked:
-				t.printf("  %s: revoked\n", s.Name)
+				t.printf("  %s: revoked%s\n", s.Name, origin)
 			case s.Key != nil:
-				t.printf("  %s: %s %d bits\n", s.Name, strings.ToUpper(s.Key.KeyType), s.Key.KeyBits)
+				t.printf("  %s: %s %d bits%s\n", s.Name, strings.ToUpper(s.Key.KeyType), s.Key.KeyBits, origin)
+			case s.Provider != "" && s.Error == dkim.NoKeyRecord:
+				t.printf("  %s: %s%s\n", s.Name, s.Error, origin)
 			default:
-				t.printf("  %s: %s\n", s.Name, t.style(ansiRed, s.Error))
+				t.printf("  %s: %s%s\n", s.Name, t.style(ansiRed, s.Error), origin)
 			}
+		}
+		switch {
+		case shown > 0:
+		case guessed > 0:
+			t.printf("  no keys under provider default selectors (use --dkim-selector)\n")
+		default:
+			t.printf("  no selectors checked (use --dkim-selector)\n")
 		}
 	}
 	if d.MTASTS != nil {

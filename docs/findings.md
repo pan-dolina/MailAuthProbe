@@ -84,6 +84,7 @@ finding.
 | `MAIL-DKIM-013` | medium | standard-violation | Multiple TXT records at a DKIM selector |
 | `MAIL-DKIM-014` | info | informational | DKIM key record contains an unknown tag |
 | `MAIL-DKIM-015` | low | hardening | DKIM RSA key is not in SubjectPublicKeyInfo format |
+| `MAIL-DKIM-016` | info | informational | DKIM selectors taken from provider defaults |
 | `MAIL-DKIM-020` | pass | informational | DKIM signature valid |
 | `MAIL-DKIM-021` | high | security-weakness | DKIM signature does not verify |
 | `MAIL-DKIM-022` | high | security-weakness | DKIM body hash mismatch |

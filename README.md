@@ -51,9 +51,15 @@ mailauthprobe domain example.com --dkim-selector selector1 --dkim-selector selec
 mailauthprobe domain example.com --json --fail-on high
 ```
 
-DKIM selectors cannot be discovered from DNS, and MailAuthProbe does not
-guess them. Without `--dkim-selector` the report says that DKIM keys were not
-audited. Analysing a signed message from the domain reveals its selectors.
+DKIM selectors cannot be enumerated from DNS. When no `--dkim-selector` is
+given, MailAuthProbe recognises hosted mail providers from the MX hosts and SPF
+includes (Google Workspace, Microsoft 365, Mailchimp, SendGrid, Brevo, Mailjet,
+Zendesk, Fastmail, Proton Mail, iCloud Mail, Yandex 360) and audits the
+selectors their setup documentation specifies, such as `google` or
+`selector1`/`selector2`. Custom selectors, and providers that generate
+selectors per domain (Amazon SES, Postmark), still require `--dkim-selector`;
+analysing a signed message from the domain reveals the selectors in use.
+Passing `--dkim-selector` disables provider defaults.
 
 ### Analyse a message
 

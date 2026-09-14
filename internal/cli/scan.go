@@ -33,8 +33,12 @@ func (a *App) newDomainCommand() *cobra.Command {
 		Short: "Audit the mail security configuration of a domain",
 		Long: `Audit MX, SPF, DKIM, DMARC, MTA-STS and TLS-RPT for a domain.
 
-DKIM selectors cannot be discovered from DNS; pass the selectors in use with
---dkim-selector (repeatable) to audit their keys.`,
+DKIM selectors cannot be enumerated from DNS. Without --dkim-selector, the
+selectors documented by hosted mail providers recognised from the MX hosts and
+SPF includes (for example "google" for Google Workspace, "selector1" and
+"selector2" for Microsoft 365) are audited. Pass the selectors in use with
+--dkim-selector (repeatable) to audit other keys; this disables provider
+defaults.`,
 		Example: `  mailauthprobe domain example.com
   mailauthprobe domain example.com --dkim-selector selector1 --dkim-selector selector2
   mailauthprobe domain example.com --json --fail-on high`,
