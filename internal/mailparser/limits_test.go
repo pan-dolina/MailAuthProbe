@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"runtime"
 	"slices"
 	"strings"
 	"testing"
@@ -114,5 +115,34 @@ func TestMIMEPartsLimit(t *testing.T) {
 	}
 	if !slices.Contains(defectKinds(m), DefectMIMEPartsExceeded) || len(m.MIME.Parts) >= 100 {
 		t.Errorf("parts = %d, defects = %v", len(m.MIME.Parts), m.Defects)
+	}
+}
+
+func TestMIMENestedCopiesAreBounded(t *testing.T) {
+	var b strings.Builder
+	depth := 20
+	b.WriteString("MIME-Version: 1.0\r\nContent-Type: multipart/mixed; boundary=b0\r\n\r\n")
+	for i := 0; i < depth; i++ {
+		fmt.Fprintf(&b, "--b%d\r\nContent-Type: multipart/mixed; boundary=b%d\r\n\r\n", i, i+1)
+	}
+	fmt.Fprintf(&b, "--b%d\r\nContent-Type: text/plain\r\n\r\n%s\r\n--b%d--\r\n", depth, strings.Repeat("x", 4<<20), depth)
+	for i := depth - 1; i >= 0; i-- {
+		fmt.Fprintf(&b, "--b%d--\r\n", i)
+	}
+	data := []byte(b.String())
+
+	var before, after runtime.MemStats
+	runtime.GC()
+	runtime.ReadMemStats(&before)
+	m, err := ParseBytes(data, Options{Limits: Limits{MaxMIMEDepth: 30}})
+	runtime.ReadMemStats(&after)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !slices.Contains(defectKinds(m), DefectMIMESizeExceeded) {
+		t.Errorf("defects = %v", m.Defects)
+	}
+	if alloc := after.TotalAlloc - before.TotalAlloc; alloc > uint64(6*len(data)) {
+		t.Errorf("allocated %d bytes for a %d byte message", alloc, len(data))
 	}
 }

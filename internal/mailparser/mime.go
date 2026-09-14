@@ -54,6 +54,11 @@ type mimeWalker struct {
 	m      *Message
 	limits Limits
 	parts  int
+	// examined counts the bytes copied out of part bodies. Every nesting
+	// level copies its content, so without a bound a deeply nested message
+	// would be held in memory many times over.
+	examined    int
+	maxExamined int
 	// stopped is set once a MIME limit is hit; the remaining structure is
 	// not examined.
 	stopped bool
@@ -64,7 +69,7 @@ func parseMIME(m *Message, limits Limits) {
 		m.MIME = &Part{ContentType: "text/plain", Charset: "us-ascii", Size: len(m.Body)}
 		return
 	}
-	w := &mimeWalker{m: m, limits: limits}
+	w := &mimeWalker{m: m, limits: limits, maxExamined: 2*len(m.Body) + 1<<20}
 	m.MIME = w.part(messageHeaders{m}, m.Body, 0)
 	if _, ok := m.First("MIME-Version"); !ok && strings.HasPrefix(m.MIME.ContentType, "multipart/") {
 		m.defect(DefectMIMEMissingVersion, "multipart message without a MIME-Version header")
@@ -142,7 +147,13 @@ func (w *mimeWalker) part(h headerGetter, body []byte, depth int) *Part {
 			w.m.defect(DefectMIMEUnterminated, "%s body is malformed: %v", p.ContentType, err)
 			break
 		}
-		content, err := io.ReadAll(child)
+		content, err := io.ReadAll(io.LimitReader(child, int64(w.maxExamined-w.examined)+1))
+		w.examined += len(content)
+		if w.examined > w.maxExamined {
+			w.m.defect(DefectMIMESizeExceeded, "nested MIME parts exceed the analysis budget of %d bytes; remaining parts were not examined", w.maxExamined)
+			w.stopped = true
+			break
+		}
 		if err != nil {
 			w.m.defect(DefectMIMEUnterminated, "%s body ends before its closing boundary: %v", p.ContentType, err)
 			p.Parts = append(p.Parts, w.part(child.Header, content, depth+1))

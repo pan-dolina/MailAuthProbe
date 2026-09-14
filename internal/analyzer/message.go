@@ -318,7 +318,7 @@ func (s *session) structureFindings(msg *mailparser.Message, m *report.Message) 
 			lineDefects = append(lineDefects, entry)
 		case mailparser.DefectNULByte, mailparser.DefectEightBitHeader:
 			badBytes = append(badBytes, entry)
-		case mailparser.DefectMIMEDepthExceeded, mailparser.DefectMIMEPartsExceeded:
+		case mailparser.DefectMIMEDepthExceeded, mailparser.DefectMIMEPartsExceeded, mailparser.DefectMIMESizeExceeded:
 			limitDefects = append(limitDefects, entry)
 		case mailparser.DefectMIMEInvalidContentType, mailparser.DefectMIMEMissingBoundary, mailparser.DefectMIMEUnterminated,
 			mailparser.DefectMIMENoParts, mailparser.DefectMIMEBadEncoding, mailparser.DefectMIMEMissingVersion:

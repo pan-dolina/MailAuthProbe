@@ -46,6 +46,7 @@ const (
 	DefectMIMEMissingVersion     DefectKind = "mime-missing-version"
 	DefectMIMEDepthExceeded      DefectKind = "mime-depth-exceeded"
 	DefectMIMEPartsExceeded      DefectKind = "mime-parts-exceeded"
+	DefectMIMESizeExceeded       DefectKind = "mime-size-exceeded"
 )
 
 // Defect is a problem found while parsing.
