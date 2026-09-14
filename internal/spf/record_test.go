@@ -194,9 +194,16 @@ func TestParseCollectsAllErrors(t *testing.T) {
 	}
 }
 
-func TestParseExpAllowsExplanationMacros(t *testing.T) {
-	if _, err := Parse("v=spf1 exp=%{c}.%{r}.%{t}.example.com -all"); err != nil {
-		t.Fatal(err)
+func TestParseExplanationMacrosOnlyInExplanationText(t *testing.T) {
+	if _, err := Parse("v=spf1 exp=%{c}.%{r}.%{t}.example.com -all"); err == nil {
+		t.Error("c, r and t macros must not be accepted in the exp domain-spec")
+	}
+	rec, err := Parse("v=spf1 a:%{l/}.example.com/24 -all")
+	if err != nil {
+		t.Fatalf("slash macro delimiter rejected: %v", err)
+	}
+	if a := rec.Terms[0]; a.Domain != "%{l/}.example.com" || a.CIDR4 != 24 {
+		t.Errorf("term = %+v", a)
 	}
 }
 

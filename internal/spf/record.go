@@ -348,7 +348,10 @@ func validModifierName(s string) bool {
 }
 
 func (t *Term) setDomain(spec string) error {
-	m, err := parseMacroString(spec, t.Modifier && t.Name == ModExp)
+	// The c, r and t macro letters are only allowed in the explanation
+	// text fetched through exp=, not in any domain-spec, including exp's own
+	// (RFC 7208 section 7.1).
+	m, err := parseMacroString(spec, false)
 	if err != nil {
 		return err
 	}
@@ -373,8 +376,12 @@ func (t *Term) parseDomainAndCIDR(arg string) error {
 	}
 
 	// dual-cidr-length = [ ip4-cidr-length ] [ "/" ip6-cidr-length ], i.e.
-	// "/n", "//m" or "/n//m" at the end of the term.
-	if i := strings.Index(spec, "//"); i >= 0 {
+	// "/n", "//m" or "/n//m" at the end of the term. '/' is also a valid
+	// macro delimiter ("%{l/}"), so only text after the last macro is
+	// searched.
+	base := strings.LastIndexByte(spec, '}') + 1
+	if i := strings.Index(spec[base:], "//"); i >= 0 {
+		i += base
 		v6, err := parseCIDR(spec[i+2:], 128)
 		if err != nil {
 			return fmt.Errorf("invalid ip6-cidr-length: %w", err)
@@ -382,7 +389,7 @@ func (t *Term) parseDomainAndCIDR(arg string) error {
 		t.CIDR6 = v6
 		spec = spec[:i]
 	}
-	if i := strings.LastIndexByte(spec, '/'); i >= 0 {
+	if i := strings.LastIndexByte(spec, '/'); i >= base {
 		v4, err := parseCIDR(spec[i+1:], 32)
 		if err != nil {
 			return fmt.Errorf("invalid ip4-cidr-length: %w", err)

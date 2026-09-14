@@ -291,41 +291,58 @@ func (st *analysisState) checkDirective(term Term, domain string) {
 		}
 	case MechPTR:
 		st.add(findings.SPFPTR.New(domain, fmt.Sprintf("The SPF record of %s uses %q.", domain, term.Raw)))
-	case MechIP4, MechIP6:
+	case MechIP4, MechIP6, MechA, MechMX:
 		if term.Qualifier == QualifierFail || term.Qualifier == QualifierSoftFail {
 			return
 		}
-		bits := term.Network.Bits()
-		var sev findings.Severity
-		if term.Name == MechIP4 {
-			switch {
-			case bits == 0:
-				sev = findings.SeverityCritical
-			case bits <= 8:
-				sev = findings.SeverityHigh
-			case bits <= 16:
-				sev = findings.SeverityMedium
+		type width struct{ bits, maxBits int }
+		var widths []width
+		switch term.Name {
+		case MechIP4, MechIP6:
+			widths = append(widths, width{term.Network.Bits(), term.Network.Addr().BitLen()})
+		default:
+			// a/0 or mx//0 turn a host lookup into "the whole Internet".
+			if term.CIDR4 >= 0 {
+				widths = append(widths, width{term.CIDR4, 32})
 			}
-		} else {
-			switch {
-			case bits == 0:
-				sev = findings.SeverityCritical
-			case bits <= 16:
-				sev = findings.SeverityHigh
-			case bits <= 32:
-				sev = findings.SeverityMedium
+			if term.CIDR6 >= 0 {
+				widths = append(widths, width{term.CIDR6, 128})
 			}
 		}
-		if sev != 0 {
-			st.add(findings.SPFBroadRange.New(domain,
-				fmt.Sprintf("%q in the SPF record of %s authorizes %s addresses.", term.Raw, domain, rangeSize(term)),
-			).WithSeverity(sev))
+		for _, w := range widths {
+			if sev := broadRangeSeverity(w.bits, w.maxBits); sev != 0 {
+				st.add(findings.SPFBroadRange.New(domain,
+					fmt.Sprintf("%q in the SPF record of %s authorizes blocks of %s addresses.", term.Raw, domain, rangeSize(w.maxBits-w.bits)),
+				).WithSeverity(sev))
+			}
 		}
 	}
 }
 
-func rangeSize(term Term) string {
-	hostBits := term.Network.Addr().BitLen() - term.Network.Bits()
+func broadRangeSeverity(bits, maxBits int) findings.Severity {
+	if maxBits == 32 {
+		switch {
+		case bits == 0:
+			return findings.SeverityCritical
+		case bits <= 8:
+			return findings.SeverityHigh
+		case bits <= 16:
+			return findings.SeverityMedium
+		}
+		return 0
+	}
+	switch {
+	case bits == 0:
+		return findings.SeverityCritical
+	case bits <= 16:
+		return findings.SeverityHigh
+	case bits <= 32:
+		return findings.SeverityMedium
+	}
+	return 0
+}
+
+func rangeSize(hostBits int) string {
 	if hostBits < 63 {
 		return fmt.Sprintf("%d", uint64(1)<<hostBits)
 	}
