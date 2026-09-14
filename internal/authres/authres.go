@@ -100,6 +100,10 @@ func parseResInfo(s string) (Result, error) {
 	}
 	r := Result{Result: strings.ToLower(unquote(result)), Props: map[string]string{}}
 	r.Method, r.Version, _ = strings.Cut(strings.ToLower(method), "/")
+	// Validate after unquoting: `spf=""` must not yield an empty result.
+	if !isKeyword(r.Method) || !isKeyword(r.Result) {
+		return Result{}, fmt.Errorf("invalid method result %q", tokens[0])
+	}
 	for _, tok := range tokens[1:] {
 		name, val, ok := strings.Cut(tok, "=")
 		if !ok {
@@ -118,6 +122,21 @@ func parseResInfo(s string) (Result, error) {
 		}
 	}
 	return r, nil
+}
+
+// isKeyword reports whether s is a method or result keyword: letters,
+// digits, '-' and '_' (RFC 8601 section 2.2).
+func isKeyword(s string) bool {
+	if s == "" {
+		return false
+	}
+	for i := 0; i < len(s); i++ {
+		c := s[i]
+		if !(c >= 'a' && c <= 'z' || c >= '0' && c <= '9' || c == '-' || c == '_') {
+			return false
+		}
+	}
+	return true
 }
 
 // tokenizeAssignments splits "a = b c.d= e" into ["a=b", "c.d=e"], keeping

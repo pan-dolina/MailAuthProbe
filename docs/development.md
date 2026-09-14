@@ -141,4 +141,43 @@ MailAuthProbe. Newest entries at the bottom of each section.
 
 ## Fuzzing
 
-_No fuzzing campaigns yet._
+Native Go fuzzing (`go test -fuzz`), targets listed in `.github/workflows/ci.yml`.
+CI runs each target for 45 seconds on every push; longer campaigns are run
+locally before releases.
+
+### Campaign 1 – 2026-09-14, Go 1.27.1, Apple M-series, 60 s per target
+
+| Target | Executions | New corpus entries | Result |
+|--------|-----------:|-------------------:|--------|
+| mailparser/FuzzParseHeaders | 23.4 M | 221 | pass |
+| mailparser/FuzzParseMIME | 16.6 M | 520 | pass |
+| received/FuzzParseReceived | 12.2 M | 620 | pass |
+| spf/FuzzParseSPF | 19.8 M | 370 | pass |
+| spf/FuzzCheckHost | 16.3 M | 639 | pass |
+| dmarc/FuzzParseDMARC | 11.9 M | 399 | pass |
+| dmarc/FuzzAlignment | 5.2 M | 363 | pass |
+| dkim/FuzzParseKeyRecord | 14.1 M | 380 | pass |
+| dkim/FuzzParseSignature | 13.2 M | 329 | pass |
+| dkim/FuzzVerifyMessage | 11.0 M | 300 | pass |
+| dkim/FuzzCanonicalization | 14.6 M | 165 | pass |
+| authres/FuzzParseAuthenticationResults | – | – | **failure after 0.4 s** |
+| authres/FuzzParseReceivedSPF | 23.6 M | 407 | pass |
+| mtasts/FuzzParsePolicy | 6.5 M | 262 | pass |
+
+No panics were found. One invariant violation:
+
+- `authres.Parse("0=\"\"")` returned a result with an empty result keyword.
+  Method and result were checked for emptiness *before* removing quotes, so
+  `spf=""` produced `Result{Method: "spf", Result: ""}`. Downstream, an empty
+  claimed result is silently skipped by the comparison, which would hide a
+  malformed header instead of reporting it. Method and result are now
+  validated as RFC 8601 keywords after unquoting. The failing input is kept
+  as a regression seed in
+  `internal/authres/testdata/fuzz/FuzzParseAuthenticationResults/`; a
+  further 60 s run (21.6 M executions) passed.
+
+Before the campaign, the seed corpus alone caught an incorrect property in
+`FuzzParseHeaders`: raw header bytes were expected to be a prefix of the
+input, which is false when a continuation line precedes the first field (the
+line is skipped). The property was corrected to "raw bytes appear in order
+within the header section".
