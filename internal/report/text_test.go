@@ -117,7 +117,7 @@ c.tree.example.   TXT "v=spf1 ip4:192.0.2.2 -all"
 
 func TestTextEscapesHostileContent(t *testing.T) {
 	raw := "From: Alice <alice@test.example>\r\n" +
-		"Subject: hi\x1b]0;owned\x07\x1b[2J\x1b[31mFAKE: DMARC pass\x1b[0m ‮evil‬ \x9b1m\xff\r\n" +
+		"Subject: hi\x1b]0;owned\x07\x1b[2J\x1b[31mFAKE: DMARC pass\x1b[0m \u202eevil\u202c \x9b1m\xff\r\n" +
 		"Date: Mon, 14 Sep 2026 10:00:00 +0000\r\n\r\nbody\r\n"
 	rep, err := analyzer.Message(context.Background(), strings.NewReader(raw), "x\x1b[1m.eml", false, analyzer.Options{Resolver: zone(t), Now: time.Unix(1789380000, 0)})
 	if err != nil {
@@ -125,7 +125,7 @@ func TestTextEscapesHostileContent(t *testing.T) {
 	}
 	for _, color := range []bool{false, true} {
 		out := render(t, rep, report.TextOptions{Color: color, Verbose: true})
-		for _, bad := range []string{"\x1b]", "\x1b[2J", "\x1b[31mFAKE", "\x07", "‮", "\xc2\x9b", "\xff"} {
+		for _, bad := range []string{"\x1b]", "\x1b[2J", "\x1b[31mFAKE", "\x07", "\u202e", "\xc2\x9b", "\xff"} {
 			if strings.Contains(out, bad) {
 				t.Errorf("color=%v: output contains raw %q", color, bad)
 			}

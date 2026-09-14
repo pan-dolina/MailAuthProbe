@@ -142,7 +142,7 @@ func TestMIMENestedCopiesAreBounded(t *testing.T) {
 	if !slices.Contains(defectKinds(m), DefectMIMESizeExceeded) {
 		t.Errorf("defects = %v", m.Defects)
 	}
-	if alloc := after.TotalAlloc - before.TotalAlloc; alloc > uint64(6*len(data)) {
+	if alloc := after.TotalAlloc - before.TotalAlloc; !raceEnabled && alloc > uint64(6*len(data)) {
 		t.Errorf("allocated %d bytes for a %d byte message", alloc, len(data))
 	}
 }
