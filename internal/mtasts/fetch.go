@@ -116,19 +116,12 @@ func (f *HTTPFetcher) Fetch(ctx context.Context, domain string) (*Response, erro
 		}
 		return nil, &FetchError{Kind: FetchNetwork, Err: lastErr}
 	}
-	var peerCert *x509.Certificate
 	transport := &http.Transport{
 		DialContext: dial,
 		TLSClientConfig: &tls.Config{
 			MinVersion: tls.VersionTLS12,
 			RootCAs:    f.RootCAs,
 			ServerName: host,
-			VerifyConnection: func(cs tls.ConnectionState) error {
-				if len(cs.PeerCertificates) > 0 {
-					peerCert = cs.PeerCertificates[0]
-				}
-				return nil
-			},
 		},
 		TLSHandshakeTimeout:    timeout,
 		ResponseHeaderTimeout:  timeout,
@@ -149,18 +142,19 @@ func (f *HTTPFetcher) Fetch(ctx context.Context, domain string) (*Response, erro
 	}
 	req.Header.Set("User-Agent", "MailAuthProbe (+https://github.com/marcindolinski/mailauthprobe)")
 	httpResp, err := client.Do(req)
-	if peerCert != nil {
-		resp.Certificate = &Certificate{
-			Subject:  peerCert.Subject.String(),
-			Issuer:   peerCert.Issuer.String(),
-			DNSNames: peerCert.DNSNames,
-			NotAfter: peerCert.NotAfter.UTC(),
-		}
-	}
 	if err != nil {
+		// On a verification failure the presented certificate is still
+		// useful to explain the problem.
+		var certErr *tls.CertificateVerificationError
+		if errors.As(err, &certErr) && len(certErr.UnverifiedCertificates) > 0 {
+			resp.Certificate = summarize(certErr.UnverifiedCertificates[0])
+		}
 		return resp, classify(err)
 	}
 	defer httpResp.Body.Close()
+	if httpResp.TLS != nil && len(httpResp.TLS.PeerCertificates) > 0 {
+		resp.Certificate = summarize(httpResp.TLS.PeerCertificates[0])
+	}
 	resp.StatusCode = httpResp.StatusCode
 	resp.ContentType = httpResp.Header.Get("Content-Type")
 
@@ -179,6 +173,15 @@ func (f *HTTPFetcher) Fetch(ctx context.Context, domain string) (*Response, erro
 	}
 	resp.Body = string(body)
 	return resp, nil
+}
+
+func summarize(c *x509.Certificate) *Certificate {
+	return &Certificate{
+		Subject:  c.Subject.String(),
+		Issuer:   c.Issuer.String(),
+		DNSNames: c.DNSNames,
+		NotAfter: c.NotAfter.UTC(),
+	}
 }
 
 func (f *HTTPFetcher) resolve(ctx context.Context, host string) ([]netip.Addr, error) {
