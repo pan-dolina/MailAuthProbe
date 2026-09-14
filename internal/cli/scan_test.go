@@ -2,11 +2,13 @@ package cli
 
 import (
 	"encoding/json"
+	"io"
 	"os"
 	"path/filepath"
 	"slices"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/marcindolinski/mailauthprobe/internal/dnsresolver/dnstest"
 )
@@ -118,5 +120,24 @@ func TestNoColorEnvironment(t *testing.T) {
 	}}
 	if app.useColor() {
 		t.Error("NO_COLOR ignored")
+	}
+}
+
+func TestStalledStdinHonoursTimeout(t *testing.T) {
+	pr, pw := io.Pipe()
+	defer pw.Close()
+	var out, errb strings.Builder
+	app := &App{Stdin: pr, Stdout: &out, Stderr: &errb, Getenv: func(string) string { return "" }}
+	done := make(chan int, 1)
+	go func() {
+		done <- app.Execute(t.Context(), []string{"message", "-", "--timeout", "200ms", "--resolver", "127.0.0.1:1"})
+	}()
+	select {
+	case code := <-done:
+		if code != ExitInput || !strings.Contains(errb.String(), "deadline exceeded") {
+			t.Errorf("code = %d, stderr = %s", code, errb.String())
+		}
+	case <-time.After(5 * time.Second):
+		t.Fatal("stalled standard input ignored --timeout")
 	}
 }

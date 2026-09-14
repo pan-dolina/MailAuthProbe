@@ -51,7 +51,7 @@
         "type": "object",
         "required": ["kind", "component", "message"],
         "properties": {
-          "kind": { "enum": ["dns", "input", "internal"] },
+          "kind": { "enum": ["dns", "input"] },
           "component": { "type": "string" },
           "message": { "type": "string" }
         }

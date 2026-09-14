@@ -155,11 +155,6 @@ func (r Rule) New(subject, description string, evidence ...string) Finding {
 	}
 }
 
-// Newf is New with a formatted description.
-func (r Rule) Newf(subject, format string, args ...any) Finding {
-	return r.New(subject, fmt.Sprintf(format, args...))
-}
-
 // WithSeverity returns a copy of f with a different severity. Rules define a
 // default; context can make the same condition more or less severe.
 func (f Finding) WithSeverity(s Severity) Finding {

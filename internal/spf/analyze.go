@@ -64,7 +64,8 @@ type analysisState struct {
 const maxAnalysisNodes = 64
 
 // Analyze builds the dependency tree of domain's SPF policy. The returned
-// error is non-nil only for DNS infrastructure failures on the root record.
+// error is non-nil for DNS infrastructure failures on the root record or on
+// records referenced by include or redirect.
 func (a *Analyzer) Analyze(ctx context.Context, domain string) (*Analysis, error) {
 	limits := a.Limits
 	if limits == (Limits{}) {

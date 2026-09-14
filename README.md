@@ -90,10 +90,10 @@ mailauthprobe completion fish > ~/.config/fish/completions/mailauthprobe.fish
 | `--json` | Write the versioned JSON report instead of text. |
 | `--quiet`, `-q` | Write nothing to standard output; rely on the exit code. |
 | `--verbose`, `-v` | Show passing checks, all evidence, references and SPF traces. |
-| `--no-color` | Disable colours. `NO_COLOR` is honoured, and colour is off when output is not a terminal. |
+| `--no-color` | Disable colours. `NO_COLOR` is honoured; colour is off when output is not a terminal and on Windows. |
 | `--fail-on <severity>` | Exit with status 1 if any finding is at least `info`, `low`, `medium`, `high` or `critical`. Default `none`. |
-| `--timeout <duration>` | Deadline for the whole scan (default `30s`). Each DNS query is limited to 5 s. |
-| `--resolver <ip[:port]>` | DNS resolver to use. Default: servers from `/etc/resolv.conf`, or the OS resolver on Windows. |
+| `--timeout <duration>` | Deadline for the whole scan, including reading standard input (default `30s`). Each DNS attempt is limited to 5 s, with two attempts per configured server. |
+| `--resolver <ip[:port]>` | DNS resolver to use. Default: servers from `/etc/resolv.conf`, or the OS resolver on Windows (which cannot tell a non-existent name from a name without records; use `--resolver` for precise results). |
 
 ## Exit codes
 
@@ -107,7 +107,9 @@ mailauthprobe completion fish > ~/.config/fish/completions/mailauthprobe.fish
 | 5 | Internal error. |
 
 When several apply, the most specific code wins: 5, then 3, then 4, then 1.
-With `--json`, a report is written for codes 0, 1, 3 and 4.
+With `--json`, a report is written for codes 0, 1 and 4, and for code 3 when
+the input could be opened but not parsed (for example when it exceeds a
+limit). Files that cannot be opened produce only an error message.
 
 ## Output
 

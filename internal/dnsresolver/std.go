@@ -9,21 +9,25 @@ import (
 )
 
 // StdResolver adapts net.Resolver. It is used only when no name servers can
-// be discovered for Client. The standard library does not distinguish
-// NXDOMAIN from NODATA reliably, so both are reported as KindNXDomain, and
-// response size limits cannot be enforced.
+// be discovered for Client (Windows). The standard library does not
+// distinguish NXDOMAIN from NODATA, so "not found" is reported as an empty
+// answer: reporting it as NXDOMAIN would claim that existing domains without
+// records of one type do not exist. Response size limits cannot be enforced.
 type StdResolver struct {
 	Resolver *net.Resolver
 }
 
 var _ Resolver = (*StdResolver)(nil)
 
+// errNoData marks a not-found answer that callers turn into an empty result.
+var errNoData = errors.New("no data")
+
 func (s *StdResolver) wrap(name, typ string, err error) error {
 	var dnsErr *net.DNSError
 	if errors.As(err, &dnsErr) {
 		switch {
 		case dnsErr.IsNotFound:
-			return &Error{Kind: KindNXDomain, Name: Trim(name), Type: typ}
+			return errNoData
 		case dnsErr.IsTimeout, dnsErr.IsTemporary:
 			return &Error{Kind: KindTemporary, Name: Trim(name), Type: typ, Err: err}
 		}
@@ -38,7 +42,10 @@ func (s *StdResolver) LookupTXT(ctx context.Context, name string) ([]string, err
 	}
 	txt, err := s.Resolver.LookupTXT(ctx, Fqdn(name))
 	if err != nil {
-		return nil, s.wrap(name, "TXT", err)
+		if err = s.wrap(name, "TXT", err); err == errNoData {
+			return []string{}, nil
+		}
+		return nil, err
 	}
 	return txt, nil
 }
@@ -50,7 +57,10 @@ func (s *StdResolver) LookupMX(ctx context.Context, name string) ([]MX, error) {
 	}
 	mxs, err := s.Resolver.LookupMX(ctx, Fqdn(name))
 	if err != nil {
-		return nil, s.wrap(name, "MX", err)
+		if err = s.wrap(name, "MX", err); err == errNoData {
+			return []MX{}, nil
+		}
+		return nil, err
 	}
 	out := make([]MX, 0, len(mxs))
 	for _, mx := range mxs {
@@ -65,7 +75,10 @@ func (s *StdResolver) lookupIP(ctx context.Context, network, name, typ string) (
 	}
 	addrs, err := s.Resolver.LookupNetIP(ctx, network, Fqdn(name))
 	if err != nil {
-		return nil, s.wrap(name, typ, err)
+		if err = s.wrap(name, typ, err); err == errNoData {
+			return []netip.Addr{}, nil
+		}
+		return nil, err
 	}
 	out := make([]netip.Addr, 0, len(addrs))
 	for _, a := range addrs {
@@ -91,7 +104,10 @@ func (s *StdResolver) LookupCNAME(ctx context.Context, name string) (string, err
 	}
 	cname, err := s.Resolver.LookupCNAME(ctx, Fqdn(name))
 	if err != nil {
-		return "", s.wrap(name, "CNAME", err)
+		if err = s.wrap(name, "CNAME", err); err == errNoData {
+			return "", nil
+		}
+		return "", err
 	}
 	if strings.EqualFold(Fqdn(cname), Fqdn(name)) {
 		return "", nil
@@ -103,7 +119,10 @@ func (s *StdResolver) LookupCNAME(ctx context.Context, name string) (string, err
 func (s *StdResolver) LookupPTR(ctx context.Context, addr netip.Addr) ([]string, error) {
 	names, err := s.Resolver.LookupAddr(ctx, addr.String())
 	if err != nil {
-		return nil, s.wrap(ReverseName(addr), "PTR", err)
+		if err = s.wrap(ReverseName(addr), "PTR", err); err == errNoData {
+			return []string{}, nil
+		}
+		return nil, err
 	}
 	out := make([]string, 0, len(names))
 	for _, n := range names {

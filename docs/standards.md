@@ -20,6 +20,9 @@ ambiguous points are interpreted, and what is out of scope.
 
 - Complete record syntax, including macros, dual CIDR lengths and unknown
   modifiers. Any syntax error yields `permerror`, as required by section 4.6.
+- Macro expansions longer than 4096 octets are treated as invalid domains,
+  and the `c`, `r` and `t` macro letters are accepted only in explanation
+  text, not in the `exp=` domain-spec.
 - `check_host()` implements all mechanisms (`all`, `include`, `a`, `mx`,
   `ptr`, `ip4`, `ip6`, `exists`), the `redirect` and `exp` modifiers, and all
   macro letters. IPv4-mapped IPv6 clients are evaluated as IPv4.
@@ -46,7 +49,8 @@ ambiguous points are interpreted, and what is out of scope.
   PKCS #1 RSAPublicKey.
 - Messages stored with LF line endings are normalised to CRLF before
   canonicalization, since the signer saw CRLF on the wire.
-- At most 10 signatures per message are verified.
+- At most 10 signatures per message are verified. RSA keys larger than
+  8192 bits are rejected to bound verification cost.
 - Result names follow RFC 8601: `pass`, `fail` (signature or body hash
   mismatch), `neutral` (header signature valid, body unavailable),
   `permerror`, `temperror`.
@@ -66,6 +70,15 @@ ambiguous points are interpreted, and what is out of scope.
 - The SPF identity used for alignment is MAIL FROM, or HELO only for a null
   reverse-path. `pct` is reported but not sampled: the disposition shows the
   requested policy.
+- A message is reported as DMARC `fail` only when every identifier that could
+  align produced a definite result. If there is no aligned pass but SPF could
+  not be evaluated, or an aligned DKIM signature could only be partially
+  verified (headers without body), the result is `indeterminate` (not an
+  RFC 7489 result); aligned SPF or DKIM `temperror` gives `temperror`.
+- An invalid `sp` tag is handled like an invalid `p` tag (RFC 7489
+  section 6.6.3): the record is ignored, or treated as `p=none` when it lists
+  a valid `rua`. External report destinations are checked for `mailto:` and
+  `https:` URIs.
 
 ## MTA-STS (RFC 8461) and TLS-RPT (RFC 8460)
 
@@ -89,9 +102,11 @@ ambiguous points are interpreted, and what is out of scope.
   Exim, qmail, Microsoft Exchange and Gmail. Every extracted value is marked
   `stated` (explicit in the header) or `inferred` (dependent on a
   convention, such as the word after `from` being the HELO name).
-- The SMTP client used for SPF is inferred from `Received-SPF`, or from the
-  most recent Received header with a public client address. The receiving
-  organization's trust boundary is unknown, so this is always an inference.
+- The SMTP client used for SPF is inferred from the most recent Received
+  header with a public client address. `Received-SPF` never supplies the
+  client address; it supplies HELO and MAIL FROM only when its `client-ip`
+  matches. The receiving organization's trust boundary is unknown, so these
+  values are always marked as inferred.
 - Authentication-Results (RFC 8601) are parsed, including the Exchange Online
   variant without an authserv-id. Conflicts between headers from the same
   authserv-id and disagreement with MailAuthProbe's own results are reported.

@@ -29,9 +29,8 @@ const (
 
 // Error kinds.
 const (
-	ErrorDNS      = "dns"
-	ErrorInput    = "input"
-	ErrorInternal = "internal"
+	ErrorDNS   = "dns"
+	ErrorInput = "input"
 )
 
 // Report is the complete result of one scan.

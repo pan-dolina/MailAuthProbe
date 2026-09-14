@@ -102,6 +102,12 @@ func Assess(ctx context.Context, domain string, opts Options) (*Assessment, erro
 		}
 		url := PolicyURL(domain)
 		switch kind {
+		case FetchDNS:
+			if dnsresolver.IsInfrastructure(fe.Err) {
+				add(findings.DNSLookupFailed.New("mta-sts."+domain, "The address lookup for the MTA-STS policy host failed.", err.Error()))
+				return a, fe.Err
+			}
+			add(findings.MTASTSFetchFailed.New(url, fmt.Sprintf("The MTA-STS TXT record exists but the policy could not be fetched: %v. Senders cannot apply MTA-STS.", err)))
 		case FetchCertificate:
 			add(findings.MTASTSCertificate.New("mta-sts."+domain, fmt.Sprintf("The certificate presented by mta-sts.%s is not valid: %v.", domain, err)))
 		case FetchRedirect:

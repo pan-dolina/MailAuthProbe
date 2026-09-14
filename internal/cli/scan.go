@@ -7,6 +7,7 @@ import (
 	"io"
 	"net/netip"
 	"os"
+	"runtime"
 	"strings"
 	"time"
 
@@ -117,6 +118,9 @@ verified, but body hashes cannot be checked.`
 			}
 			defer cancel()
 			opts.SourceIP, opts.HELO, opts.MailFrom = mf.sourceIP, mf.helo, mf.mailFrom
+			if target == "-" {
+				in = contextReader{ctx: opts.ctx, r: in}
+			}
 			rep, err := analyzer.Message(opts.ctx, in, target, headersOnly, opts.Options)
 			return a.finish(rep, err)
 		},
@@ -215,7 +219,9 @@ func (a *App) finish(rep *report.Report, scanErr error) error {
 }
 
 func (a *App) useColor() bool {
-	if a.opts.noColor || a.Getenv("NO_COLOR") != "" || a.Getenv("TERM") == "dumb" {
+	// The legacy Windows console only renders ANSI sequences after the
+	// program enables virtual terminal processing; stay plain there.
+	if a.opts.noColor || a.Getenv("NO_COLOR") != "" || a.Getenv("TERM") == "dumb" || runtime.GOOS == "windows" {
 		return false
 	}
 	f, ok := a.Stdout.(*os.File)
@@ -224,4 +230,35 @@ func (a *App) useColor() bool {
 	}
 	st, err := f.Stat()
 	return err == nil && st.Mode()&os.ModeCharDevice != 0
+}
+
+// contextReader makes reads fail once ctx is done, so that --timeout and
+// Ctrl-C also apply to a stalled pipe on standard input. A blocked Read on
+// the underlying reader is abandoned, not interrupted.
+type contextReader struct {
+	ctx context.Context
+	r   io.Reader
+}
+
+func (c contextReader) Read(p []byte) (int, error) {
+	if err := c.ctx.Err(); err != nil {
+		return 0, err
+	}
+	type result struct {
+		n   int
+		err error
+	}
+	buf := make([]byte, len(p))
+	ch := make(chan result, 1)
+	go func() {
+		n, err := c.r.Read(buf)
+		ch <- result{n, err}
+	}()
+	select {
+	case res := <-ch:
+		copy(p, buf[:res.n])
+		return res.n, res.err
+	case <-c.ctx.Done():
+		return 0, fmt.Errorf("reading input: %w", context.Cause(c.ctx))
+	}
 }
