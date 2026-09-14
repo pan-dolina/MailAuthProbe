@@ -66,6 +66,10 @@ MailAuthProbe. Newest entries at the bottom of each section.
 - Message size and header section limits are hard errors (exit code 3);
   MIME depth and part limits are defects. Authentication does not depend on
   MIME structure, so a message with 10 000 parts can still be verified.
+- Running the new fixtures through the CLI showed that a message without a
+  Return-Path fed the HELO SPF result into DMARC. RFC 7489 uses the HELO
+  identity only for a null reverse-path; with an unknown MAIL FROM the SPF
+  input to DMARC is now "not evaluated".
 - Domain checks run concurrently. The first cache implementation stored an
   answer only after the lookup returned, so two checks asking for the same
   name at the same time (for example `mx.Assess` and an SPF `mx` mechanism)

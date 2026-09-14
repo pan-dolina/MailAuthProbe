@@ -85,14 +85,21 @@ func (c *Checker) CheckMessage(ctx context.Context, in MessageInputs) *MessageCh
 		helo = dnsresolver.Trim(in.HELO.Value)
 		mc.HELO = c.CheckHost(ctx, Request{IP: ip, HELO: helo, Domain: helo, Sender: "postmaster@" + helo})
 	}
-	if in.MailFrom != nil && !in.NullSender {
+	switch {
+	case in.MailFrom != nil && !in.NullSender:
 		mc.MailFrom = c.CheckHost(ctx, Request{IP: ip, Sender: in.MailFrom.Value, HELO: helo})
 		mc.Result, mc.Domain = mc.MailFrom.Result, mc.MailFrom.Domain
-	} else if mc.HELO != nil {
+	case in.NullSender && mc.HELO != nil:
+		// RFC 7489 section 3.1.2: for a null reverse-path, DMARC uses the
+		// HELO identity.
 		mc.Result, mc.Domain = mc.HELO.Result, mc.HELO.Domain
-	}
-	if mc.Result == "" {
+	case in.NullSender:
 		add(findings.SPFNotEvaluated.New("", "SPF was not evaluated: the sender was null and no HELO name is known."))
+		return mc
+	default:
+		// Only HELO is known. Its result is recorded, but it is not the
+		// identity DMARC uses for a non-null sender.
+		add(findings.SPFNotEvaluated.New("", fmt.Sprintf("The MAIL FROM identity is unknown, so the SPF result used by DMARC could not be computed (HELO %s: %s). Pass --mail-from or analyse a message with a Return-Path header.", helo, mc.HELO.Result)))
 		return mc
 	}
 

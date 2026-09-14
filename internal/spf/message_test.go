@@ -31,6 +31,7 @@ loop.test.           TXT "v=spf1 include:loop.test -all"
 		{"none", MessageInputs{IP: flag("203.0.113.66"), MailFrom: flag("x@nospf.test")}, ResultNone, "nospf.test", []string{"MAIL-SPF-033"}},
 		{"null sender uses HELO", MessageInputs{IP: flag("192.0.2.10"), HELO: flag("mail.example.test"), NullSender: true}, ResultPass, "mail.example.test", []string{"MAIL-SPF-030"}},
 		{"permerror loop is high", MessageInputs{IP: flag("192.0.2.10"), MailFrom: flag("x@loop.test")}, ResultPermError, "loop.test", []string{"MAIL-SPF-034"}},
+		{"helo only is not used for DMARC", MessageInputs{IP: flag("192.0.2.10"), HELO: flag("mail.example.test")}, "", "", []string{"MAIL-SPF-036"}},
 		{"no ip", MessageInputs{MailFrom: flag("x@example.test")}, "", "", []string{"MAIL-SPF-036"}},
 		{"bad ip", MessageInputs{IP: flag("not-an-ip"), MailFrom: flag("x@example.test")}, "", "", []string{"MAIL-SPF-036"}},
 		{"no identity", MessageInputs{IP: flag("192.0.2.10")}, "", "", []string{"MAIL-SPF-036"}},
