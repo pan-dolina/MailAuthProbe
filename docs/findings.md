@@ -137,6 +137,15 @@ finding.
 | `MAIL-MTASTS-015` | info | informational | MTA-STS policy uses LF line endings |
 | `MAIL-MTASTS-016` | medium | standard-violation | MTA-STS policy is too large |
 
+## tls-rpt
+
+| ID | Default severity | Category | Title |
+|----|------------------|----------|-------|
+| `MAIL-TLSRPT-001` | low | hardening | TLS-RPT not configured |
+| `MAIL-TLSRPT-002` | medium | standard-violation | Invalid TLS-RPT record |
+| `MAIL-TLSRPT-003` | medium | standard-violation | Invalid TLS-RPT report URI |
+| `MAIL-TLSRPT-004` | pass | informational | TLS-RPT is configured |
+
 ## received
 
 | ID | Default severity | Category | Title |

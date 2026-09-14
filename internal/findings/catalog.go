@@ -1136,3 +1136,41 @@ var (
 		References:     []string{RFC8461 + "#section-3.2"},
 	})
 )
+
+// TLS-RPT rules.
+var (
+	TLSRPTMissing = register(Rule{
+		ID:             "MAIL-TLSRPT-001",
+		Component:      ComponentTLSRPT,
+		Category:       CategoryHardening,
+		Severity:       SeverityLow,
+		Title:          "TLS-RPT not configured",
+		Recommendation: "Publish \"v=TLSRPTv1; rua=mailto:tls-reports@<domain>\" at _smtp._tls.<domain> to receive reports about failed TLS connections.",
+		References:     []string{RFC8460 + "#section-3"},
+	})
+	TLSRPTInvalid = register(Rule{
+		ID:             "MAIL-TLSRPT-002",
+		Component:      ComponentTLSRPT,
+		Category:       CategoryViolation,
+		Severity:       SeverityMedium,
+		Title:          "Invalid TLS-RPT record",
+		Recommendation: "Publish exactly one record starting with \"v=TLSRPTv1;\" and containing a rua field.",
+		References:     []string{RFC8460 + "#section-3"},
+	})
+	TLSRPTInvalidURI = register(Rule{
+		ID:             "MAIL-TLSRPT-003",
+		Component:      ComponentTLSRPT,
+		Category:       CategoryViolation,
+		Severity:       SeverityMedium,
+		Title:          "Invalid TLS-RPT report URI",
+		Recommendation: "Use mailto: or https: URIs, separated by commas.",
+		References:     []string{RFC8460 + "#section-3"},
+	})
+	TLSRPTValid = register(Rule{
+		ID:        "MAIL-TLSRPT-004",
+		Component: ComponentTLSRPT,
+		Category:  CategoryInformational,
+		Severity:  SeverityPass,
+		Title:     "TLS-RPT is configured",
+	})
+)
