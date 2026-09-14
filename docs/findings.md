@@ -57,6 +57,13 @@ finding.
 | `MAIL-SPF-023` | info | informational | SPF term depends on message data and cannot be followed statically |
 | `MAIL-SPF-024` | low | hardening | SPF record is longer than 450 octets |
 | `MAIL-SPF-025` | low | hardening | SPF mechanism references a name without records |
+| `MAIL-SPF-030` | pass | informational | SPF pass |
+| `MAIL-SPF-031` | high | security-weakness | SPF fail: sending host is not authorized |
+| `MAIL-SPF-032` | medium | security-weakness | SPF softfail: sending host is probably not authorized |
+| `MAIL-SPF-033` | low | informational | SPF neutral or none: sender not verified |
+| `MAIL-SPF-034` | medium | standard-violation | SPF evaluation error |
+| `MAIL-SPF-035` | info | informational | SPF inputs inferred from message headers |
+| `MAIL-SPF-036` | info | informational | SPF not evaluated |
 
 ## dkim
 
@@ -100,6 +107,36 @@ finding.
 | `MAIL-DMARC-016` | info | informational | DMARC requires strict identifier alignment |
 | `MAIL-DMARC-017` | pass | informational | DMARC policy is enforced |
 | `MAIL-DMARC-018` | info | informational | DMARC fo tag has no effect without ruf |
+| `MAIL-DMARC-030` | pass | informational | DMARC pass |
+| `MAIL-DMARC-031` | high | security-weakness | DMARC fail |
+| `MAIL-DMARC-032` | medium | security-weakness | No usable DMARC policy for the From domain |
+| `MAIL-DMARC-033` | high | standard-violation | From header unusable for DMARC |
+| `MAIL-DMARC-034` | medium | informational | DMARC temperror |
+| `MAIL-DMARC-035` | medium | informational | Strict alignment prevented a DMARC pass |
+| `MAIL-DMARC-036` | info | informational | SPF passed but is not aligned with From |
+| `MAIL-DMARC-037` | info | informational | DKIM passed but is not aligned with From |
+
+## received
+
+| ID | Default severity | Category | Title |
+|----|------------------|----------|-------|
+| `MAIL-RCVD-001` | low | informational | No Received headers |
+| `MAIL-RCVD-002` | low | standard-violation | Received header could not be parsed |
+| `MAIL-RCVD-003` | low | informational | Received timestamps go backwards |
+| `MAIL-RCVD-004` | medium | informational | Too many Received headers |
+| `MAIL-RCVD-005` | info | hardening | Hop transmitted without TLS |
+| `MAIL-RCVD-006` | low | standard-violation | Received header has no date |
+| `MAIL-RCVD-007` | info | informational | Long delay between hops |
+
+## authentication-results
+
+| ID | Default severity | Category | Title |
+|----|------------------|----------|-------|
+| `MAIL-AR-001` | high | security-weakness | Conflicting Authentication-Results from the same server |
+| `MAIL-AR-002` | medium | informational | Authentication-Results disagree with independent verification |
+| `MAIL-AR-003` | pass | informational | Authentication-Results agree with independent verification |
+| `MAIL-AR-004` | low | standard-violation | Authentication-Results header cannot be parsed |
+| `MAIL-AR-005` | info | informational | No Authentication-Results headers |
 
 ## dns
 

@@ -44,6 +44,28 @@ MailAuthProbe. Newest entries at the bottom of each section.
   stack) instead of relying on the lookup limit, so the report can show the
   actual cycle. Including the same domain twice on different branches is
   legal and is not reported as a loop.
+- DKIM verification is implemented on the standard library rather than
+  using go-msgauth (ADR 0003). To check it independently, a throw-away
+  program outside the module signed messages with each implementation and
+  verified them with the other: 4 canonicalization modes x RSA/Ed25519 x 4
+  body shapes, in both directions, 64 combinations, all passing. go-msgauth
+  v0.7.0 was used for this check only.
+- Exchange Online writes Authentication-Results without an authserv-id and
+  with bare properties (`action=none`, `compauth=pass reason=100`). The first
+  parser rejected such headers as invalid RFC 8601, which would have hidden
+  the most common source of conflicting results. They are now accepted with
+  an empty authserv-id.
+- The message parser keeps each header field's raw bytes (`Header.Raw`)
+  next to the unfolded value. DKIM canonicalization must operate on the bytes
+  that were signed; reconstructing them from parsed values loses folding and
+  whitespace.
+- A line in the header section that is neither a field nor a continuation is
+  treated as the start of the body, matching what Postfix and Exim do. The
+  alternative (skipping the line) would let an attacker hide header fields
+  from MailAuthProbe that receivers never saw.
+- Message size and header section limits are hard errors (exit code 3);
+  MIME depth and part limits are defects. Authentication does not depend on
+  MIME structure, so a message with 10 000 parts can still be verified.
 - Owner names in answers are compared case-insensitively: servers and
   forwarders using 0x20 case randomisation return names in mixed case.
 
@@ -54,6 +76,12 @@ MailAuthProbe. Newest entries at the bottom of each section.
   every record includes ten others, most of them non-existent) still issued
   614 DNS queries, because failed include targets were not counted. The bound
   now counts every include/redirect target fetched.
+- Received parsing: TLS detection took the first word of the `with` clause
+  via `strings.Fields(protocol + " ")[0]`, which panics for headers without a
+  `with` clause (local delivery: `by host id X; date`). Found by the first
+  table test with a Postfix local-delivery header. Also, Exim writes
+  `with esmtps (TLS1.3) tls <cipher>`, so the protocol is now the words before
+  the first comment in the clause.
 
 ## Fuzzing
 

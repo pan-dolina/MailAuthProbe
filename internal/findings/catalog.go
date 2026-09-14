@@ -743,3 +743,251 @@ var (
 		References:     []string{RFC6376 + "#section-3.6.1"},
 	})
 )
+
+// Received chain rules.
+var (
+	RcvdNone = register(Rule{
+		ID:             "MAIL-RCVD-001",
+		Component:      ComponentReceived,
+		Category:       CategoryInformational,
+		Severity:       SeverityLow,
+		Title:          "No Received headers",
+		Recommendation: "Analyse the message as delivered to a mailbox (with full headers) to see its transport path.",
+		References:     []string{RFC5321 + "#section-4.4"},
+	})
+	RcvdUnparseable = register(Rule{
+		ID:             "MAIL-RCVD-002",
+		Component:      ComponentReceived,
+		Category:       CategoryViolation,
+		Severity:       SeverityLow,
+		Title:          "Received header could not be parsed",
+		Recommendation: "Treat data from this hop with caution; malformed trace headers are common in forged or badly generated messages.",
+		References:     []string{RFC5321 + "#section-4.4"},
+	})
+	RcvdTimeTravel = register(Rule{
+		ID:             "MAIL-RCVD-003",
+		Component:      ComponentReceived,
+		Category:       CategoryInformational,
+		Severity:       SeverityLow,
+		Title:          "Received timestamps go backwards",
+		Recommendation: "Headers below the inconsistency may have been added by the sender rather than by the servers they name.",
+		References:     []string{RFC5321 + "#section-4.4"},
+	})
+	RcvdTooMany = register(Rule{
+		ID:             "MAIL-RCVD-004",
+		Component:      ComponentReceived,
+		Category:       CategoryInformational,
+		Severity:       SeverityMedium,
+		Title:          "Too many Received headers",
+		Recommendation: "Check for a mail loop or for headers padded by the sender to hide the real origin.",
+		References:     []string{RFC5321 + "#section-6.3"},
+	})
+	RcvdNoTLS = register(Rule{
+		ID:         "MAIL-RCVD-005",
+		Component:  ComponentReceived,
+		Category:   CategoryHardening,
+		Severity:   SeverityInfo,
+		Title:      "Hop transmitted without TLS",
+		References: []string{"https://www.rfc-editor.org/rfc/rfc3848"},
+	})
+	RcvdNoDate = register(Rule{
+		ID:             "MAIL-RCVD-006",
+		Component:      ComponentReceived,
+		Category:       CategoryViolation,
+		Severity:       SeverityLow,
+		Title:          "Received header has no date",
+		Recommendation: "Every Received header must end with \"; date-time\". A missing date suggests a forged or broken header.",
+		References:     []string{RFC5321 + "#section-4.4"},
+	})
+	RcvdDelay = register(Rule{
+		ID:         "MAIL-RCVD-007",
+		Component:  ComponentReceived,
+		Category:   CategoryInformational,
+		Severity:   SeverityInfo,
+		Title:      "Long delay between hops",
+		References: []string{RFC5321 + "#section-4.4"},
+	})
+)
+
+// SPF message verification rules.
+var (
+	SPFMessagePass = register(Rule{
+		ID:         "MAIL-SPF-030",
+		Component:  ComponentSPF,
+		Category:   CategoryInformational,
+		Severity:   SeverityPass,
+		Title:      "SPF pass",
+		References: []string{RFC7208 + "#section-2.6.3"},
+	})
+	SPFMessageFail = register(Rule{
+		ID:             "MAIL-SPF-031",
+		Component:      ComponentSPF,
+		Category:       CategoryWeakness,
+		Severity:       SeverityHigh,
+		Title:          "SPF fail: sending host is not authorized",
+		Recommendation: "The client is explicitly not authorized to send for this domain. Unless the message was forwarded, treat it as spoofed.",
+		References:     []string{RFC7208 + "#section-2.6.2"},
+	})
+	SPFMessageSoftFail = register(Rule{
+		ID:             "MAIL-SPF-032",
+		Component:      ComponentSPF,
+		Category:       CategoryWeakness,
+		Severity:       SeverityMedium,
+		Title:          "SPF softfail: sending host is probably not authorized",
+		Recommendation: "The domain owner believes this host is not authorized. Check DKIM and DMARC before trusting the message.",
+		References:     []string{RFC7208 + "#section-2.6.5"},
+	})
+	SPFMessageNeutral = register(Rule{
+		ID:             "MAIL-SPF-033",
+		Component:      ComponentSPF,
+		Category:       CategoryInformational,
+		Severity:       SeverityLow,
+		Title:          "SPF neutral or none: sender not verified",
+		Recommendation: "SPF gives no assurance for this message; rely on DKIM and DMARC.",
+		References:     []string{RFC7208 + "#section-2.6.1"},
+	})
+	SPFMessageError = register(Rule{
+		ID:             "MAIL-SPF-034",
+		Component:      ComponentSPF,
+		Category:       CategoryViolation,
+		Severity:       SeverityMedium,
+		Title:          "SPF evaluation error",
+		Recommendation: "SPF returned temperror or permerror; receivers may reject or ignore SPF for this domain. See the reason for details.",
+		References:     []string{RFC7208 + "#section-2.6.6", RFC7208 + "#section-2.6.7"},
+	})
+	SPFInputsInferred = register(Rule{
+		ID:         "MAIL-SPF-035",
+		Component:  ComponentSPF,
+		Category:   CategoryInformational,
+		Severity:   SeverityInfo,
+		Title:      "SPF inputs inferred from message headers",
+		References: []string{RFC7208 + "#section-9.1"},
+	})
+	SPFNotEvaluated = register(Rule{
+		ID:         "MAIL-SPF-036",
+		Component:  ComponentSPF,
+		Category:   CategoryInformational,
+		Severity:   SeverityInfo,
+		Title:      "SPF not evaluated",
+		References: []string{RFC7208 + "#section-4.1"},
+	})
+)
+
+// DMARC message evaluation rules.
+var (
+	DMARCMessagePass = register(Rule{
+		ID:         "MAIL-DMARC-030",
+		Component:  ComponentDMARC,
+		Category:   CategoryInformational,
+		Severity:   SeverityPass,
+		Title:      "DMARC pass",
+		References: []string{RFC7489 + "#section-4.2"},
+	})
+	DMARCMessageFail = register(Rule{
+		ID:             "MAIL-DMARC-031",
+		Component:      ComponentDMARC,
+		Category:       CategoryWeakness,
+		Severity:       SeverityHigh,
+		Title:          "DMARC fail",
+		Recommendation: "The From domain could not be authenticated. Unless the message passed through a forwarder or mailing list that broke authentication, treat it as spoofed.",
+		References:     []string{RFC7489 + "#section-6.6.2"},
+	})
+	DMARCMessageNoPolicy = register(Rule{
+		ID:             "MAIL-DMARC-032",
+		Component:      ComponentDMARC,
+		Category:       CategoryWeakness,
+		Severity:       SeverityMedium,
+		Title:          "No usable DMARC policy for the From domain",
+		Recommendation: "Without DMARC, receivers have no instruction to reject mail that spoofs this From domain.",
+		References:     []string{RFC7489 + "#section-6.6.3"},
+	})
+	DMARCMessageBadFrom = register(Rule{
+		ID:             "MAIL-DMARC-033",
+		Component:      ComponentDMARC,
+		Category:       CategoryViolation,
+		Severity:       SeverityHigh,
+		Title:          "From header unusable for DMARC",
+		Recommendation: "A message must have exactly one From header with one mailbox. Multiple or malformed From headers are a common spoofing technique.",
+		References:     []string{RFC7489 + "#section-6.6.1", RFC5322 + "#section-3.6"},
+	})
+	DMARCMessageTempError = register(Rule{
+		ID:             "MAIL-DMARC-034",
+		Component:      ComponentDMARC,
+		Category:       CategoryInformational,
+		Severity:       SeverityMedium,
+		Title:          "DMARC temperror",
+		Recommendation: "The DMARC policy could not be retrieved. Retry the analysis.",
+		References:     []string{RFC7489 + "#section-6.6.3"},
+	})
+	DMARCMessageStrictMisalign = register(Rule{
+		ID:             "MAIL-DMARC-035",
+		Component:      ComponentDMARC,
+		Category:       CategoryInformational,
+		Severity:       SeverityMedium,
+		Title:          "Strict alignment prevented a DMARC pass",
+		Recommendation: "An authenticated identifier from the same organization failed strict alignment. If the domain owner intends subdomains to send, relaxed alignment (adkim=r / aspf=r) would pass.",
+		References:     []string{RFC7489 + "#section-3.1"},
+	})
+	DMARCMessageSPFUnaligned = register(Rule{
+		ID:         "MAIL-DMARC-036",
+		Component:  ComponentDMARC,
+		Category:   CategoryInformational,
+		Severity:   SeverityInfo,
+		Title:      "SPF passed but is not aligned with From",
+		References: []string{RFC7489 + "#section-3.1.2"},
+	})
+	DMARCMessageDKIMUnaligned = register(Rule{
+		ID:         "MAIL-DMARC-037",
+		Component:  ComponentDMARC,
+		Category:   CategoryInformational,
+		Severity:   SeverityInfo,
+		Title:      "DKIM passed but is not aligned with From",
+		References: []string{RFC7489 + "#section-3.1.1"},
+	})
+)
+
+// Authentication-Results comparison rules.
+var (
+	ARConflict = register(Rule{
+		ID:             "MAIL-AR-001",
+		Component:      ComponentAuthResults,
+		Category:       CategoryWeakness,
+		Severity:       SeverityHigh,
+		Title:          "Conflicting Authentication-Results from the same server",
+		Recommendation: "Two headers claim to come from the same authserv-id but disagree. One of them was probably added by the sender to mislead filters or users; trust only headers your own receiving MTA adds and strips.",
+		References:     []string{RFC8601 + "#section-5"},
+	})
+	ARMismatch = register(Rule{
+		ID:             "MAIL-AR-002",
+		Component:      ComponentAuthResults,
+		Category:       CategoryInformational,
+		Severity:       SeverityMedium,
+		Title:          "Authentication-Results disagree with independent verification",
+		Recommendation: "Differences can come from forged headers, message modification after delivery, DNS changes since receipt, or inferred SPF inputs. Investigate before relying on either verdict.",
+		References:     []string{RFC8601 + "#section-7"},
+	})
+	ARConsistent = register(Rule{
+		ID:        "MAIL-AR-003",
+		Component: ComponentAuthResults,
+		Category:  CategoryInformational,
+		Severity:  SeverityPass,
+		Title:     "Authentication-Results agree with independent verification",
+	})
+	ARUnparseable = register(Rule{
+		ID:             "MAIL-AR-004",
+		Component:      ComponentAuthResults,
+		Category:       CategoryViolation,
+		Severity:       SeverityLow,
+		Title:          "Authentication-Results header cannot be parsed",
+		Recommendation: "The header does not follow RFC 8601; it was not used for comparison.",
+		References:     []string{RFC8601 + "#section-2.2"},
+	})
+	ARNone = register(Rule{
+		ID:         "MAIL-AR-005",
+		Component:  ComponentAuthResults,
+		Category:   CategoryInformational,
+		Severity:   SeverityInfo,
+		Title:      "No Authentication-Results headers",
+		References: []string{RFC8601},
+	})
+)
