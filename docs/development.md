@@ -139,6 +139,29 @@ MailAuthProbe. Newest entries at the bottom of each section.
   to the test package directory instead of the repository root. Both fixed;
   smoke tests pass for darwin/arm64 natively and darwin/amd64 under Rosetta.
 
+## Performance
+
+Benchmarks: `go test -run '^$' -bench . -benchmem ./internal/...`.
+Baseline on 2026-09-14 (Go 1.27.1, Apple M-series, 10 cores):
+
+| Benchmark | Time/op | Allocs/op | Notes |
+|-----------|--------:|----------:|-------|
+| mailparser ParseFixture (1.9 KB, 3 DKIM signatures) | 4.6 µs | 45 | 409 MB/s |
+| mailparser ParseLargeMultipart (200 parts, 600 KB) | 468 µs | 4050 | 1.3 GB/s |
+| dkim VerifyFixture (3 signatures, RSA + Ed25519) | 62 µs | 214 → 202 | includes zone lookups |
+| dkim CanonicalBodyRelaxed (1 MiB) | 1.8 ms | 16650 → 5 | 571 MB/s |
+| spf Parse | 1.2 µs | 25 | |
+| spf CheckHost (include chain, in-memory zone) | 3.1 µs | 78 | |
+| received Parse (Postfix header with TLS comment) | 4.0 µs | 125 | |
+| dmarc Parse | 1.3 µs | 16 | |
+| dmarc OrganizationalDomain | 125 ns | 1 | |
+
+The first run showed one allocation per line in body canonicalization: the
+CRLF terminator was converted from a string literal on every call through
+an `io.Writer`. A shared slice removed 16 645 allocations per MiB; throughput
+was unchanged because hashing dominates. Parsing and verification are far
+below DNS latency, so no further optimisation is planned.
+
 ## Fuzzing
 
 Native Go fuzzing (`go test -fuzz`), targets listed in `.github/workflows/ci.yml`.

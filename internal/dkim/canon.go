@@ -23,6 +23,8 @@ func normalizeEOL(b []byte) []byte {
 
 func isWSP(c byte) bool { return c == ' ' || c == '\t' }
 
+var crlf = []byte("\r\n")
+
 // CanonicalHeader returns the canonical form of a raw header field. It is
 // exported for signing test fixtures.
 func CanonicalHeader(raw []byte, alg string) []byte { return canonHeader(raw, alg) }
@@ -129,15 +131,15 @@ func canonBody(w io.Writer, body []byte, alg string, limit int64) int64 {
 			continue
 		}
 		for ; pendingEmpty > 0; pendingEmpty-- {
-			out.write([]byte("\r\n"))
+			out.write(crlf)
 		}
 		out.write(line)
-		out.write([]byte("\r\n"))
+		out.write(crlf)
 	}
 	if out.total == 0 && !relaxed {
 		// An empty body is a single CRLF under "simple" and empty under
 		// "relaxed".
-		out.write([]byte("\r\n"))
+		out.write(crlf)
 	}
 	return out.total
 }
