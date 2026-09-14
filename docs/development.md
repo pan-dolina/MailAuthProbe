@@ -50,6 +50,11 @@ MailAuthProbe. Newest entries at the bottom of each section.
   verified them with the other: 4 canonicalization modes x RSA/Ed25519 x 4
   body shapes, in both directions, 64 combinations, all passing. go-msgauth
   v0.7.0 was used for this check only.
+- Exchange Online writes Authentication-Results without an authserv-id and
+  with bare properties (`action=none`, `compauth=pass reason=100`). The first
+  parser rejected such headers as invalid RFC 8601, which would have hidden
+  the most common source of conflicting results. They are now accepted with
+  an empty authserv-id.
 - The message parser keeps each header field's raw bytes (`Header.Raw`)
   next to the unfolded value. DKIM canonicalization must operate on the bytes
   that were signed; reconstructing them from parsed values loses folding and
