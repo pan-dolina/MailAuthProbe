@@ -1,0 +1,5 @@
+# Third-party modules linked into the mailauthprobe binary.
+# Changes require a justification in docs/development.md.
+github.com/spf13/cobra
+github.com/spf13/pflag
+golang.org/x/net

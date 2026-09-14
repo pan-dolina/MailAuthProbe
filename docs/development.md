@@ -108,6 +108,14 @@ MailAuthProbe. Newest entries at the bottom of each section.
   and a reason.
 - govulncheck and OSV-Scanner report no known vulnerabilities in the module
   graph (cobra, pflag, golang.org/x/net).
+- `scripts/check-dependencies.sh` fails when the set of third-party modules
+  linked into the binary changes without a matching edit to
+  `.github/allowed-modules.txt` (currently cobra, pflag and golang.org/x/net;
+  mousetrap is only linked on Windows builds and appears in module SBOMs).
+- SBOMs are generated with Syft in SPDX 2.3 and CycloneDX JSON. The first
+  attempt at a source SBOM embedded the absolute checkout path through
+  Syft's file cataloger; the script now scans the module from the repository
+  root with file cataloging disabled.
 - CI runs the tools with `go run module@version`; versions are pinned and
   module checksums are verified against sum.golang.org.
 
