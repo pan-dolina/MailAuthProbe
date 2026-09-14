@@ -19,15 +19,22 @@ internal/
   tlsrpt/                  TLS-RPT record
   mailparser/              RFC 5322 header section and MIME structure, with limits
   received/                Received header parsing and hop chain modelling
-  authres/                 Authentication-Results and Received-SPF parsing
+  authres/                 Authentication-Results and Received-SPF parsing, comparison
+  arc/                     structural ARC header set checks
   findings/                Finding model, severities and the stable ID catalog
   report/                  report model, text and JSON renderers
+  netutil/                 address classification and host name helpers
   version/                 build metadata
+  tools/                   developer tools (not shipped)
+    fixturegen/            regenerates testdata/messages and testdata/dns
+    testdns/               serves the fixture zone on localhost
+    archive/               deterministic release archives
 test/
   functional/              runs the compiled CLI against fixtures
   smoke/                   runs a release binary
-testdata/                  message fixtures, DNS zones, golden output
-docs/                      standards notes, security model, ADRs
+testdata/                  message fixtures, DNS zone, test keys, golden output
+scripts/                   release build, reproducibility check, SBOM, dependency check
+docs/                      standards notes, security model, finding catalog, JSON schema, ADRs
 ```
 
 ## Data flow
