@@ -450,3 +450,162 @@ var (
 		References:     []string{RFC7208 + "#section-4.6.4"},
 	})
 )
+
+// DMARC rules.
+var (
+	DMARCMissing = register(Rule{
+		ID:             "MAIL-DMARC-001",
+		Component:      ComponentDMARC,
+		Category:       CategoryWeakness,
+		Severity:       SeverityHigh,
+		Title:          "No DMARC record",
+		Recommendation: "Publish a DMARC record at _dmarc.<domain>, starting with \"v=DMARC1; p=none; rua=mailto:...\" to collect reports, then move to quarantine or reject.",
+		References:     []string{RFC7489 + "#section-6.1"},
+	})
+	DMARCMultiple = register(Rule{
+		ID:             "MAIL-DMARC-002",
+		Component:      ComponentDMARC,
+		Category:       CategoryViolation,
+		Severity:       SeverityHigh,
+		Title:          "Multiple DMARC records",
+		Recommendation: "Keep exactly one DMARC record. With several records receivers do not apply DMARC at all.",
+		References:     []string{RFC7489 + "#section-6.6.3"},
+	})
+	DMARCInvalid = register(Rule{
+		ID:             "MAIL-DMARC-003",
+		Component:      ComponentDMARC,
+		Category:       CategoryViolation,
+		Severity:       SeverityHigh,
+		Title:          "Invalid DMARC record",
+		Recommendation: "Fix the record so that it starts with \"v=DMARC1\" and contains a valid p tag. Receivers ignore invalid records.",
+		References:     []string{RFC7489 + "#section-6.3", RFC7489 + "#section-6.6.3"},
+	})
+	DMARCPolicyNone = register(Rule{
+		ID:             "MAIL-DMARC-004",
+		Component:      ComponentDMARC,
+		Category:       CategoryWeakness,
+		Severity:       SeverityMedium,
+		Title:          "DMARC policy is p=none (monitoring only)",
+		Recommendation: "After reviewing aggregate reports, move to p=quarantine and then p=reject so that spoofed mail is not delivered.",
+		References:     []string{RFC7489 + "#section-6.3"},
+	})
+	DMARCPolicyQuarantine = register(Rule{
+		ID:             "MAIL-DMARC-005",
+		Component:      ComponentDMARC,
+		Category:       CategoryHardening,
+		Severity:       SeverityLow,
+		Title:          "DMARC policy is p=quarantine",
+		Recommendation: "Consider p=reject once no legitimate mail is quarantined.",
+		References:     []string{RFC7489 + "#section-6.3"},
+	})
+	DMARCPartialPct = register(Rule{
+		ID:             "MAIL-DMARC-006",
+		Component:      ComponentDMARC,
+		Category:       CategoryWeakness,
+		Severity:       SeverityMedium,
+		Title:          "DMARC policy applies to only part of the mail (pct < 100)",
+		Recommendation: "Increase pct to 100. Messages outside the sampled percentage are handled with the next weaker policy.",
+		References:     []string{RFC7489 + "#section-6.3"},
+	})
+	DMARCWeakSubdomainPolicy = register(Rule{
+		ID:             "MAIL-DMARC-007",
+		Component:      ComponentDMARC,
+		Category:       CategoryWeakness,
+		Severity:       SeverityMedium,
+		Title:          "DMARC subdomain policy is weaker than the domain policy",
+		Recommendation: "Set sp to the same value as p unless specific subdomains still need monitoring; attackers can spoof arbitrary subdomains otherwise.",
+		References:     []string{RFC7489 + "#section-6.3"},
+	})
+	DMARCNoRUA = register(Rule{
+		ID:             "MAIL-DMARC-008",
+		Component:      ComponentDMARC,
+		Category:       CategoryHardening,
+		Severity:       SeverityLow,
+		Title:          "DMARC aggregate reports are not requested",
+		Recommendation: "Add rua=mailto:... to receive aggregate reports; without them you cannot see who sends mail using the domain.",
+		References:     []string{RFC7489 + "#section-7.2"},
+	})
+	DMARCRUF = register(Rule{
+		ID:         "MAIL-DMARC-009",
+		Component:  ComponentDMARC,
+		Category:   CategoryInformational,
+		Severity:   SeverityInfo,
+		Title:      "DMARC failure reports (ruf) requested",
+		References: []string{RFC7489 + "#section-7.3"},
+	})
+	DMARCInvalidValue = register(Rule{
+		ID:             "MAIL-DMARC-010",
+		Component:      ComponentDMARC,
+		Category:       CategoryViolation,
+		Severity:       SeverityMedium,
+		Title:          "DMARC tag has an invalid value",
+		Recommendation: "Correct the tag value; receivers fall back to the default, which may not be what you intended.",
+		References:     []string{RFC7489 + "#section-6.3"},
+	})
+	DMARCDuplicateTag = register(Rule{
+		ID:             "MAIL-DMARC-011",
+		Component:      ComponentDMARC,
+		Category:       CategoryViolation,
+		Severity:       SeverityMedium,
+		Title:          "DMARC tag appears more than once",
+		Recommendation: "Remove the duplicate tag. Receivers disagree on which occurrence wins.",
+		References:     []string{RFC7489 + "#section-6.4"},
+	})
+	DMARCUnknownTag = register(Rule{
+		ID:         "MAIL-DMARC-012",
+		Component:  ComponentDMARC,
+		Category:   CategoryInformational,
+		Severity:   SeverityInfo,
+		Title:      "DMARC record contains an unknown tag",
+		References: []string{RFC7489 + "#section-6.3"},
+	})
+	DMARCInvalidURI = register(Rule{
+		ID:             "MAIL-DMARC-013",
+		Component:      ComponentDMARC,
+		Category:       CategoryViolation,
+		Severity:       SeverityMedium,
+		Title:          "DMARC report URI is invalid",
+		Recommendation: "Use URIs of the form mailto:dmarc-reports@example.com, optionally followed by a size limit such as !10m.",
+		References:     []string{RFC7489 + "#section-6.2"},
+	})
+	DMARCExternalUnauthorized = register(Rule{
+		ID:             "MAIL-DMARC-014",
+		Component:      ComponentDMARC,
+		Category:       CategoryViolation,
+		Severity:       SeverityMedium,
+		Title:          "External DMARC report destination is not authorized",
+		Recommendation: "The receiving domain must publish \"v=DMARC1\" at <policy-domain>._report._dmarc.<destination-domain>; otherwise reports are not sent there.",
+		References:     []string{RFC7489 + "#section-7.1"},
+	})
+	DMARCInherited = register(Rule{
+		ID:         "MAIL-DMARC-015",
+		Component:  ComponentDMARC,
+		Category:   CategoryInformational,
+		Severity:   SeverityInfo,
+		Title:      "DMARC policy inherited from the organizational domain",
+		References: []string{RFC7489 + "#section-6.6.3"},
+	})
+	DMARCStrictAlignment = register(Rule{
+		ID:         "MAIL-DMARC-016",
+		Component:  ComponentDMARC,
+		Category:   CategoryInformational,
+		Severity:   SeverityInfo,
+		Title:      "DMARC requires strict identifier alignment",
+		References: []string{RFC7489 + "#section-3.1"},
+	})
+	DMARCEnforced = register(Rule{
+		ID:        "MAIL-DMARC-017",
+		Component: ComponentDMARC,
+		Category:  CategoryInformational,
+		Severity:  SeverityPass,
+		Title:     "DMARC policy is enforced",
+	})
+	DMARCFONoRUF = register(Rule{
+		ID:         "MAIL-DMARC-018",
+		Component:  ComponentDMARC,
+		Category:   CategoryInformational,
+		Severity:   SeverityInfo,
+		Title:      "DMARC fo tag has no effect without ruf",
+		References: []string{RFC7489 + "#section-6.3"},
+	})
+)
