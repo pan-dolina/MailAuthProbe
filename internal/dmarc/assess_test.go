@@ -95,6 +95,12 @@ func TestAssess(t *testing.T) {
 _dmarc.example.com. TXT "v=DMARC1; p=reject; rua=mailto:d@reports.example.net,mailto:x@sub.example.com"
 example.com._report._dmarc.reports.example.net. TXT "v=DMARC1"
 `, "example.com", []string{"MAIL-DMARC-017"}, false},
+		{"external https destination unauthorized", `_dmarc.example.com. TXT "v=DMARC1; p=reject; rua=https://reports.example.net/dmarc"`, "example.com",
+			[]string{"MAIL-DMARC-014"}, false},
+		{"authorization must be a DMARC record", `
+_dmarc.example.com. TXT "v=DMARC1; p=reject; rua=mailto:d@reports.example.net"
+example.com._report._dmarc.reports.example.net. TXT "v=DMARC1x"
+`, "example.com", []string{"MAIL-DMARC-014"}, false},
 		{"lookup failure", `_dmarc.example.com. TIMEOUT`, "example.com", []string{"MAIL-DNS-001"}, true},
 	}
 	for _, tt := range tests {

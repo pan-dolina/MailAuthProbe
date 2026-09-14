@@ -4,6 +4,7 @@ package dmarc
 
 import (
 	"fmt"
+	"net"
 	"regexp"
 	"strconv"
 	"strings"
@@ -159,6 +160,7 @@ func Parse(txt string) (*Record, error) {
 	seen := map[string]bool{}
 	pValid := false
 	pPresent := false
+	spInvalid := false
 	for i, part := range strings.Split(txt, ";") {
 		part = strings.Trim(part, " \t\r\n")
 		if part == "" {
@@ -198,7 +200,8 @@ func Parse(txt string) (*Record, error) {
 			if p, ok := parsePolicy(value); ok {
 				rec.SubdomainPolicy = p
 			} else {
-				issue(IssueInvalidValue, name, "invalid subdomain policy %q; the p value applies instead", value)
+				spInvalid = true
+				issue(IssueInvalidValue, name, "invalid subdomain policy %q", value)
 			}
 		case "np":
 			if _, ok := parsePolicy(value); !ok {
@@ -277,15 +280,21 @@ func Parse(txt string) (*Record, error) {
 		}
 	}
 
-	if !pValid {
-		hasValidRUA := len(rec.RUA) > 0
-		if !hasValidRUA {
-			if pPresent {
+	// RFC 7489 section 6.6.3, step 6: a missing or invalid p, or an invalid
+	// sp, makes the record unusable unless it lists a valid rua, in which
+	// case it is treated as "v=DMARC1; p=none" with that rua.
+	if !pValid || spInvalid {
+		if len(rec.RUA) == 0 {
+			switch {
+			case pValid:
+				return nil, &ParseError{Msg: "invalid sp tag and no valid rua"}
+			case pPresent:
 				return nil, &ParseError{Msg: "invalid p tag and no valid rua"}
 			}
 			return nil, &ParseError{Msg: "required tag p is missing"}
 		}
 		rec.Policy = PolicyNone
+		rec.SubdomainPolicy = ""
 		rec.PolicyImplied = true
 	}
 	return rec, nil
@@ -328,10 +337,21 @@ func parseURIs(value string, issue func(string)) []ReportURI {
 			u.Address = addr
 			u.Domain = strings.ToLower(strings.TrimSuffix(domain, "."))
 		case "https", "http":
-			if !strings.HasPrefix(rest, "//") || len(rest) < 3 {
+			host := ""
+			if h, ok := strings.CutPrefix(rest, "//"); ok {
+				host = h
+			}
+			if i := strings.IndexAny(host, "/?#"); i >= 0 {
+				host = host[:i]
+			}
+			if h, _, err := net.SplitHostPort(host); err == nil {
+				host = h
+			}
+			if !validDomain(host) {
 				issue(fmt.Sprintf("%q is not a valid %s URI", u.URI, u.Scheme))
 				continue
 			}
+			u.Domain = strings.ToLower(strings.TrimSuffix(host, "."))
 		default:
 			issue(fmt.Sprintf("unsupported report URI scheme %q in %q", u.Scheme, u.URI))
 			continue

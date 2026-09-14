@@ -3,7 +3,6 @@ package dmarc
 import (
 	"context"
 	"fmt"
-	"strings"
 
 	"github.com/marcindolinski/mailauthprobe/internal/dnsresolver"
 	"github.com/marcindolinski/mailauthprobe/internal/findings"
@@ -116,7 +115,8 @@ func checkExternalDestinations(ctx context.Context, r dnsresolver.Resolver, poli
 	checked := map[string]bool{}
 	var infraErr error
 	for _, u := range append(append([]ReportURI{}, rec.RUA...), rec.RUF...) {
-		if u.Scheme != "mailto" || u.Domain == "" || OrganizationalDomain(u.Domain) == org || checked[u.Domain] {
+		// RFC 7489 section 7.1 applies to the host of any report URI.
+		if u.Domain == "" || OrganizationalDomain(u.Domain) == org || checked[u.Domain] {
 			continue
 		}
 		checked[u.Domain] = true
@@ -131,7 +131,7 @@ func checkExternalDestinations(ctx context.Context, r dnsresolver.Resolver, poli
 		}
 		authorized := false
 		for _, t := range txts {
-			if strings.HasPrefix(strings.TrimSpace(t), "v=DMARC1") {
+			if IsDMARC(t) {
 				authorized = true
 			}
 		}

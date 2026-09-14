@@ -64,6 +64,7 @@ func TestParseFatalErrors(t *testing.T) {
 		{"v=DMARC1; sp=reject", "required tag p is missing"},
 		{"v=DMARC1; p=block", "invalid p tag"},
 		{"v=DMARC1; p=reject; garbage", "malformed tag"},
+		{"v=DMARC1; p=reject; sp=rejct", "invalid sp tag"},
 		{"v=DMARC1; =x; p=none", "malformed tag"},
 	}
 	for _, tt := range tests {
@@ -78,10 +79,11 @@ func TestParseFatalErrors(t *testing.T) {
 func TestParseImpliedPolicy(t *testing.T) {
 	for _, txt := range []string{
 		"v=DMARC1; rua=mailto:d@example.com",
-		"v=DMARC1; p=bogus; rua=mailto:d@example.com",
+		"v=DMARC1; p=bogus; sp=reject; rua=mailto:d@example.com",
+		"v=DMARC1; p=reject; sp=rejct; rua=mailto:d@example.com",
 	} {
 		rec, err := Parse(txt)
-		if err != nil || rec.Policy != PolicyNone || !rec.PolicyImplied {
+		if err != nil || rec.Policy != PolicyNone || !rec.PolicyImplied || rec.EffectiveSubdomainPolicy() != PolicyNone {
 			t.Errorf("Parse(%q) = %+v, %v", txt, rec, err)
 		}
 	}
@@ -95,7 +97,7 @@ func TestParseIssues(t *testing.T) {
 	}{
 		{"v=DMARC1; p=none; p=reject", IssueDuplicateTag, "p"},
 		{"v=DMARC1; p=none; v=DMARC1", IssueDuplicateTag, "v"},
-		{"v=DMARC1; p=none; sp=block", IssueInvalidValue, "sp"},
+		{"v=DMARC1; p=none; sp=block; rua=mailto:d@example.com", IssueInvalidValue, "sp"},
 		{"v=DMARC1; p=none; pct=101", IssueInvalidValue, "pct"},
 		{"v=DMARC1; p=none; pct=-1", IssueInvalidValue, "pct"},
 		{"v=DMARC1; p=none; pct=50%", IssueInvalidValue, "pct"},
@@ -111,6 +113,7 @@ func TestParseIssues(t *testing.T) {
 		{"v=DMARC1; p=none; rua=mailto:d@localhost", IssueInvalidURI, "rua"},
 		{"v=DMARC1; p=none; rua=mailto:d@example.com!10x", IssueInvalidURI, "rua"},
 		{"v=DMARC1; p=none; ruf=ftp://example.com/r", IssueInvalidURI, "ruf"},
+		{"v=DMARC1; p=none; rua=https://", IssueInvalidURI, "rua"},
 		{"v=DMARC1; p=none; rua=mailto:a@example.com,", IssueInvalidURI, "rua"},
 		{"v=DMARC1; p=none; foo=bar", IssueUnknownTag, "foo"},
 	}
