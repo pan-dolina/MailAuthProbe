@@ -25,7 +25,9 @@ type MessageInput struct {
 	// was not evaluated.
 	SPFResult string
 	SPFDomain string
-	DKIM      []DKIMInput
+	// SPFInferred is set when the SPF inputs were reconstructed from headers.
+	SPFInferred bool
+	DKIM        []DKIMInput
 }
 
 // Message DMARC results.
@@ -35,6 +37,10 @@ const (
 	MessageNone      = "none"
 	MessageTempError = "temperror"
 	MessagePermError = "permerror"
+	// MessageIndeterminate is not an RFC 7489 result: no aligned pass was
+	// found, but SPF could not be evaluated or a DKIM signature could only be
+	// partially verified, so a "fail" cannot be concluded.
+	MessageIndeterminate = "indeterminate"
 )
 
 // MessageEvaluation is the DMARC outcome for a message.
@@ -125,6 +131,9 @@ func EvaluateMessage(ctx context.Context, r dnsresolver.Resolver, in MessageInpu
 	}
 
 	if ev.SPFAligned || ev.DKIMAligned {
+		if !ev.DKIMAligned && in.SPFInferred {
+			evidence = append(evidence, "note: the aligned SPF pass relies on SMTP inputs inferred from message headers")
+		}
 		ev.Result = MessagePass
 		var via []string
 		if ev.DKIMAligned {
@@ -135,6 +144,36 @@ func EvaluateMessage(ctx context.Context, r dnsresolver.Resolver, in MessageInpu
 		}
 		ev.Reason = "aligned " + strings.Join(via, " and ")
 		add(findings.DMARCMessagePass.New(from, fmt.Sprintf("DMARC pass for %s via %s.", from, strings.Join(via, " and ")), evidence...))
+		return ev
+	}
+
+	// Without an aligned pass, fail only if every input produced a definite
+	// result (RFC 7489 section 6.6.2).
+	var temp, incomplete []string
+	switch in.SPFResult {
+	case "temperror":
+		temp = append(temp, "SPF temperror")
+	case "":
+		incomplete = append(incomplete, "SPF was not evaluated")
+	}
+	for _, d := range in.DKIM {
+		switch d.Result {
+		case "temperror":
+			temp = append(temp, "DKIM temperror for d="+d.Domain)
+		case "neutral":
+			incomplete = append(incomplete, "DKIM signature by d="+d.Domain+" could not be fully verified")
+		}
+	}
+	switch {
+	case len(temp) > 0:
+		ev.Result = MessageTempError
+		ev.Reason = "no aligned pass and " + strings.Join(temp, ", ")
+		add(findings.DMARCMessageTempError.New(from, fmt.Sprintf("DMARC for %s cannot be decided: %s. Receivers would return temperror.", from, strings.Join(temp, ", ")), evidence...))
+		return ev
+	case len(incomplete) > 0:
+		ev.Result = MessageIndeterminate
+		ev.Reason = "no aligned pass, but " + strings.Join(incomplete, "; ")
+		add(findings.DMARCMessageIndeterminate.New(from, fmt.Sprintf("No aligned SPF or DKIM pass was found for %s, but the evaluation is incomplete: %s. The message may still pass DMARC at the receiver.", from, strings.Join(incomplete, "; ")), evidence...))
 		return ev
 	}
 

@@ -390,7 +390,8 @@
         "policy_domain=test.example",
         "p=reject sp=reject pct=100 adkim=r aspf=r",
         "spf=pass domain=test.example aligned=true",
-        "dkim=fail d=test.example aligned=false"
+        "dkim=fail d=test.example aligned=false",
+        "note: the aligned SPF pass relies on SMTP inputs inferred from message headers"
       ],
       "references": [
         "https://www.rfc-editor.org/rfc/rfc7489#section-4.2"

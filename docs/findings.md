@@ -127,6 +127,7 @@ finding.
 | `MAIL-DMARC-035` | medium | informational | Strict alignment prevented a DMARC pass |
 | `MAIL-DMARC-036` | info | informational | SPF passed but is not aligned with From |
 | `MAIL-DMARC-037` | info | informational | DKIM passed but is not aligned with From |
+| `MAIL-DMARC-038` | medium | informational | DMARC result indeterminate |
 
 ## mta-sts
 

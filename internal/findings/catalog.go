@@ -936,6 +936,15 @@ var (
 		Title:      "SPF passed but is not aligned with From",
 		References: []string{RFC7489 + "#section-3.1.2"},
 	})
+	DMARCMessageIndeterminate = register(Rule{
+		ID:             "MAIL-DMARC-038",
+		Component:      ComponentDMARC,
+		Category:       CategoryInformational,
+		Severity:       SeverityMedium,
+		Title:          "DMARC result indeterminate",
+		Recommendation: "Provide the missing inputs (--source-ip, --helo, --mail-from, or the complete message including its body) to obtain a definite DMARC result.",
+		References:     []string{RFC7489 + "#section-6.6.2"},
+	})
 	DMARCMessageDKIMUnaligned = register(Rule{
 		ID:         "MAIL-DMARC-037",
 		Component:  ComponentDMARC,

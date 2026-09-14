@@ -20,7 +20,10 @@ type Computed struct {
 	// SPF is empty when SPF was not evaluated.
 	SPF         string
 	SPFInferred bool
-	DKIM        []ComputedDKIM
+	// DKIMEvaluated is false when signatures could not be verified (for
+	// example without the message body); DKIM claims are then not compared.
+	DKIMEvaluated bool
+	DKIM          []ComputedDKIM
 	// DMARC is empty when DMARC was not evaluated.
 	DMARC string
 }
@@ -117,7 +120,8 @@ func Compare(parsed []Parsed, c Computed) []findings.Finding {
 	h := top.Header
 	var diffs, agree []string
 	check := func(method, claimed, computed, note string) {
-		if claimed == "" || computed == "" {
+		// A local temporary failure says nothing about what the receiver saw.
+		if claimed == "" || computed == "" || computed == "temperror" {
 			return
 		}
 		if normalizeResult(claimed) == normalizeResult(computed) {
@@ -137,6 +141,9 @@ func Compare(parsed []Parsed, c Computed) []findings.Finding {
 		check("dmarc", rs[0].Result, c.DMARC, "")
 	}
 	for _, r := range h.ByMethod("dkim") {
+		if !c.DKIMEvaluated {
+			break
+		}
 		if d, ok := matchDKIM(r, c.DKIM); ok {
 			check("dkim d="+d.Domain, r.Result, d.Result, "")
 		} else if r.Result == "pass" {
@@ -155,12 +162,23 @@ func Compare(parsed []Parsed, c Computed) []findings.Finding {
 }
 
 func matchDKIM(r Result, computed []ComputedDKIM) (ComputedDKIM, bool) {
+	// header.b identifies a signature by a prefix of its b= value; RFC 6008
+	// asks for at least 8 characters. Once header.b is given it is the only
+	// criterion, and it must match exactly one signature.
 	if b := r.Prop("header.b"); b != "" {
+		if len(b) < 8 {
+			return ComputedDKIM{}, false
+		}
+		var match []ComputedDKIM
 		for _, c := range computed {
 			if c.HeaderB != "" && (strings.HasPrefix(c.HeaderB, b) || strings.HasPrefix(b, c.HeaderB)) {
-				return c, true
+				match = append(match, c)
 			}
 		}
+		if len(match) == 1 {
+			return match[0], true
+		}
+		return ComputedDKIM{}, false
 	}
 	d := strings.ToLower(r.Prop("header.d"))
 	if d == "" {

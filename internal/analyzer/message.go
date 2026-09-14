@@ -108,7 +108,12 @@ func (s *session) analyzeMessage(ctx context.Context, msg *mailparser.Message) {
 	}
 
 	// DMARC.
-	din := dmarc.MessageInput{FromHeaders: m.Headers.From, SPFResult: string(m.SPF.Result), SPFDomain: m.SPF.Domain}
+	din := dmarc.MessageInput{
+		FromHeaders: m.Headers.From,
+		SPFResult:   string(m.SPF.Result),
+		SPFDomain:   m.SPF.Domain,
+		SPFInferred: inputs.IP != nil && inputs.IP.Inferred,
+	}
 	for _, v := range m.DKIM {
 		din.DKIM = append(din.DKIM, dmarc.DKIMInput{Domain: v.Domain, Result: string(v.Result)})
 	}
@@ -128,14 +133,14 @@ func (s *session) analyzeMessage(ctx context.Context, msg *mailparser.Message) {
 		SPFInferred: inputs.IP != nil && inputs.IP.Inferred,
 		DMARC:       m.DMARC.Result,
 	}
-	if !msg.BodyAvailable {
-		computed.DKIM = nil // header-only verification cannot confirm DKIM results
-	} else {
+	// Header-only verification cannot confirm or refute DKIM results.
+	if msg.BodyAvailable {
+		computed.DKIMEvaluated = true
 		for _, v := range m.DKIM {
 			computed.DKIM = append(computed.DKIM, authres.ComputedDKIM{Domain: v.Domain, Selector: v.Selector, HeaderB: v.HeaderB, Result: string(v.Result)})
 		}
 	}
-	if m.DMARC.Result == dmarc.MessagePermError {
+	if m.DMARC.Result == dmarc.MessagePermError || m.DMARC.Result == dmarc.MessageIndeterminate {
 		computed.DMARC = ""
 	}
 	s.add(authres.Compare(m.AuthResults, computed)...)

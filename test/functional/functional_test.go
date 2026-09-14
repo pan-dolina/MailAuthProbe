@@ -176,7 +176,7 @@ func TestMessageFixtures(t *testing.T) {
 		{file: "dmarc-none.eml", spf: "pass", dmarc: "fail", want: []string{"MAIL-DMARC-031"}},
 		{file: "dmarc-strict-alignment-fail.eml", spf: "pass", dmarc: "fail", dkim: []string{"pass"}, want: []string{"MAIL-DMARC-035"}},
 		{file: "dmarc-relaxed-alignment-pass.eml", spf: "fail", dmarc: "pass", dkim: []string{"pass"}, want: []string{"MAIL-DMARC-030"}},
-		{file: "malformed.eml", dmarc: "fail", want: []string{"MAIL-MSG-002", "MAIL-MSG-010", "MAIL-SPF-036"}},
+		{file: "malformed.eml", dmarc: "indeterminate", want: []string{"MAIL-MSG-002", "MAIL-MSG-010", "MAIL-SPF-036", "MAIL-DMARC-038"}},
 		{file: "malformed-headers.eml", dmarc: "permerror", want: []string{"MAIL-MSG-001", "MAIL-MSG-006", "MAIL-DMARC-033"}},
 		{file: "conflicting-auth-results.eml", spf: "pass", dmarc: "pass", dkim: []string{"fail"}, want: []string{"MAIL-AR-001", "MAIL-AR-002"}},
 		{file: "no-dkim.eml", spf: "pass", dmarc: "pass", want: []string{"MAIL-DKIM-025"}},

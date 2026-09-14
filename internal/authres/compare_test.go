@@ -19,9 +19,10 @@ func compareIDs(values []string, c Computed) ([]string, []string) {
 
 func TestCompare(t *testing.T) {
 	computed := Computed{
-		SPF:   "pass",
-		DKIM:  []ComputedDKIM{{Domain: "example.com", Selector: "s1", HeaderB: "AbCdEfGhIjKl", Result: "pass"}},
-		DMARC: "pass",
+		DKIMEvaluated: true,
+		SPF:           "pass",
+		DKIM:          []ComputedDKIM{{Domain: "example.com", Selector: "s1", HeaderB: "AbCdEfGhIjKl", Result: "pass"}},
+		DMARC:         "pass",
 	}
 	tests := []struct {
 		name     string
@@ -30,7 +31,7 @@ func TestCompare(t *testing.T) {
 		ids      []string
 		evidence string
 	}{
-		{"agree", []string{"mx.example.org; spf=pass smtp.mailfrom=a@example.com; dkim=pass header.d=example.com header.b=AbCdEf; dmarc=pass"},
+		{"agree", []string{"mx.example.org; spf=pass smtp.mailfrom=a@example.com; dkim=pass header.d=example.com header.b=AbCdEfGh; dmarc=pass"},
 			computed, []string{"MAIL-AR-003"}, "dkim d=example.com=pass"},
 		{"none header", nil, computed, []string{"MAIL-AR-005"}, ""},
 		{"dmarc mismatch", []string{"mx.example.org; dmarc=pass header.from=example.com"},
@@ -40,7 +41,13 @@ func TestCompare(t *testing.T) {
 		{"dkim matched by domain and selector", []string{"mx.example.org; dkim=fail header.d=example.com header.s=s1"},
 			computed, []string{"MAIL-AR-002"}, "dkim d=example.com: header says fail"},
 		{"claimed signature absent", []string{"mx.example.org; dkim=pass header.d=bank.example"},
-			Computed{}, []string{"MAIL-AR-002"}, "not present in the message"},
+			Computed{DKIMEvaluated: true}, []string{"MAIL-AR-002"}, "not present in the message"},
+		{"dkim not evaluated", []string{"mx.example.org; dkim=pass header.d=bank.example"},
+			Computed{}, nil, ""},
+		{"local temperror is not a disagreement", []string{"mx.example.org; spf=pass; dmarc=pass"},
+			Computed{SPF: "temperror", DMARC: "temperror"}, nil, ""},
+		{"short header.b does not match", []string{"mx.example.org; dkim=pass header.d=other.example header.b=Ab"},
+			Computed{DKIMEvaluated: true, DKIM: []ComputedDKIM{{Domain: "example.com", HeaderB: "AbCdEfGhIjKl", Result: "fail"}}}, []string{"MAIL-AR-002"}, "not present"},
 		{"conflict under same authserv-id", []string{
 			"mx.example.org; dkim=pass header.d=example.com; spf=pass",
 			"mx.example.org; dkim=fail header.d=example.com; spf=pass",

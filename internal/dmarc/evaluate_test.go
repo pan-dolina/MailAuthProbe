@@ -42,7 +42,11 @@ _dmarc.flaky.example.   SERVFAIL
 			MessageFail, PolicyReject, []string{"MAIL-DMARC-031", "MAIL-DMARC-035", "MAIL-DMARC-035"}},
 		{"strict alignment exact pass", MessageInput{FromHeaders: []string{"a@strict.example"}, DKIM: []DKIMInput{{"STRICT.example", "pass"}}},
 			MessagePass, "", []string{"MAIL-DMARC-030"}},
-		{"pct", MessageInput{FromHeaders: []string{"a@pct.example"}}, MessageFail, PolicyQuarantine, []string{"MAIL-DMARC-031"}},
+		{"pct", MessageInput{FromHeaders: []string{"a@pct.example"}, SPFResult: "none", SPFDomain: "pct.example"}, MessageFail, PolicyQuarantine, []string{"MAIL-DMARC-031"}},
+		{"spf not evaluated is indeterminate", MessageInput{FromHeaders: []string{"a@example.com"}}, MessageIndeterminate, "", []string{"MAIL-DMARC-038"}},
+		{"header-only dkim is indeterminate", MessageInput{FromHeaders: []string{"a@example.com"}, SPFResult: "fail", SPFDomain: "example.com", DKIM: []DKIMInput{{"example.com", "neutral"}}}, MessageIndeterminate, "", []string{"MAIL-DMARC-038"}},
+		{"spf temperror", MessageInput{FromHeaders: []string{"a@example.com"}, SPFResult: "temperror", SPFDomain: "example.com"}, MessageTempError, "", []string{"MAIL-DMARC-034"}},
+		{"dkim temperror", MessageInput{FromHeaders: []string{"a@example.com"}, SPFResult: "fail", SPFDomain: "example.com", DKIM: []DKIMInput{{"example.com", "temperror"}}}, MessageTempError, "", []string{"MAIL-DMARC-034"}},
 		{"no policy", MessageInput{FromHeaders: []string{"a@unprotected.example"}}, MessageNone, "", []string{"MAIL-DMARC-032"}},
 		{"invalid policy", MessageInput{FromHeaders: []string{"a@bad.example"}}, MessageNone, "", []string{"MAIL-DMARC-032"}},
 		{"temperror", MessageInput{FromHeaders: []string{"a@flaky.example"}}, MessageTempError, "", []string{"MAIL-DMARC-034"}},
@@ -69,7 +73,7 @@ _dmarc.flaky.example.   SERVFAIL
 
 func TestEvaluateMessageSeverity(t *testing.T) {
 	zone := dnstest.MustParseZone(`_dmarc.none.example. TXT "v=DMARC1; p=none"`)
-	ev := EvaluateMessage(context.Background(), zone, MessageInput{FromHeaders: []string{"a@none.example"}})
+	ev := EvaluateMessage(context.Background(), zone, MessageInput{FromHeaders: []string{"a@none.example"}, SPFResult: "fail", SPFDomain: "none.example"})
 	if ev.Findings[0].Severity.String() != "medium" {
 		t.Errorf("p=none failure severity = %v", ev.Findings[0].Severity)
 	}
