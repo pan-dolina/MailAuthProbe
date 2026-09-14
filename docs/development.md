@@ -208,3 +208,73 @@ Before the campaign, the seed corpus alone caught an incorrect property in
 input, which is false when a continuation line precedes the first field (the
 line is skipped). The property was corrected to "raw bytes appear in order
 within the header section".
+
+## Pre-release review
+
+Before tagging v0.1.0 the code was reviewed separately from four
+perspectives. Findings that were fixed:
+
+**Go maintainer**
+- Hostile input reached the terminal unescaped (also found by the AppSec
+  review); the text renderer now escapes control characters, C1 controls,
+  invalid UTF-8 and bidi overrides, enforced by a distinct `styled` type.
+- Golden tests embedded OS-specific path separators and would fail on
+  Windows.
+- Concurrent domain checks raced for the shared query budget, making reports
+  non-deterministic once the budget was hit, and a panic in a check goroutine
+  bypassed the CLI's recover. Checks now run sequentially; budget rejections
+  are cached and summarised in one finding.
+- A data race on the MTA-STS certificate captured in a TLS callback.
+- The Windows fallback resolver reported existing names without records as
+  NXDOMAIN.
+- `--timeout` did not apply to a stalled standard input; Ctrl-C was reported
+  as a deadline; a second Ctrl-C was swallowed.
+- A local DNS temperror was reported as disagreement with
+  Authentication-Results; MTA-STS DNS failures did not map to exit code 4.
+
+**Mail security (RFC semantics)**
+- A forged `Received-SPF` header could supply the SMTP client address and
+  turn a spoofed message into SPF and DMARC pass. The client address now
+  comes only from the Received chain or `--source-ip`.
+- DMARC concluded `fail` (with the reject disposition) when SPF was not
+  evaluated or DKIM could only be checked without the body. Such cases are
+  now `indeterminate`; aligned temperrors give `temperror`.
+- `a/0` and `mx//0` were not reported as authorizing the whole Internet;
+  `/` as a macro delimiter broke `a`/`mx` parsing; `c`, `r`, `t` macros were
+  accepted in the `exp=` domain-spec.
+- An invalid DMARC `sp` fell back to `p` instead of invalidating the record;
+  external report authorization accepted `v=DMARC1x` and skipped https URIs.
+- Authentication-Results DKIM matching accepted `header.b` prefixes shorter
+  than 8 characters.
+
+**Application security**
+- SPF macro expansion with a 400 KB envelope sender from headers allocated
+  3.8 GiB; expansions are now bounded to 4096 octets and inferred inputs are
+  length-checked (measured after the fix: 3 MiB).
+- A sender's SPF policy could exhaust the scan's DNS budget with `%{p}`
+  macros and downgrade the victim domain's DMARC result to temperror. SPF now
+  has its own budget, `%{p}` is resolved once per domain, and only
+  identifiers that could align affect the DMARC decision.
+- Nested MIME copied a 49 MiB body at every level (2.2 GiB allocated); copies
+  are now bounded to twice the body size (223 MiB peak measured).
+- A hostile SPF tree produced 512 071 findings; repeated findings are capped
+  per rule (46 findings after the fix).
+- NAT64, 6to4, Teredo and IPv4-compatible addresses bypassed the MTA-STS
+  private-address check; DNS responses with a mismatching question and an
+  error code, or truncated over TCP, were accepted; RSA DKIM keys had no
+  upper size bound; DNS error messages revealed the internal resolver.
+
+**Supply chain**
+- Release binaries would have been built with Go 1.26.0 (20 reachable
+  standard library vulnerabilities according to govulncheck) because go.mod
+  had no `toolchain` line; the vulnerability job scanned a different
+  toolchain. go.mod now names the release toolchain, and release binaries are
+  scanned with `govulncheck -mode=binary`.
+- Releases can only be published from commits on main, through a `release`
+  environment; SBOMs are signed; cosign is pinned; darwin/amd64 is smoke
+  tested; the reproducibility check compares against the artifacts being
+  published; build environment variables that change binaries are pinned.
+
+Not changed, by decision: `pct` sampling is not simulated (the requested
+disposition is reported), and MTA-STS policies with `max_age` above the RFC
+maximum are rejected rather than capped.
