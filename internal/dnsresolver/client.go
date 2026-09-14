@@ -362,6 +362,9 @@ func exchangeTCP(conn net.Conn, query []byte, id uint16, q dnsmessage.Question, 
 	if errors.Is(err, errMismatch) {
 		return nil, &Error{Kind: KindMalformed, Err: err}
 	}
+	if err == nil && msg.Truncated {
+		return nil, &Error{Kind: KindMalformed, Err: errors.New("truncated response over TCP")}
+	}
 	return msg, err
 }
 
@@ -379,14 +382,17 @@ func parseResponse(b []byte, id uint16, q dnsmessage.Question) (*dnsmessage.Mess
 	if msg.ID != id || !msg.Response {
 		return nil, errMismatch
 	}
-	if msg.Truncated {
+	// Some servers omit the question in truncated or error responses;
+	// when a question is present it must be ours.
+	questionOK := len(msg.Questions) == 1 && msg.Questions[0].Type == q.Type &&
+		msg.Questions[0].Class == q.Class && strings.EqualFold(msg.Questions[0].Name.String(), q.Name.String())
+	switch {
+	case len(msg.Questions) > 0 && !questionOK:
+		return nil, &Error{Kind: KindMalformed, Err: errMismatch}
+	case msg.Truncated:
 		return &msg, nil
-	}
-	if msg.RCode == dnsmessage.RCodeSuccess || msg.RCode == dnsmessage.RCodeNameError {
-		if len(msg.Questions) != 1 || msg.Questions[0].Type != q.Type ||
-			!strings.EqualFold(msg.Questions[0].Name.String(), q.Name.String()) {
-			return nil, &Error{Kind: KindMalformed, Err: errMismatch}
-		}
+	case !questionOK && (msg.RCode == dnsmessage.RCodeSuccess || msg.RCode == dnsmessage.RCodeNameError):
+		return nil, &Error{Kind: KindMalformed, Err: errMismatch}
 	}
 	return &msg, nil
 }

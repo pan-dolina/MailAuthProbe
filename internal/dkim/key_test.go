@@ -7,6 +7,7 @@ import (
 	"crypto/rsa"
 	"crypto/x509"
 	"encoding/base64"
+	"math/big"
 	"slices"
 	"strings"
 	"sync"
@@ -211,5 +212,18 @@ func TestAssessDeduplicatesSelectors(t *testing.T) {
 	a, _ := Assess(context.Background(), zone, "example.com", []string{"s", " S ", ""})
 	if len(a.Selectors) != 1 || len(zone.Queries()) != 1 {
 		t.Errorf("selectors = %d, queries = %d", len(a.Selectors), len(zone.Queries()))
+	}
+}
+
+func TestParseKeyRecordRejectsHugeRSAKeys(t *testing.T) {
+	n := new(big.Int).Lsh(big.NewInt(1), MaxRSAKeyBits+100)
+	n.Add(n, big.NewInt(1))
+	der, err := x509.MarshalPKIXPublicKey(&rsa.PublicKey{N: n, E: 65537})
+	if err != nil {
+		t.Fatal(err)
+	}
+	_, err = ParseKeyRecord("v=DKIM1; p=" + base64.StdEncoding.EncodeToString(der))
+	if err == nil || !strings.Contains(err.Error(), "exceeds the supported maximum") {
+		t.Errorf("err = %v", err)
 	}
 }

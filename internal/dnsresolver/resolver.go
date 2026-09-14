@@ -96,11 +96,10 @@ type Error struct {
 	Err    error
 }
 
+// Error omits Server so that reports shared outside the organization do not
+// reveal internal resolver addresses; the field remains available to callers.
 func (e *Error) Error() string {
 	msg := fmt.Sprintf("dns %s %s: %s", e.Type, e.Name, e.Kind)
-	if e.Server != "" {
-		msg += " (server " + e.Server + ")"
-	}
 	if e.Err != nil {
 		msg += ": " + e.Err.Error()
 	}

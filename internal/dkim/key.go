@@ -17,6 +17,10 @@ const (
 	KeyTypeEd25519 = "ed25519"
 )
 
+// MaxRSAKeyBits bounds RSA verification cost. Keys are published in DNS by
+// the (possibly hostile) signer; RFC 8301 only requires support up to 4096.
+const MaxRSAKeyBits = 8192
+
 // KeyRecord is a parsed DKIM public key record (RFC 6376 section 3.6.1).
 type KeyRecord struct {
 	Raw      string   `json:"raw"`
@@ -116,6 +120,9 @@ func ParseKeyRecord(txt string) (*KeyRecord, error) {
 		rsaKey, ok := pub.(*rsa.PublicKey)
 		if !ok {
 			return nil, fmt.Errorf("k=rsa but p contains a %T", pub)
+		}
+		if bits := rsaKey.N.BitLen(); bits > MaxRSAKeyBits {
+			return nil, fmt.Errorf("RSA key of %d bits exceeds the supported maximum of %d", bits, MaxRSAKeyBits)
 		}
 		k.PublicKey = rsaKey
 		k.KeyBits = rsaKey.N.BitLen()
