@@ -101,6 +101,18 @@ finding.
 | `MAIL-DMARC-017` | pass | informational | DMARC policy is enforced |
 | `MAIL-DMARC-018` | info | informational | DMARC fo tag has no effect without ruf |
 
+## received
+
+| ID | Default severity | Category | Title |
+|----|------------------|----------|-------|
+| `MAIL-RCVD-001` | low | informational | No Received headers |
+| `MAIL-RCVD-002` | low | standard-violation | Received header could not be parsed |
+| `MAIL-RCVD-003` | low | informational | Received timestamps go backwards |
+| `MAIL-RCVD-004` | medium | informational | Too many Received headers |
+| `MAIL-RCVD-005` | info | hardening | Hop transmitted without TLS |
+| `MAIL-RCVD-006` | low | standard-violation | Received header has no date |
+| `MAIL-RCVD-007` | info | informational | Long delay between hops |
+
 ## dns
 
 | ID | Default severity | Category | Title |

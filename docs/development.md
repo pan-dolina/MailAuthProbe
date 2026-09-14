@@ -65,6 +65,12 @@ MailAuthProbe. Newest entries at the bottom of each section.
   every record includes ten others, most of them non-existent) still issued
   614 DNS queries, because failed include targets were not counted. The bound
   now counts every include/redirect target fetched.
+- Received parsing: TLS detection took the first word of the `with` clause
+  via `strings.Fields(protocol + " ")[0]`, which panics for headers without a
+  `with` clause (local delivery: `by host id X; date`). Found by the first
+  table test with a Postfix local-delivery header. Also, Exim writes
+  `with esmtps (TLS1.3) tls <cipher>`, so the protocol is now the words before
+  the first comment in the clause.
 
 ## Fuzzing
 

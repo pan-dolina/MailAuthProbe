@@ -743,3 +743,68 @@ var (
 		References:     []string{RFC6376 + "#section-3.6.1"},
 	})
 )
+
+// Received chain rules.
+var (
+	RcvdNone = register(Rule{
+		ID:             "MAIL-RCVD-001",
+		Component:      ComponentReceived,
+		Category:       CategoryInformational,
+		Severity:       SeverityLow,
+		Title:          "No Received headers",
+		Recommendation: "Analyse the message as delivered to a mailbox (with full headers) to see its transport path.",
+		References:     []string{RFC5321 + "#section-4.4"},
+	})
+	RcvdUnparseable = register(Rule{
+		ID:             "MAIL-RCVD-002",
+		Component:      ComponentReceived,
+		Category:       CategoryViolation,
+		Severity:       SeverityLow,
+		Title:          "Received header could not be parsed",
+		Recommendation: "Treat data from this hop with caution; malformed trace headers are common in forged or badly generated messages.",
+		References:     []string{RFC5321 + "#section-4.4"},
+	})
+	RcvdTimeTravel = register(Rule{
+		ID:             "MAIL-RCVD-003",
+		Component:      ComponentReceived,
+		Category:       CategoryInformational,
+		Severity:       SeverityLow,
+		Title:          "Received timestamps go backwards",
+		Recommendation: "Headers below the inconsistency may have been added by the sender rather than by the servers they name.",
+		References:     []string{RFC5321 + "#section-4.4"},
+	})
+	RcvdTooMany = register(Rule{
+		ID:             "MAIL-RCVD-004",
+		Component:      ComponentReceived,
+		Category:       CategoryInformational,
+		Severity:       SeverityMedium,
+		Title:          "Too many Received headers",
+		Recommendation: "Check for a mail loop or for headers padded by the sender to hide the real origin.",
+		References:     []string{RFC5321 + "#section-6.3"},
+	})
+	RcvdNoTLS = register(Rule{
+		ID:         "MAIL-RCVD-005",
+		Component:  ComponentReceived,
+		Category:   CategoryHardening,
+		Severity:   SeverityInfo,
+		Title:      "Hop transmitted without TLS",
+		References: []string{"https://www.rfc-editor.org/rfc/rfc3848"},
+	})
+	RcvdNoDate = register(Rule{
+		ID:             "MAIL-RCVD-006",
+		Component:      ComponentReceived,
+		Category:       CategoryViolation,
+		Severity:       SeverityLow,
+		Title:          "Received header has no date",
+		Recommendation: "Every Received header must end with \"; date-time\". A missing date suggests a forged or broken header.",
+		References:     []string{RFC5321 + "#section-4.4"},
+	})
+	RcvdDelay = register(Rule{
+		ID:         "MAIL-RCVD-007",
+		Component:  ComponentReceived,
+		Category:   CategoryInformational,
+		Severity:   SeverityInfo,
+		Title:      "Long delay between hops",
+		References: []string{RFC5321 + "#section-4.4"},
+	})
+)
