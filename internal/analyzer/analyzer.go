@@ -4,6 +4,10 @@ package analyzer
 
 import (
 	"context"
+	"errors"
+	"fmt"
+	"slices"
+	"strings"
 	"time"
 
 	"github.com/marcindolinski/mailauthprobe/internal/dnsresolver"
@@ -93,11 +97,31 @@ func (s *session) dnsError(component string, err error) {
 
 func (s *session) finish(ctx context.Context) *report.Report {
 	if s.budget.Exhausted() {
-		s.add(findings.DNSQueryBudgetExceeded.New("", "The scan reached its limit of DNS queries; some checks are incomplete."))
+		// Individual lookups rejected by the budget are summarised in one
+		// finding instead of one "lookup failed" finding each.
+		var kept []findings.Finding
+		var affected []string
+		for _, f := range s.rep.Findings {
+			if f.ID == findings.DNSLookupFailed.ID && slices.ContainsFunc(f.Evidence, isBudgetEvidence) {
+				affected = append(affected, f.Subject)
+				continue
+			}
+			kept = append(kept, f)
+		}
+		s.rep.Findings = kept
+		slices.Sort(affected)
+		s.add(findings.DNSQueryBudgetExceeded.New("", fmt.Sprintf("The scan reached its limit of %d DNS queries; some checks are incomplete.", s.opts.QueryBudget), slices.Compact(affected)...))
 	}
-	if err := ctx.Err(); err != nil {
+	switch {
+	case errors.Is(ctx.Err(), context.DeadlineExceeded):
 		s.rep.Errors = append(s.rep.Errors, report.Error{Kind: report.ErrorDNS, Component: "scan", Message: "scan deadline exceeded: results are incomplete"})
+	case ctx.Err() != nil:
+		s.rep.Errors = append(s.rep.Errors, report.Error{Kind: report.ErrorDNS, Component: "scan", Message: "scan interrupted: results are incomplete"})
 	}
-	s.rep.Finalize(s.budget.Used())
+	s.rep.Finalize(s.budget.Sent())
 	return s.rep
+}
+
+func isBudgetEvidence(ev string) bool {
+	return strings.Contains(ev, dnsresolver.KindBudget.String())
 }

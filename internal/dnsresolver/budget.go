@@ -24,6 +24,9 @@ func WithBudget(r Resolver, limit int) *Budget {
 // Used returns the number of lookups attempted, including rejected ones.
 func (b *Budget) Used() int { return int(b.used.Load()) }
 
+// Sent returns the number of lookups passed on to the underlying resolver.
+func (b *Budget) Sent() int { return int(min(b.used.Load(), b.limit)) }
+
 // Exhausted reports whether any lookup was rejected by the budget.
 func (b *Budget) Exhausted() bool { return b.used.Load() > b.limit }
 
@@ -84,9 +87,8 @@ func (b *Budget) LookupPTR(ctx context.Context, addr netip.Addr) ([]string, erro
 
 // Cache memoises lookups for the lifetime of one scan, so that the same
 // record consulted by several checks is fetched once and every check sees the
-// same answer. Concurrent lookups of the same name share one query, which
-// keeps query counts deterministic when checks run in parallel. Temporary
-// failures are not cached.
+// same answer. Concurrent lookups of the same name share one query.
+// Temporary failures other than budget rejections are not cached.
 type Cache struct {
 	next Resolver
 	mu   sync.Mutex
@@ -116,16 +118,18 @@ func cached[T any](c *Cache, key string, fetch func() (T, error)) (T, error) {
 	c.m[key] = e
 	c.mu.Unlock()
 
+	// Close the entry even if fetch panics, so that waiters never block.
+	defer close(e.done)
 	v, err := fetch()
 	e.val, e.err = v, err
-	if err != nil && IsTemporary(err) {
+	if err != nil && IsTemporary(err) && KindOf(err) != KindBudget {
 		// Waiters already blocked on this entry receive the failure; later
-		// callers retry.
+		// callers retry. Budget rejections are final for the scan and are
+		// cached so that repeated lookups do not count again.
 		c.mu.Lock()
 		delete(c.m, key)
 		c.mu.Unlock()
 	}
-	close(e.done)
 	return v, err
 }
 

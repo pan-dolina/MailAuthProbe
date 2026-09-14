@@ -2,7 +2,6 @@ package analyzer
 
 import (
 	"context"
-	"sync"
 
 	"github.com/marcindolinski/mailauthprobe/internal/dkim"
 	"github.com/marcindolinski/mailauthprobe/internal/dmarc"
@@ -21,21 +20,15 @@ func Domain(ctx context.Context, domain string, opts Options) *report.Report {
 	d := &report.Domain{Name: domain}
 	s.rep.Domain = d
 
-	// MX, SPF, DMARC and DKIM are independent; run them concurrently and
-	// merge results in a fixed order.
-	var (
-		wg                             sync.WaitGroup
-		mxErr, spfErr, dmarcErr, dkErr error
-	)
-	wg.Add(4)
-	go func() { defer wg.Done(); d.MX, mxErr = mx.Assess(ctx, s.resolver, domain) }()
-	go func() {
-		defer wg.Done()
-		d.SPF, spfErr = (&spf.Analyzer{Resolver: s.resolver}).Analyze(ctx, domain)
-	}()
-	go func() { defer wg.Done(); d.DMARC, dmarcErr = dmarc.Assess(ctx, s.resolver, domain) }()
-	go func() { defer wg.Done(); d.DKIM, dkErr = dkim.Assess(ctx, s.resolver, domain, s.opts.DKIMSelectors) }()
-	wg.Wait()
+	// Checks run sequentially. Running them concurrently saves little
+	// (answers are cached and most scans need a few dozen queries) but makes
+	// the order in which checks consume the shared query budget, and
+	// therefore the report, depend on scheduling.
+	var mxErr, spfErr, dmarcErr, dkErr error
+	d.MX, mxErr = mx.Assess(ctx, s.resolver, domain)
+	d.SPF, spfErr = (&spf.Analyzer{Resolver: s.resolver}).Analyze(ctx, domain)
+	d.DMARC, dmarcErr = dmarc.Assess(ctx, s.resolver, domain)
+	d.DKIM, dkErr = dkim.Assess(ctx, s.resolver, domain, s.opts.DKIMSelectors)
 
 	s.add(d.MX.Findings...)
 	s.add(d.SPF.Findings...)

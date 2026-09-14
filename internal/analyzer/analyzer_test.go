@@ -72,7 +72,7 @@ func TestDomainQueryBudget(t *testing.T) {
 	if !slices.Contains(ids(rep), findings.DNSQueryBudgetExceeded.ID) {
 		t.Errorf("findings = %v", ids(rep))
 	}
-	if rep.Summary.DNSQueries <= 3 {
+	if rep.Summary.DNSQueries != 3 {
 		t.Errorf("dns queries = %d", rep.Summary.DNSQueries)
 	}
 }
@@ -169,6 +169,25 @@ func TestMessageStructureFindings(t *testing.T) {
 	for _, want := range []string{"MAIL-MSG-005", "MAIL-MSG-006", "MAIL-MSG-010", "MAIL-MSG-012", "MAIL-DMARC-033", "MAIL-DKIM-025", "MAIL-RCVD-001", "MAIL-SPF-036"} {
 		if !slices.Contains(got, want) {
 			t.Errorf("missing %s in %v", want, got)
+		}
+	}
+}
+
+func TestDomainBudgetIsDeterministic(t *testing.T) {
+	var first []string
+	for i := range 30 {
+		rep := Domain(context.Background(), "test.example", Options{Resolver: fixtureZone(t), QueryBudget: 6, DKIMSelectors: []string{"s2026"}})
+		got := ids(rep)
+		if slices.Contains(got, findings.DNSLookupFailed.ID) {
+			t.Fatalf("budget rejections reported as lookup failures: %v", got)
+		}
+		if rep.Summary.DNSQueries != 6 {
+			t.Fatalf("dns_queries = %d, want 6", rep.Summary.DNSQueries)
+		}
+		if i == 0 {
+			first = got
+		} else if !slices.Equal(got, first) {
+			t.Fatalf("run %d findings %v differ from %v", i, got, first)
 		}
 	}
 }
