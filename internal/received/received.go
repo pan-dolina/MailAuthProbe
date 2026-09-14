@@ -57,7 +57,9 @@ type Hop struct {
 	Timestamp  *time.Time `json:"timestamp,omitempty"`
 	TLS        *TLS       `json:"tls,omitempty"`
 	// Delay since the previous hop, when both timestamps are known.
-	Delay *time.Duration `json:"delay,omitempty"`
+	Delay *time.Duration `json:"-"`
+	// DelaySeconds mirrors Delay for machine-readable output.
+	DelaySeconds *float64 `json:"delay_seconds,omitempty"`
 	// Problems lists parse problems for this header.
 	Problems []string `json:"problems,omitempty"`
 }

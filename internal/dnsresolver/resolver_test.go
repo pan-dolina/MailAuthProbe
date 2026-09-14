@@ -8,6 +8,7 @@ import (
 	"net/netip"
 	"slices"
 	"strings"
+	"sync"
 	"testing"
 	"time"
 
@@ -294,5 +295,41 @@ func TestClientRejectsInvalidName(t *testing.T) {
 	_, err := c.LookupTXT(context.Background(), "bad name.example")
 	if KindOf(err) != KindInvalidName {
 		t.Fatalf("err = %v", err)
+	}
+}
+
+// slowResolver blocks TXT lookups until released and counts them.
+type slowResolver struct {
+	countingResolver
+	release chan struct{}
+	mu      sync.Mutex
+}
+
+func (s *slowResolver) LookupTXT(ctx context.Context, name string) ([]string, error) {
+	s.mu.Lock()
+	s.calls++
+	s.mu.Unlock()
+	<-s.release
+	return []string{name}, nil
+}
+
+func TestCacheDeduplicatesConcurrentLookups(t *testing.T) {
+	next := &slowResolver{release: make(chan struct{})}
+	c := NewCache(next)
+	var wg sync.WaitGroup
+	for range 10 {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			if got, err := c.LookupTXT(context.Background(), "example.com"); err != nil || len(got) != 1 {
+				t.Errorf("got %v, %v", got, err)
+			}
+		}()
+	}
+	time.Sleep(20 * time.Millisecond)
+	close(next.release)
+	wg.Wait()
+	if next.calls != 1 {
+		t.Errorf("calls = %d, want 1", next.calls)
 	}
 }

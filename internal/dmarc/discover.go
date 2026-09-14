@@ -21,6 +21,8 @@ type Discovery struct {
 	Record  *Record  `json:"record,omitempty"`
 	// ParseErr is set when a single record was found but is unusable.
 	ParseErr error `json:"-"`
+	// ParseError mirrors ParseErr for machine-readable output.
+	ParseError string `json:"parse_error,omitempty"`
 	// Inherited is set when the policy comes from the organizational domain.
 	Inherited bool `json:"inherited,omitempty"`
 }
@@ -65,6 +67,9 @@ func (d *Discovery) try(ctx context.Context, r dnsresolver.Resolver, name string
 	d.Records = records
 	if len(records) == 1 {
 		d.Record, d.ParseErr = Parse(records[0])
+		if d.ParseErr != nil {
+			d.ParseError = d.ParseErr.Error()
+		}
 	}
 	return true, nil
 }

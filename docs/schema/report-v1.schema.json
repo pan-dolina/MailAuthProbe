@@ -1,0 +1,79 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/marcindolinski/mailauthprobe/docs/schema/report-v1.schema.json",
+  "title": "MailAuthProbe report, schema version 1",
+  "description": "Output of mailauthprobe --json. Consumers must ignore unknown properties: new fields may be added without changing schema_version.",
+  "type": "object",
+  "required": ["schema_version", "tool", "kind", "target", "summary", "findings", "errors"],
+  "properties": {
+    "schema_version": { "const": "1" },
+    "tool": {
+      "type": "object",
+      "required": ["name", "version"],
+      "properties": {
+        "name": { "const": "mailauthprobe" },
+        "version": { "type": "string" }
+      }
+    },
+    "kind": { "enum": ["domain", "message", "headers"] },
+    "target": { "type": "string", "description": "Domain name, file name, or \"-\" for standard input." },
+    "summary": {
+      "type": "object",
+      "required": ["highest_severity", "counts", "dns_queries"],
+      "properties": {
+        "highest_severity": { "enum": ["none", "pass", "info", "low", "medium", "high", "critical"] },
+        "counts": {
+          "type": "object",
+          "required": ["critical", "high", "medium", "low", "info", "pass"],
+          "additionalProperties": { "type": "integer", "minimum": 0 }
+        },
+        "dns_queries": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "domain": {
+      "type": "object",
+      "description": "Present for kind=domain. Component objects (mx, spf, dkim, dmarc, mta_sts, tls_rpt) are informational detail; automation should key on findings.",
+      "required": ["name"]
+    },
+    "message": {
+      "type": "object",
+      "description": "Present for kind=message and kind=headers.",
+      "required": ["size", "header_size", "body_available", "headers", "received", "spf", "dkim", "dmarc", "authentication_results"]
+    },
+    "findings": {
+      "type": "array",
+      "description": "Sorted by severity (most severe first), then id, subject and description.",
+      "items": { "$ref": "#/$defs/finding" }
+    },
+    "errors": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["kind", "component", "message"],
+        "properties": {
+          "kind": { "enum": ["dns", "input", "internal"] },
+          "component": { "type": "string" },
+          "message": { "type": "string" }
+        }
+      }
+    }
+  },
+  "$defs": {
+    "finding": {
+      "type": "object",
+      "required": ["id", "severity", "category", "component", "title", "description"],
+      "properties": {
+        "id": { "type": "string", "pattern": "^MAIL-[A-Z]+-[0-9]{3}$" },
+        "severity": { "enum": ["pass", "info", "low", "medium", "high", "critical"] },
+        "category": { "enum": ["standard-violation", "security-weakness", "hardening", "informational"] },
+        "component": { "type": "string" },
+        "title": { "type": "string" },
+        "subject": { "type": "string" },
+        "description": { "type": "string" },
+        "evidence": { "type": "array", "items": { "type": "string" } },
+        "recommendation": { "type": "string" },
+        "references": { "type": "array", "items": { "type": "string", "format": "uri" } }
+      }
+    }
+  }
+}

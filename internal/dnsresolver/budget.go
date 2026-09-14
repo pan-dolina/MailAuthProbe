@@ -84,37 +84,48 @@ func (b *Budget) LookupPTR(ctx context.Context, addr netip.Addr) ([]string, erro
 
 // Cache memoises lookups for the lifetime of one scan, so that the same
 // record consulted by several checks is fetched once and every check sees the
-// same answer. Temporary failures are not cached.
+// same answer. Concurrent lookups of the same name share one query, which
+// keeps query counts deterministic when checks run in parallel. Temporary
+// failures are not cached.
 type Cache struct {
 	next Resolver
 	mu   sync.Mutex
-	m    map[string]cacheEntry
+	m    map[string]*cacheEntry
 }
 
 type cacheEntry struct {
-	val any
-	err error
+	done chan struct{}
+	val  any
+	err  error
 }
 
 // NewCache wraps r with a per-scan cache.
 func NewCache(r Resolver) *Cache {
-	return &Cache{next: r, m: map[string]cacheEntry{}}
+	return &Cache{next: r, m: map[string]*cacheEntry{}}
 }
 
 func cached[T any](c *Cache, key string, fetch func() (T, error)) (T, error) {
 	c.mu.Lock()
-	e, ok := c.m[key]
-	c.mu.Unlock()
-	if ok {
+	if e, ok := c.m[key]; ok {
+		c.mu.Unlock()
+		<-e.done
 		v, _ := e.val.(T)
 		return v, e.err
 	}
+	e := &cacheEntry{done: make(chan struct{})}
+	c.m[key] = e
+	c.mu.Unlock()
+
 	v, err := fetch()
-	if err == nil || !IsTemporary(err) {
+	e.val, e.err = v, err
+	if err != nil && IsTemporary(err) {
+		// Waiters already blocked on this entry receive the failure; later
+		// callers retry.
 		c.mu.Lock()
-		c.m[key] = cacheEntry{val: v, err: err}
+		delete(c.m, key)
 		c.mu.Unlock()
 	}
+	close(e.done)
 	return v, err
 }
 

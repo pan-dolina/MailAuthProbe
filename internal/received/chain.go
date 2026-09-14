@@ -55,7 +55,8 @@ func Build(values []string) *Chain {
 		}
 		if prev != nil && prev.Timestamp != nil && h.Timestamp != nil {
 			d := h.Timestamp.Sub(*prev.Timestamp)
-			h.Delay = &d
+			secs := d.Seconds()
+			h.Delay, h.DelaySeconds = &d, &secs
 			switch {
 			case d < -clockSkew:
 				add(findings.RcvdTimeTravel.New(hopSubject(h),
