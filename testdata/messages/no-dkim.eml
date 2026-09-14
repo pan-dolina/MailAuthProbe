@@ -1,0 +1,18 @@
+Return-Path: <bounces@test.example>
+Received: from mail.test.example (mail.test.example [192.0.2.10])
+	by mx.receiver.example (Postfix) with ESMTPS id 8E5F6A7B8C
+	for <bob@receiver.example>; Mon, 14 Sep 2026 10:00:00 +0000
+From: Alice <alice@test.example>
+To: Bob <bob@receiver.example>
+Subject: Unsigned
+Date: Mon, 14 Sep 2026 10:00:00 +0000
+Message-ID: <nodkim-1@test.example>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+
+Hello Bob,
+
+the quarterly report is ready.
+
+-- 
+Alice

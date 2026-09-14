@@ -1,0 +1,41 @@
+Return-Path: <bounces@test.example>
+Received: from mail.test.example (mail.test.example [192.0.2.10])
+	by mx.receiver.example (Postfix) with ESMTPS id 7D4E5F6A7B
+	for <bob@receiver.example>; Mon, 14 Sep 2026 10:00:00 +0000
+DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=esp.example; s=mailer;
+	t=1789380000; h=From:To:Subject:Date:Message-ID;
+	bh=BGNkjYt6FyBSfqlL/5Evhd3QqHebNuB7LQ3obuhbE94=;
+	b=EblpV9WX/acclukhViSaZIqORQMKIwgSSCdZelWgYPeG5htFI3eDMkhnCJr1LSUZ
+	 qC5a7weETlwo4sVSHLoinbxdRoK+GNnXh5YU8Kvf6lR9/zCOG8YoO/SMhcmY3QDa
+	 2viyTyjnFPn0JKGmff7m6UqWNEAlZDvba+oJQkA4yQiuRuChjepKKe7Y9QVO4R0F
+	 3ujl4mxpoRT+wEcdPBNt6ow3sh34Fu4QGOayUJbKfZV5HhcKnCTcrzA/65fGswtm
+	 pDii+TeN+ro3i6Qqii5ZHlKDpF0odhqfTLbERLhbAuS7yjsBZah9tbGTyJ3t5hxT
+	 TzMZsWnL4O+7icLnjXbWFA==
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=test.example; s=ed2026;
+	t=1789380000; h=From:To:Subject:Date:Message-ID;
+	bh=ea9f2yJXZI4+ZYxo5GswMrT1DAN0SKiiRfJMAz50vps=;
+	b=eI1+5LSNX8lnwH04fRGffkzPKvnAqYkHgSdlV8GONOce6cE9T5/DWUtrVExpQgsT
+	 KBkZSeHE6gwf58uvNrD2Ag==
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=test.example; s=s2026;
+	t=1789380000; h=From:To:Subject:Date:Message-ID;
+	bh=ea9f2yJXZI4+ZYxo5GswMrT1DAN0SKiiRfJMAz50vps=;
+	b=8AznvOQXoHNzosv2v5UA8NJh4wdCRxH4l9DVaNVC5v8jhfM0PrVZPL+moH6vOmgg
+	 gsf3oVv6fB53BEgPnm/9kyl1Hj17lsAddBPgd3RddjPe2VUyXMT3K72JR5oX/g1Z
+	 33SX6Wc8ffZP/MF84/3njK9CvSfQmpKb8vgIlQu1SWTrZ6X6HaBaHrL/tpfHM28B
+	 j6/4pMHG5RkJFoAKwcf5L3Hbq2zzrwq1MlYi4FZLn2ApH92eWXZ810oYcD5mN4Zw
+	 lrkc1K24ThTK+bG2ZC3T/OS4aLENbn2Ga99ITw3HHpYvXIg5o9QY5mrpqlSoUUHG
+	 ykoujlnFZ8QPGzTnAAg0Rw==
+From: Alice <alice@test.example>
+To: Bob <bob@receiver.example>
+Subject: Newsletter
+Date: Mon, 14 Sep 2026 10:00:00 +0000
+Message-ID: <multi-1@test.example>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+
+Hello Bob,
+
+the quarterly report is ready.
+
+-- 
+Alice
