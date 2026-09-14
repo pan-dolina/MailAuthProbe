@@ -41,11 +41,17 @@ func NewApp() *App {
 }
 
 // Execute runs the CLI with the given arguments and returns the exit code.
-func (a *App) Execute(ctx context.Context, args []string) int {
+func (a *App) Execute(ctx context.Context, args []string) (code int) {
+	defer func() {
+		if r := recover(); r != nil {
+			fmt.Fprintf(a.Stderr, "mailauthprobe: internal error: %v\n", r)
+			code = ExitInternal
+		}
+	}()
 	root := a.newRootCommand()
 	root.SetArgs(args)
 	err := root.ExecuteContext(ctx)
-	code := ExitCode(err)
+	code = ExitCode(err)
 	if err != nil {
 		var ee *exitError
 		if !errors.As(err, &ee) || ee.err != nil {
@@ -72,7 +78,10 @@ Exit codes:
   2  invalid arguments
   3  input could not be read or parsed, or exceeded safety limits
   4  DNS or network failure prevented a reliable result
-  5  internal error`,
+  5  internal error
+
+When several conditions apply, the most specific code wins: 5, then 3,
+then 4, then 1.`,
 		SilenceUsage:  true,
 		SilenceErrors: true,
 		PersistentPreRunE: func(cmd *cobra.Command, _ []string) error {
@@ -95,7 +104,12 @@ Exit codes:
 	pf.DurationVar(&a.opts.timeout, "timeout", 30*time.Second, "overall deadline for the scan")
 	pf.StringVar(&a.opts.resolver, "resolver", "", "DNS resolver address (host or host:port); defaults to the system resolver")
 
-	root.AddCommand(a.newVersionCommand())
+	root.AddCommand(
+		a.newDomainCommand(),
+		a.newMessageCommand(false),
+		a.newMessageCommand(true),
+		a.newVersionCommand(),
+	)
 	return root
 }
 
