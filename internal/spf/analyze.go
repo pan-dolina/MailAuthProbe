@@ -55,6 +55,7 @@ type analysisState struct {
 	root     string
 	findings []findings.Finding
 	infraErr error
+	perRule  map[string]int
 	// nodes counts include/redirect targets fetched, bounding the work
 	// done on hostile trees.
 	nodes int
@@ -121,11 +122,36 @@ func (a *Analyzer) Analyze(ctx context.Context, domain string) (*Analysis, error
 	if worst < findings.SeverityMedium {
 		st.add(findings.SPFValid.New(domain, fmt.Sprintf("The SPF record is valid and needs %d of %d DNS lookups.", res.TotalLookups, limits.MaxLookups), res.Record))
 	}
+	st.noteSuppressed()
 	res.Findings = st.findings
 	return res, st.infraErr
 }
 
-func (st *analysisState) add(f findings.Finding) { st.findings = append(st.findings, f) }
+// maxFindingsPerRule caps repeated findings: a hostile tree can contain
+// thousands of identical problems (for example 8000 "ptr" terms).
+const maxFindingsPerRule = 20
+
+func (st *analysisState) add(f findings.Finding) {
+	if st.perRule == nil {
+		st.perRule = map[string]int{}
+	}
+	st.perRule[f.ID]++
+	if st.perRule[f.ID] > maxFindingsPerRule {
+		return
+	}
+	st.findings = append(st.findings, f)
+}
+
+// noteSuppressed records how many findings of each rule were dropped.
+func (st *analysisState) noteSuppressed() {
+	for i := len(st.findings) - 1; i >= 0; i-- {
+		f := st.findings[i]
+		if n := st.perRule[f.ID]; n > maxFindingsPerRule {
+			st.findings[i] = f.WithEvidence(fmt.Sprintf("%d further %s findings in this SPF tree are not listed", n-maxFindingsPerRule, f.ID))
+			st.perRule[f.ID] = 0
+		}
+	}
+}
 
 func sumVoids(n *Node) int {
 	total := n.VoidLookups
@@ -168,7 +194,11 @@ func (st *analysisState) walk(ctx context.Context, domain, via, txt string, stac
 		node.Error = err.Error()
 		f := findings.SPFSyntax.New(subject, fmt.Sprintf("The SPF record of %s contains syntax errors; it evaluates to permerror.", domain), txt)
 		if se, ok := err.(*SyntaxError); ok {
-			for _, te := range se.Errors {
+			for i, te := range se.Errors {
+				if i == 10 {
+					f = f.WithEvidence(fmt.Sprintf("... and %d more syntax errors", len(se.Errors)-10))
+					break
+				}
 				f = f.WithEvidence(te.Error())
 			}
 		}

@@ -204,3 +204,21 @@ func TestAnalyzeBoundsHostileTrees(t *testing.T) {
 		t.Error("expected lookup limit finding")
 	}
 }
+
+func TestAnalyzeCapsRepeatedFindings(t *testing.T) {
+	record := "v=spf1 " + strings.Repeat("ptr ", 500) + "-all"
+	res, _ := analyze(t, `example.test. TXT "`+record+`"`, "example.test")
+	count := 0
+	for _, f := range res.Findings {
+		if f.ID == "MAIL-SPF-012" {
+			count++
+		}
+	}
+	if count != maxFindingsPerRule {
+		t.Errorf("ptr findings = %d, want %d", count, maxFindingsPerRule)
+	}
+	last := res.Findings[slices.IndexFunc(res.Findings, func(f findings.Finding) bool { return f.ID == "MAIL-SPF-012" })+count-1]
+	if !strings.Contains(strings.Join(last.Evidence, " "), "480 further") {
+		t.Errorf("suppression not noted: %v", last.Evidence)
+	}
+}
