@@ -133,6 +133,11 @@ MailAuthProbe. Newest entries at the bottom of each section.
 - `scripts/verify-reproducible.sh` builds twice, the second time with an empty
   module and build cache, and compares SHA256SUMS. First local run (Go
   1.27.1, darwin/arm64 host, all five targets): identical checksums.
+- First smoke run against a release archive failed twice for real reasons:
+  `build-release.sh` aborted when a target subset produced no `.zip` (the
+  checksum glob did not match), and `MAILAUTHPROBE_BIN` was resolved relative
+  to the test package directory instead of the repository root. Both fixed;
+  smoke tests pass for darwin/arm64 natively and darwin/amd64 under Rosetta.
 
 ## Fuzzing
 

@@ -56,10 +56,12 @@ done
 
 (
   cd "$DIST"
+  shopt -s nullglob
+  archives=(*.tar.gz *.zip)
   if command -v sha256sum >/dev/null 2>&1; then
-    sha256sum -- *.tar.gz *.zip | LC_ALL=C sort -k2 > SHA256SUMS
+    sha256sum -- "${archives[@]}" | LC_ALL=C sort -k2 > SHA256SUMS
   else
-    shasum -a 256 -- *.tar.gz *.zip | LC_ALL=C sort -k2 > SHA256SUMS
+    shasum -a 256 -- "${archives[@]}" | LC_ALL=C sort -k2 > SHA256SUMS
   fi
 )
 echo "wrote $DIST/SHA256SUMS"
