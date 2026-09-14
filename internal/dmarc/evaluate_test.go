@@ -46,6 +46,8 @@ _dmarc.flaky.example.   SERVFAIL
 		{"spf not evaluated is indeterminate", MessageInput{FromHeaders: []string{"a@example.com"}}, MessageIndeterminate, "", []string{"MAIL-DMARC-038"}},
 		{"header-only dkim is indeterminate", MessageInput{FromHeaders: []string{"a@example.com"}, SPFResult: "fail", SPFDomain: "example.com", DKIM: []DKIMInput{{"example.com", "neutral"}}}, MessageIndeterminate, "", []string{"MAIL-DMARC-038"}},
 		{"spf temperror", MessageInput{FromHeaders: []string{"a@example.com"}, SPFResult: "temperror", SPFDomain: "example.com"}, MessageTempError, "", []string{"MAIL-DMARC-034"}},
+		{"unaligned spf temperror still fails", MessageInput{FromHeaders: []string{"a@example.com"}, SPFResult: "temperror", SPFDomain: "attacker.example"}, MessageFail, PolicyReject, []string{"MAIL-DMARC-031"}},
+		{"unaligned dkim neutral still fails", MessageInput{FromHeaders: []string{"a@example.com"}, SPFResult: "fail", SPFDomain: "example.com", DKIM: []DKIMInput{{"attacker.example", "neutral"}}}, MessageFail, PolicyReject, []string{"MAIL-DMARC-031"}},
 		{"dkim temperror", MessageInput{FromHeaders: []string{"a@example.com"}, SPFResult: "fail", SPFDomain: "example.com", DKIM: []DKIMInput{{"example.com", "temperror"}}}, MessageTempError, "", []string{"MAIL-DMARC-034"}},
 		{"no policy", MessageInput{FromHeaders: []string{"a@unprotected.example"}}, MessageNone, "", []string{"MAIL-DMARC-032"}},
 		{"invalid policy", MessageInput{FromHeaders: []string{"a@bad.example"}}, MessageNone, "", []string{"MAIL-DMARC-032"}},

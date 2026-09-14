@@ -149,14 +149,19 @@ func EvaluateMessage(ctx context.Context, r dnsresolver.Resolver, in MessageInpu
 
 	// Without an aligned pass, fail only if every input produced a definite
 	// result (RFC 7489 section 6.6.2).
+	// Only identifiers that could align with the From domain matter: an
+	// unrelated domain's temperror cannot turn into an aligned pass.
 	var temp, incomplete []string
-	switch in.SPFResult {
-	case "temperror":
-		temp = append(temp, "SPF temperror")
-	case "":
+	switch {
+	case in.SPFResult == "":
 		incomplete = append(incomplete, "SPF was not evaluated")
+	case in.SPFResult == "temperror" && Aligned(in.SPFDomain, from, rec.ASPF):
+		temp = append(temp, "SPF temperror")
 	}
 	for _, d := range in.DKIM {
+		if !Aligned(d.Domain, from, rec.ADKIM) {
+			continue
+		}
 		switch d.Result {
 		case "temperror":
 			temp = append(temp, "DKIM temperror for d="+d.Domain)

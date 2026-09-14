@@ -21,6 +21,10 @@ import (
 	"github.com/marcindolinski/mailauthprobe/internal/spf"
 )
 
+// spfQueryBudget bounds the DNS queries of the SPF checks for one message
+// (MAIL FROM and HELO, including "p" macros and MX/PTR address lookups).
+const spfQueryBudget = 120
+
 // InputError wraps failures to read or parse the input message.
 type InputError struct{ Err error }
 
@@ -98,7 +102,10 @@ func (s *session) analyzeMessage(ctx context.Context, msg *mailparser.Message) {
 
 	// SPF.
 	inputs := s.spfInputs(msg, m)
-	checker := &spf.Checker{Resolver: s.resolver}
+	// SPF runs against records chosen by the sender. A separate budget keeps
+	// a hostile SPF policy from starving the DMARC and DKIM lookups for the
+	// From domain.
+	checker := &spf.Checker{Resolver: dnsresolver.WithBudget(s.resolver, spfQueryBudget)}
 	m.SPF = checker.CheckMessage(ctx, inputs)
 	s.add(m.SPF.Findings...)
 	for _, ev := range []*spf.Evaluation{m.SPF.MailFrom, m.SPF.HELO} {

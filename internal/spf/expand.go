@@ -21,19 +21,29 @@ type macroContext struct {
 	ptr func() string
 }
 
-// expand performs macro expansion (RFC 7208 section 7.3).
+// maxExpansion bounds the result of a single macro expansion. Hostile
+// records can repeat macros thousands of times; any expansion this long is
+// far beyond the 253-octet domain limit and is rejected as a whole.
+const maxExpansion = 4096
+
+// expand performs macro expansion (RFC 7208 section 7.3). It returns "" when
+// the result would exceed maxExpansion, which callers treat as an invalid
+// domain.
 func (m macroString) expand(mc *macroContext) string {
 	var b strings.Builder
 	for _, tok := range m {
 		if tok.letter == 0 {
 			b.WriteString(tok.literal)
-			continue
+		} else {
+			v := transform(mc.value(tok.letter), tok)
+			if tok.urlEscape {
+				v = urlEscape(v)
+			}
+			b.WriteString(v)
 		}
-		v := transform(mc.value(tok.letter), tok)
-		if tok.urlEscape {
-			v = urlEscape(v)
+		if b.Len() > maxExpansion {
+			return ""
 		}
-		b.WriteString(v)
 	}
 	return b.String()
 }

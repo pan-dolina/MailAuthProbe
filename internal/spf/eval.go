@@ -106,6 +106,7 @@ type evaluator struct {
 	req      Request
 	ev       *Evaluation
 	stack    []string
+	pCache   map[string]string
 }
 
 // CheckHost evaluates the SPF policy for req (RFC 7208 section 4).
@@ -129,7 +130,7 @@ func (c *Checker) CheckHost(ctx context.Context, req Request) *Evaluation {
 	}
 	req.Domain = dnsresolver.Trim(req.Domain)
 
-	e := &evaluator{resolver: c.Resolver, limits: limits, req: req, ev: &Evaluation{Domain: req.Domain, Trace: []Step{}}}
+	e := &evaluator{resolver: c.Resolver, limits: limits, req: req, ev: &Evaluation{Domain: req.Domain, Trace: []Step{}}, pCache: map[string]string{}}
 	result, err := e.checkHost(ctx, req.Domain, 0)
 	var ee *evalError
 	if errors.As(err, &ee) {
@@ -220,7 +221,16 @@ func (e *evaluator) checkHost(ctx context.Context, domain string, depth int) (Re
 	e.trace(depth, domain, "", "record: %s", txt)
 
 	mc := &macroContext{ip: e.req.IP, sender: e.req.Sender, domain: domain, helo: e.req.HELO, receiver: e.req.Receiver, now: e.req.Now}
-	mc.ptr = func() string { return e.pMacro(ctx, domain) }
+	mc.ptr = func() string {
+		// The "p" macro performs PTR and address lookups that do not count
+		// towards the lookup limit; resolve it at most once per domain.
+		if v, ok := e.pCache[domain]; ok {
+			return v
+		}
+		v := e.pMacro(ctx, domain)
+		e.pCache[domain] = v
+		return v
+	}
 
 	for _, term := range rec.Terms {
 		if term.Modifier {

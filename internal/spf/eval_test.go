@@ -186,3 +186,20 @@ func TestCheckHostExplanation(t *testing.T) {
 		t.Errorf("result %s, explanation %q", ev.Result, ev.Explanation)
 	}
 }
+
+func TestMacroExpansionIsBounded(t *testing.T) {
+	m, err := parseMacroString(strings.Repeat("%{s}", 2000)+".example.com", false)
+	if err != nil {
+		t.Fatal(err)
+	}
+	mc := &macroContext{sender: strings.Repeat("a", 64) + "@" + strings.Repeat("b", 180) + ".example", domain: "example.com"}
+	if got := m.expand(mc); got != "" {
+		t.Errorf("oversized expansion returned %d bytes", len(got))
+	}
+	zone := dnstest.MustParseZone(`big.test. TXT "v=spf1 exists:` + strings.Repeat("%{l}", 1500) + `.x.test -all"`)
+	c := &Checker{Resolver: zone}
+	ev := c.CheckHost(context.Background(), Request{IP: netip.MustParseAddr("192.0.2.1"), Sender: strings.Repeat("a", 64) + "@big.test"})
+	if ev.Result != ResultFail {
+		t.Errorf("result = %s (%s)", ev.Result, ev.Reason)
+	}
+}

@@ -26,7 +26,7 @@ func Domain(ctx context.Context, domain string, opts Options) *report.Report {
 	// therefore the report, depend on scheduling.
 	var mxErr, spfErr, dmarcErr, dkErr error
 	d.MX, mxErr = mx.Assess(ctx, s.resolver, domain)
-	d.SPF, spfErr = (&spf.Analyzer{Resolver: s.resolver}).Analyze(ctx, domain)
+	d.SPF, spfErr = (&spf.Analyzer{Resolver: dnsresolver.WithBudget(s.resolver, spfQueryBudget)}).Analyze(ctx, domain)
 	d.DMARC, dmarcErr = dmarc.Assess(ctx, s.resolver, domain)
 	d.DKIM, dkErr = dkim.Assess(ctx, s.resolver, domain, s.opts.DKIMSelectors)
 
