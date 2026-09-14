@@ -58,6 +58,26 @@ finding.
 | `MAIL-SPF-024` | low | hardening | SPF record is longer than 450 octets |
 | `MAIL-SPF-025` | low | hardening | SPF mechanism references a name without records |
 
+## dkim
+
+| ID | Default severity | Category | Title |
+|----|------------------|----------|-------|
+| `MAIL-DKIM-001` | info | informational | DKIM audit incomplete: no selector specified |
+| `MAIL-DKIM-002` | high | standard-violation | DKIM key record not found |
+| `MAIL-DKIM-003` | high | standard-violation | DKIM key record is invalid |
+| `MAIL-DKIM-004` | medium | informational | DKIM key is revoked |
+| `MAIL-DKIM-005` | high | security-weakness | DKIM RSA key shorter than 1024 bits |
+| `MAIL-DKIM-006` | medium | hardening | DKIM RSA key shorter than 2048 bits |
+| `MAIL-DKIM-007` | low | hardening | DKIM RSA key longer than 4096 bits |
+| `MAIL-DKIM-008` | high | standard-violation | DKIM key restricts hashes to SHA-1 |
+| `MAIL-DKIM-009` | low | hardening | DKIM key is in testing mode (t=y) |
+| `MAIL-DKIM-010` | high | standard-violation | DKIM key is not usable for e-mail |
+| `MAIL-DKIM-011` | info | informational | DKIM key uses Ed25519 |
+| `MAIL-DKIM-012` | pass | informational | DKIM key record is valid |
+| `MAIL-DKIM-013` | medium | standard-violation | Multiple TXT records at a DKIM selector |
+| `MAIL-DKIM-014` | info | informational | DKIM key record contains an unknown tag |
+| `MAIL-DKIM-015` | low | hardening | DKIM RSA key is not in SubjectPublicKeyInfo format |
+
 ## dmarc
 
 | ID | Default severity | Category | Title |

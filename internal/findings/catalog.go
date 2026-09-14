@@ -609,3 +609,137 @@ var (
 		References: []string{RFC7489 + "#section-6.3"},
 	})
 )
+
+// DKIM rules.
+var (
+	DKIMNoSelector = register(Rule{
+		ID:         "MAIL-DKIM-001",
+		Component:  ComponentDKIM,
+		Category:   CategoryInformational,
+		Severity:   SeverityInfo,
+		Title:      "DKIM audit incomplete: no selector specified",
+		References: []string{RFC6376 + "#section-3.1"},
+	})
+	DKIMKeyNotFound = register(Rule{
+		ID:             "MAIL-DKIM-002",
+		Component:      ComponentDKIM,
+		Category:       CategoryViolation,
+		Severity:       SeverityHigh,
+		Title:          "DKIM key record not found",
+		Recommendation: "Publish the public key at <selector>._domainkey.<domain>, or check that the selector name is correct.",
+		References:     []string{RFC6376 + "#section-3.6.2"},
+	})
+	DKIMInvalidKey = register(Rule{
+		ID:             "MAIL-DKIM-003",
+		Component:      ComponentDKIM,
+		Category:       CategoryViolation,
+		Severity:       SeverityHigh,
+		Title:          "DKIM key record is invalid",
+		Recommendation: "Republish the key record as \"v=DKIM1; k=rsa; p=<base64 SubjectPublicKeyInfo>\". An invalid record makes every signature fail.",
+		References:     []string{RFC6376 + "#section-3.6.1"},
+	})
+	DKIMKeyRevoked = register(Rule{
+		ID:             "MAIL-DKIM-004",
+		Component:      ComponentDKIM,
+		Category:       CategoryInformational,
+		Severity:       SeverityMedium,
+		Title:          "DKIM key is revoked",
+		Recommendation: "If this selector is still used for signing, publish the current public key. If it was retired deliberately, stop signing with it.",
+		References:     []string{RFC6376 + "#section-3.6.1"},
+	})
+	DKIMKeyTooShort = register(Rule{
+		ID:             "MAIL-DKIM-005",
+		Component:      ComponentDKIM,
+		Category:       CategoryWeakness,
+		Severity:       SeverityHigh,
+		Title:          "DKIM RSA key shorter than 1024 bits",
+		Recommendation: "Generate a new 2048-bit RSA key, publish it under a new selector and switch signing to it.",
+		References:     []string{RFC8301 + "#section-3.2"},
+	})
+	DKIMKeyWeak = register(Rule{
+		ID:             "MAIL-DKIM-006",
+		Component:      ComponentDKIM,
+		Category:       CategoryHardening,
+		Severity:       SeverityMedium,
+		Title:          "DKIM RSA key shorter than 2048 bits",
+		Recommendation: "Rotate to a 2048-bit RSA key; 1024-bit keys are below current recommendations.",
+		References:     []string{RFC8301 + "#section-3.2"},
+	})
+	DKIMKeyTooLong = register(Rule{
+		ID:             "MAIL-DKIM-007",
+		Component:      ComponentDKIM,
+		Category:       CategoryHardening,
+		Severity:       SeverityLow,
+		Title:          "DKIM RSA key longer than 4096 bits",
+		Recommendation: "Use a 2048- or 4096-bit key; longer keys may exceed verifier limits and DNS response sizes.",
+		References:     []string{RFC8301 + "#section-3.2"},
+	})
+	DKIMKeySHA1Only = register(Rule{
+		ID:             "MAIL-DKIM-008",
+		Component:      ComponentDKIM,
+		Category:       CategoryViolation,
+		Severity:       SeverityHigh,
+		Title:          "DKIM key restricts hashes to SHA-1",
+		Recommendation: "Remove the h= tag or set h=sha256.",
+		References:     []string{RFC8301 + "#section-3.1"},
+	})
+	DKIMKeyTesting = register(Rule{
+		ID:             "MAIL-DKIM-009",
+		Component:      ComponentDKIM,
+		Category:       CategoryHardening,
+		Severity:       SeverityLow,
+		Title:          "DKIM key is in testing mode (t=y)",
+		Recommendation: "Remove t=y once signing is verified to work.",
+		References:     []string{RFC6376 + "#section-3.6.1"},
+	})
+	DKIMKeyServiceMismatch = register(Rule{
+		ID:             "MAIL-DKIM-010",
+		Component:      ComponentDKIM,
+		Category:       CategoryViolation,
+		Severity:       SeverityHigh,
+		Title:          "DKIM key is not usable for e-mail",
+		Recommendation: "Remove the s= tag or include \"email\" in it.",
+		References:     []string{RFC6376 + "#section-3.6.1"},
+	})
+	DKIMKeyEd25519 = register(Rule{
+		ID:         "MAIL-DKIM-011",
+		Component:  ComponentDKIM,
+		Category:   CategoryInformational,
+		Severity:   SeverityInfo,
+		Title:      "DKIM key uses Ed25519",
+		References: []string{RFC8463},
+	})
+	DKIMKeyValid = register(Rule{
+		ID:        "MAIL-DKIM-012",
+		Component: ComponentDKIM,
+		Category:  CategoryInformational,
+		Severity:  SeverityPass,
+		Title:     "DKIM key record is valid",
+	})
+	DKIMMultipleKeys = register(Rule{
+		ID:             "MAIL-DKIM-013",
+		Component:      ComponentDKIM,
+		Category:       CategoryViolation,
+		Severity:       SeverityMedium,
+		Title:          "Multiple TXT records at a DKIM selector",
+		Recommendation: "Publish exactly one key record per selector.",
+		References:     []string{RFC6376 + "#section-3.6.2.2"},
+	})
+	DKIMKeyUnknownTag = register(Rule{
+		ID:         "MAIL-DKIM-014",
+		Component:  ComponentDKIM,
+		Category:   CategoryInformational,
+		Severity:   SeverityInfo,
+		Title:      "DKIM key record contains an unknown tag",
+		References: []string{RFC6376 + "#section-3.6.1"},
+	})
+	DKIMKeyPKCS1 = register(Rule{
+		ID:             "MAIL-DKIM-015",
+		Component:      ComponentDKIM,
+		Category:       CategoryHardening,
+		Severity:       SeverityLow,
+		Title:          "DKIM RSA key is not in SubjectPublicKeyInfo format",
+		Recommendation: "Publish the key as a DER SubjectPublicKeyInfo (the output of \"openssl rsa -pubout -outform DER\").",
+		References:     []string{RFC6376 + "#section-3.6.1"},
+	})
+)
