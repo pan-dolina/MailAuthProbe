@@ -106,7 +106,7 @@ func TestErrorClassification(t *testing.T) {
 		{&Error{Kind: KindNXDomain}, true, false, false},
 		{&Error{Kind: KindTemporary}, false, true, true},
 		{&Error{Kind: KindRefused}, false, true, true},
-		{&Error{Kind: KindMalformed}, false, true, false},
+		{&Error{Kind: KindMalformed}, false, true, true},
 		{&Error{Kind: KindBudget}, false, true, false},
 		{&Error{Kind: KindInvalidName}, false, false, false},
 		{context.DeadlineExceeded, false, true, true},

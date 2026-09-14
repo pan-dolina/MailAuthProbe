@@ -1,0 +1,18 @@
+Return-Path: <bounce@evil.example>
+Received: from mail.evil.example (mail.evil.example [203.0.113.66])
+	by mx.receiver.example (Postfix) with ESMTPS id EEBFC0D1E2
+	for <bob@receiver.example>; Mon, 14 Sep 2026 10:00:00 +0000
+From: Billing <billing@none.example>
+To: Bob <bob@receiver.example>
+Subject: Invoice overdue
+Date: Mon, 14 Sep 2026 10:00:00 +0000
+Message-ID: <none-1@evil.example>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+
+Hello Bob,
+
+the quarterly report is ready.
+
+-- 
+Alice

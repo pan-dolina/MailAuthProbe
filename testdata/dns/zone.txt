@@ -15,3 +15,48 @@ test.example.                    TXT   "v=spf1 ip4:192.0.2.0/24 ip6:2001:db8::/4
 _dmarc.test.example.             TXT   "v=DMARC1; p=reject; rua=mailto:dmarc@test.example"
 s2026._domainkey.test.example.   TXT   "v=DKIM1; k=rsa; p=MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA+lBF89/3lPYb2gLGaDdeppr63HMOxmUY17MmoiIYc9MYeIne5ZRa+EL2UaQFkVtsl7fitmnDwrGaOFAxPSARuuWOWRjgOTHvM7QTNFgJ2y7HEy+pWQ/TXunhXfMQI0QLAPnt4RPEir9VDqm2Shv8vlO7Ur5+aGUI/lqq+Io9UOkuVM8YWnEB6Bf9OACmk1MY+WPVveGbvpGECBy0xkUMj5guQ1TlqvaC6Q+9FSsdt6bx3XPTYEJhBN43kGCbG18b09dG9BflDlYQ8B9K4U6TpyLWZmoDeqYJ6zRctSmtg6erlfY27oxRrcrTGnK6OfEB/u9Pw1Oz8CemzBC3/SyNsQIDAQAB"
 ed2026._domainkey.test.example.  TXT   "v=DKIM1; k=ed25519; p=h6//u2wg4Rs3ZatRFRqMVv+HAU0hwSmu6zBGXTdIi6g="
+
+; evil.example: attacker-controlled domain with valid SPF and DKIM
+evil.example.                    TXT   "v=spf1 ip4:203.0.113.0/24 -all"
+s1._domainkey.evil.example.      TXT   "v=DKIM1; k=rsa; p=MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA+lBF89/3lPYb2gLGaDdeppr63HMOxmUY17MmoiIYc9MYeIne5ZRa+EL2UaQFkVtsl7fitmnDwrGaOFAxPSARuuWOWRjgOTHvM7QTNFgJ2y7HEy+pWQ/TXunhXfMQI0QLAPnt4RPEir9VDqm2Shv8vlO7Ur5+aGUI/lqq+Io9UOkuVM8YWnEB6Bf9OACmk1MY+WPVveGbvpGECBy0xkUMj5guQ1TlqvaC6Q+9FSsdt6bx3XPTYEJhBN43kGCbG18b09dG9BflDlYQ8B9K4U6TpyLWZmoDeqYJ6zRctSmtg6erlfY27oxRrcrTGnK6OfEB/u9Pw1Oz8CemzBC3/SyNsQIDAQAB"
+
+; none.example: DMARC monitoring only
+none.example.                    TXT   "v=spf1 ip4:192.0.2.0/24 ~all"
+_dmarc.none.example.             TXT   "v=DMARC1; p=none; rua=mailto:dmarc@none.example"
+
+; strict.example: strict alignment, mail sent from a subdomain
+_dmarc.strict.example.           TXT   "v=DMARC1; p=reject; adkim=s; aspf=s; rua=mailto:dmarc@strict.example"
+strict.example.                  TXT   "v=spf1 -all"
+mail.strict.example.             TXT   "v=spf1 ip4:192.0.2.0/24 -all"
+s2026._domainkey.mail.strict.example. TXT "v=DKIM1; k=rsa; p=MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA+lBF89/3lPYb2gLGaDdeppr63HMOxmUY17MmoiIYc9MYeIne5ZRa+EL2UaQFkVtsl7fitmnDwrGaOFAxPSARuuWOWRjgOTHvM7QTNFgJ2y7HEy+pWQ/TXunhXfMQI0QLAPnt4RPEir9VDqm2Shv8vlO7Ur5+aGUI/lqq+Io9UOkuVM8YWnEB6Bf9OACmk1MY+WPVveGbvpGECBy0xkUMj5guQ1TlqvaC6Q+9FSsdt6bx3XPTYEJhBN43kGCbG18b09dG9BflDlYQ8B9K4U6TpyLWZmoDeqYJ6zRctSmtg6erlfY27oxRrcrTGnK6OfEB/u9Pw1Oz8CemzBC3/SyNsQIDAQAB"
+
+; relaxed.example: relaxed alignment, mail sent from a subdomain
+_dmarc.relaxed.example.          TXT   "v=DMARC1; p=quarantine; rua=mailto:dmarc@relaxed.example"
+mail.relaxed.example.            TXT   "v=spf1 ip4:192.0.2.0/24 -all"
+s2026._domainkey.mail.relaxed.example. TXT "v=DKIM1; k=rsa; p=MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA+lBF89/3lPYb2gLGaDdeppr63HMOxmUY17MmoiIYc9MYeIne5ZRa+EL2UaQFkVtsl7fitmnDwrGaOFAxPSARuuWOWRjgOTHvM7QTNFgJ2y7HEy+pWQ/TXunhXfMQI0QLAPnt4RPEir9VDqm2Shv8vlO7Ur5+aGUI/lqq+Io9UOkuVM8YWnEB6Bf9OACmk1MY+WPVveGbvpGECBy0xkUMj5guQ1TlqvaC6Q+9FSsdt6bx3XPTYEJhBN43kGCbG18b09dG9BflDlYQ8B9K4U6TpyLWZmoDeqYJ6zRctSmtg6erlfY27oxRrcrTGnK6OfEB/u9Pw1Oz8CemzBC3/SyNsQIDAQAB"
+
+; lookups.example: SPF needs 11 DNS lookups
+lookups.example.                 TXT   "v=spf1 include:inc1.lookups.example include:inc2.lookups.example include:inc3.lookups.example include:inc4.lookups.example include:inc5.lookups.example include:inc6.lookups.example include:inc7.lookups.example include:inc8.lookups.example include:inc9.lookups.example include:inc10.lookups.example include:inc11.lookups.example ip4:192.0.2.0/24 -all"
+_dmarc.lookups.example.          TXT   "v=DMARC1; p=reject"
+inc1.lookups.example.            TXT   "v=spf1 ip4:198.51.100.1 -all"
+inc2.lookups.example.            TXT   "v=spf1 ip4:198.51.100.2 -all"
+inc3.lookups.example.            TXT   "v=spf1 ip4:198.51.100.3 -all"
+inc4.lookups.example.            TXT   "v=spf1 ip4:198.51.100.4 -all"
+inc5.lookups.example.            TXT   "v=spf1 ip4:198.51.100.5 -all"
+inc6.lookups.example.            TXT   "v=spf1 ip4:198.51.100.6 -all"
+inc7.lookups.example.            TXT   "v=spf1 ip4:198.51.100.7 -all"
+inc8.lookups.example.            TXT   "v=spf1 ip4:198.51.100.8 -all"
+inc9.lookups.example.            TXT   "v=spf1 ip4:198.51.100.9 -all"
+inc10.lookups.example.            TXT   "v=spf1 ip4:198.51.100.10 -all"
+inc11.lookups.example.            TXT   "v=spf1 ip4:198.51.100.11 -all"
+
+; loop.example: include loop
+loop.example.                    TXT   "v=spf1 include:a.loop.example -all"
+a.loop.example.                  TXT   "v=spf1 include:loop.example -all"
+_dmarc.loop.example.             TXT   "v=DMARC1; p=quarantine"
+
+; broken.example and garbled.example: DNS failures
+broken.example.                  TIMEOUT
+_dmarc.broken.example.           TIMEOUT
+garbled.example.                 MALFORMED
+_dmarc.garbled.example.          MALFORMED

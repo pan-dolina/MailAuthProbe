@@ -1,0 +1,18 @@
+Return-Path: <bounce@loop.example>
+Received: from mail.loop.example (mail.loop.example [192.0.2.10])
+	by mx.receiver.example (Postfix) with ESMTPS id CC9DAEBFC0
+	for <bob@receiver.example>; Mon, 14 Sep 2026 10:00:00 +0000
+From: Loop <a@loop.example>
+To: Bob <bob@receiver.example>
+Subject: Loop
+Date: Mon, 14 Sep 2026 10:00:00 +0000
+Message-ID: <loop-1@loop.example>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+
+Hello Bob,
+
+the quarterly report is ready.
+
+-- 
+Alice

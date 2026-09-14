@@ -1,0 +1,81 @@
+MailAuthProbe message: testdata/messages/valid.eml
+
+Headers
+  From:              Alice <alice@test.example>
+  Return-Path:       <bounces@test.example>
+  To:                Bob <bob@receiver.example>
+  Subject:           Quarterly report
+  Date:              Mon, 14 Sep 2026 10:00:00 +0000
+  Message-ID:        <valid-1@test.example>
+  Content-Type:      text/plain
+
+Verdicts
+  SPF:               pass (test.example) inputs inferred
+  DKIM:              pass (1 of 1 signatures valid)
+  DMARC:             pass (test.example, policy reject)
+
+Transport path (origin first)
+  #1  mail.test.example [192.0.2.10] → mx.receiver.example  2026-09-14T10:00:00Z
+       with ESMTPS, TLS (inferred), helo inferred, rdns mail.test.example (inferred)
+
+DKIM signatures
+  #1 pass d=test.example s=s2026 rsa-sha256 relaxed/relaxed
+     valid rsa-sha256 signature by test.example (selector s2026)
+     h=From:To:Subject:Date:Message-ID
+
+SPF
+  client IP:         192.0.2.10 (received, inferred)
+  HELO:              mail.test.example (received, inferred)
+  MAIL FROM:         bounces@test.example (return-path, inferred)
+  test.example: pass via "ip4:192.0.2.0/24"
+     test.example  record: v=spf1 ip4:192.0.2.0/24 ip6:2001:db8::/48 -all
+     test.example ip4:192.0.2.0/24 matched: pass
+  mail.test.example: none
+     mail.test.example  no SPF record: none
+
+Authentication-Results (as received)
+  #1 mx.receiver.example: dkim=pass spf=pass dmarc=pass
+
+MIME structure
+  text/plain (60 bytes)
+
+Findings
+  INFO     MAIL-SPF-035  SPF inputs inferred from message headers
+           SPF inputs were reconstructed from message headers, which the sender can forge above the
+           receiving organization's boundary. Confirm them with --source-ip, --helo and --mail-from
+           from the receiving MTA's logs.
+           │ HELO mail.test.example (from received)
+           │ MAIL FROM bounces@test.example (from return-path)
+           │ client IP 192.0.2.10 (from received)
+           https://www.rfc-editor.org/rfc/rfc7208#section-9.1
+  PASS     MAIL-AR-003  Authentication-Results agree with independent verification
+           Authentication-Results header #1 (mx.receiver.example) matches independent verification.
+           │ spf=pass
+           │ dmarc=pass
+           │ dkim d=test.example=pass
+  PASS     MAIL-DKIM-020  DKIM signature valid
+           s2026._domainkey.test.example: DKIM signature #1: valid rsa-sha256 signature by
+           test.example (selector s2026).
+           │ d=test.example s=s2026 a=rsa-sha256 c=relaxed/relaxed
+           │ h=From:To:Subject:Date:Message-ID
+           https://www.rfc-editor.org/rfc/rfc6376#section-6
+  PASS     MAIL-DMARC-030  DMARC pass
+           DMARC pass for test.example via DKIM (d=test.example) and SPF (test.example).
+           │ header.from=test.example
+           │ policy_domain=test.example
+           │ p=reject sp=reject pct=100 adkim=r aspf=r
+           │ spf=pass domain=test.example aligned=true
+           │ dkim=pass d=test.example aligned=true
+           https://www.rfc-editor.org/rfc/rfc7489#section-4.2
+  PASS     MAIL-SPF-030  SPF pass
+           SPF for MAIL FROM test.example from 192.0.2.10: pass. 192.0.2.10 matched
+           "ip4:192.0.2.0/24" in the SPF record of test.example.
+           │ client-ip=192.0.2.10
+           │ identity=mailfrom
+           │ domain=test.example
+           │ matched=ip4:192.0.2.0/24 in test.example
+           https://www.rfc-editor.org/rfc/rfc7208#section-2.6.3
+
+Summary
+  0 critical, 0 high, 0 medium, 0 low, 1 info, 4 pass
+  4 DNS queries

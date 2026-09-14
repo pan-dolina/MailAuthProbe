@@ -1,0 +1,18 @@
+Return-Path: <bounces@test.example>
+Received: from mail.test.example (mail.test.example [192.0.2.10])
+	by mx.receiver.example (Postfix) with ESMTPS id 9F6A7B8C9D
+	for <bob@receiver.example>; Mon, 14 Sep 2026 10:00:00 +0000
+From: Alice <alice@test.example>
+To: Bob <bob@receiver.example>
+Subject: SPF only
+Date: Mon, 14 Sep 2026 10:00:00 +0000
+Message-ID: <spfpass-1@test.example>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+
+Hello Bob,
+
+the quarterly report is ready.
+
+-- 
+Alice

@@ -1,0 +1,18 @@
+Return-Path: <bounce@lookups.example>
+Received: from mail.lookups.example (mail.lookups.example [192.0.2.10])
+	by mx.receiver.example (Postfix) with ESMTPS id BB8C9DAEBF
+	for <bob@receiver.example>; Mon, 14 Sep 2026 10:00:00 +0000
+From: Newsletter <news@lookups.example>
+To: Bob <bob@receiver.example>
+Subject: Monthly news
+Date: Mon, 14 Sep 2026 10:00:00 +0000
+Message-ID: <lookups-1@lookups.example>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+
+Hello Bob,
+
+the quarterly report is ready.
+
+-- 
+Alice

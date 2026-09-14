@@ -1,0 +1,27 @@
+Return-Path: <bounce@mail.strict.example>
+Received: from mail.strict.example (mail.strict.example [192.0.2.10])
+	by mx.receiver.example (Postfix) with ESMTPS id FFC0D1E2F3
+	for <bob@receiver.example>; Mon, 14 Sep 2026 10:00:00 +0000
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=mail.strict.example; s=s2026;
+	t=1789380000; h=From:To:Subject:Date:Message-ID;
+	bh=ea9f2yJXZI4+ZYxo5GswMrT1DAN0SKiiRfJMAz50vps=;
+	b=5QxGtIjxt0T5P7WgzHT9jN2Innz4Ff0+nUUEVzXrbt//cc1NFxCzIEZo9FIu4lSK
+	 vi/2BPhKCROfvtJWorzdVduquI3L09ljIFT7zW6a8QrqVLdz6FBW1oDrpNum9TZh
+	 M4mbT7p60PHdn7XimEyTOo5EsYWNcADw22Acg1INjsHfgUp/vnkC7Cpn8XPC+IDy
+	 JIuIaUXu57YcuMiReq71qq9cJZomTyH7e7o7yXUUovMkU0cjIMdmZ2GP6OBVi3Ds
+	 /LtJERzQoWFQRLCUnPqlg87ITjvde+iGqTPiokFZ4u4W0hf7YWcUUWMOXgTuvXbk
+	 LmqJW7Esk/xCNanWxsMZxQ==
+From: Alerts <alerts@strict.example>
+To: Bob <bob@receiver.example>
+Subject: Alert
+Date: Mon, 14 Sep 2026 10:00:00 +0000
+Message-ID: <strict-1@strict.example>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+
+Hello Bob,
+
+the quarterly report is ready.
+
+-- 
+Alice

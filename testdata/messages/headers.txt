@@ -1,0 +1,20 @@
+Return-Path: <bounces@test.example>
+Received: from mail.test.example (mail.test.example [192.0.2.10])
+	by mx.receiver.example (Postfix) with ESMTPS id 4A1B2C3D4E
+	for <bob@receiver.example>; Mon, 14 Sep 2026 10:00:00 +0000
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=test.example; s=s2026;
+	t=1789380000; h=From:To:Subject:Date:Message-ID;
+	bh=ea9f2yJXZI4+ZYxo5GswMrT1DAN0SKiiRfJMAz50vps=;
+	b=iOfW8eb7QOW+6N7WG6aUXUAAYsoASghIgjhautilFheKB6xaRE7SAsy/xzFS0AOg
+	 JZffW7cvqmFj2tFcTeV89JFBajAezYBQhqLn6YVJdY5A74B9GDMvI/eNIAVK0QLK
+	 G2Z7+rkB+SpS8N8wap/UxlSZlmV7+stxb3YR1uI76uEUG47wITb5uATLG4GlpuU7
+	 FzBg9n5imkyVJjGAmEOAvqC1EJhPSSmxDcxl1Dg+BpsDrMzc+XTKAVjNV5Bt8BE7
+	 DhCWBDh8gPiRvfekpFFpUKg6IZND1y0Dv3kNNaimaq+ItPRSpNEt8og4QeQmKl3h
+	 hLv9OA0iVugDDiUsL3dLZQ==
+From: Alice <alice@test.example>
+To: Bob <bob@receiver.example>
+Subject: Quarterly report
+Date: Mon, 14 Sep 2026 10:00:00 +0000
+Message-ID: <valid-1@test.example>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8

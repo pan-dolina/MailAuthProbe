@@ -1,0 +1,10 @@
+ orphan continuation line
+Received: from mail.test.example (mail.test.example [192.0.2.10]) by mx.receiver.example with ESMTPS id 32F3041526; Mon, 14 Sep 2026 10:00:00 +0000
+From: Alice <alice@test.example>
+From: Security Team <security@bank.example>
+Subject : Account verification
+Date: Mon, 14 Sep 2026 10:00:00 +0000
+This line is not a header: but looks like one
+Message-ID: <hidden@test.example>
+
+body

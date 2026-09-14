@@ -1,0 +1,504 @@
+{
+  "schema_version": "1",
+  "tool": {
+    "name": "mailauthprobe",
+    "version": "VERSION"
+  },
+  "kind": "message",
+  "target": "testdata/messages/spf-lookup-limit.eml",
+  "summary": {
+    "highest_severity": "high",
+    "counts": {
+      "critical": 0,
+      "high": 2,
+      "info": 2,
+      "low": 0,
+      "medium": 1,
+      "pass": 0
+    },
+    "dns_queries": 13
+  },
+  "message": {
+    "size": 533,
+    "header_size": 473,
+    "body_available": true,
+    "headers": {
+      "from": [
+        "Newsletter <news@lookups.example>"
+      ],
+      "return_path": [
+        "<bounce@lookups.example>"
+      ],
+      "to": [
+        "Bob <bob@receiver.example>"
+      ],
+      "subject": [
+        "Monthly news"
+      ],
+      "message_id": [
+        "<lookups-1@lookups.example>"
+      ],
+      "date": [
+        "Mon, 14 Sep 2026 10:00:00 +0000"
+      ],
+      "mime_version": [
+        "1.0"
+      ],
+      "content_type": [
+        "text/plain; charset=utf-8"
+      ]
+    },
+    "mime": {
+      "content_type": "text/plain",
+      "charset": "utf-8",
+      "size": 60,
+      "depth": 0
+    },
+    "received": {
+      "hops": [
+        {
+          "index": 1,
+          "raw": "from mail.lookups.example (mail.lookups.example [192.0.2.10])\tby mx.receiver.example (Postfix) with ESMTPS id BB8C9DAEBF\tfor <bob@receiver.example>; Mon, 14 Sep 2026 10:00:00 +0000",
+          "from_host": {
+            "value": "mail.lookups.example",
+            "source": "stated"
+          },
+          "helo": {
+            "value": "mail.lookups.example",
+            "source": "inferred"
+          },
+          "reverse_dns": {
+            "value": "mail.lookups.example",
+            "source": "inferred"
+          },
+          "ip": {
+            "value": "192.0.2.10",
+            "source": "stated"
+          },
+          "by": {
+            "value": "mx.receiver.example",
+            "source": "stated"
+          },
+          "protocol": "ESMTPS",
+          "id": "BB8C9DAEBF",
+          "for": "bob@receiver.example",
+          "timestamp": "2026-09-14T10:00:00Z",
+          "tls": {
+            "used": true,
+            "source": "inferred"
+          }
+        }
+      ]
+    },
+    "spf": {
+      "inputs": {
+        "ip": {
+          "value": "192.0.2.10",
+          "source": "received",
+          "inferred": true
+        },
+        "helo": {
+          "value": "mail.lookups.example",
+          "source": "received",
+          "inferred": true
+        },
+        "mail_from": {
+          "value": "bounce@lookups.example",
+          "source": "return-path",
+          "inferred": true
+        }
+      },
+      "mail_from": {
+        "result": "permerror",
+        "reason": "more than 10 DNS-querying terms (limit exceeded at \"include:inc11.lookups.example\")",
+        "domain": "lookups.example",
+        "dns_lookups": 11,
+        "void_lookups": 0,
+        "trace": [
+          {
+            "depth": 0,
+            "domain": "lookups.example",
+            "note": "record: v=spf1 include:inc1.lookups.example include:inc2.lookups.example include:inc3.lookups.example include:inc4.lookups.example include:inc5.lookups.example include:inc6.lookups.example include:inc7.lookups.example include:inc8.lookups.example include:inc9.lookups.example include:inc10.lookups.example include:inc11.lookups.example ip4:192.0.2.0/24 -all"
+          },
+          {
+            "depth": 1,
+            "domain": "inc1.lookups.example",
+            "note": "record: v=spf1 ip4:198.51.100.1 -all"
+          },
+          {
+            "depth": 1,
+            "domain": "inc1.lookups.example",
+            "term": "ip4:198.51.100.1",
+            "note": "no match"
+          },
+          {
+            "depth": 1,
+            "domain": "inc1.lookups.example",
+            "term": "-all",
+            "note": "matched: fail"
+          },
+          {
+            "depth": 0,
+            "domain": "lookups.example",
+            "term": "include:inc1.lookups.example",
+            "note": "no match"
+          },
+          {
+            "depth": 1,
+            "domain": "inc2.lookups.example",
+            "note": "record: v=spf1 ip4:198.51.100.2 -all"
+          },
+          {
+            "depth": 1,
+            "domain": "inc2.lookups.example",
+            "term": "ip4:198.51.100.2",
+            "note": "no match"
+          },
+          {
+            "depth": 1,
+            "domain": "inc2.lookups.example",
+            "term": "-all",
+            "note": "matched: fail"
+          },
+          {
+            "depth": 0,
+            "domain": "lookups.example",
+            "term": "include:inc2.lookups.example",
+            "note": "no match"
+          },
+          {
+            "depth": 1,
+            "domain": "inc3.lookups.example",
+            "note": "record: v=spf1 ip4:198.51.100.3 -all"
+          },
+          {
+            "depth": 1,
+            "domain": "inc3.lookups.example",
+            "term": "ip4:198.51.100.3",
+            "note": "no match"
+          },
+          {
+            "depth": 1,
+            "domain": "inc3.lookups.example",
+            "term": "-all",
+            "note": "matched: fail"
+          },
+          {
+            "depth": 0,
+            "domain": "lookups.example",
+            "term": "include:inc3.lookups.example",
+            "note": "no match"
+          },
+          {
+            "depth": 1,
+            "domain": "inc4.lookups.example",
+            "note": "record: v=spf1 ip4:198.51.100.4 -all"
+          },
+          {
+            "depth": 1,
+            "domain": "inc4.lookups.example",
+            "term": "ip4:198.51.100.4",
+            "note": "no match"
+          },
+          {
+            "depth": 1,
+            "domain": "inc4.lookups.example",
+            "term": "-all",
+            "note": "matched: fail"
+          },
+          {
+            "depth": 0,
+            "domain": "lookups.example",
+            "term": "include:inc4.lookups.example",
+            "note": "no match"
+          },
+          {
+            "depth": 1,
+            "domain": "inc5.lookups.example",
+            "note": "record: v=spf1 ip4:198.51.100.5 -all"
+          },
+          {
+            "depth": 1,
+            "domain": "inc5.lookups.example",
+            "term": "ip4:198.51.100.5",
+            "note": "no match"
+          },
+          {
+            "depth": 1,
+            "domain": "inc5.lookups.example",
+            "term": "-all",
+            "note": "matched: fail"
+          },
+          {
+            "depth": 0,
+            "domain": "lookups.example",
+            "term": "include:inc5.lookups.example",
+            "note": "no match"
+          },
+          {
+            "depth": 1,
+            "domain": "inc6.lookups.example",
+            "note": "record: v=spf1 ip4:198.51.100.6 -all"
+          },
+          {
+            "depth": 1,
+            "domain": "inc6.lookups.example",
+            "term": "ip4:198.51.100.6",
+            "note": "no match"
+          },
+          {
+            "depth": 1,
+            "domain": "inc6.lookups.example",
+            "term": "-all",
+            "note": "matched: fail"
+          },
+          {
+            "depth": 0,
+            "domain": "lookups.example",
+            "term": "include:inc6.lookups.example",
+            "note": "no match"
+          },
+          {
+            "depth": 1,
+            "domain": "inc7.lookups.example",
+            "note": "record: v=spf1 ip4:198.51.100.7 -all"
+          },
+          {
+            "depth": 1,
+            "domain": "inc7.lookups.example",
+            "term": "ip4:198.51.100.7",
+            "note": "no match"
+          },
+          {
+            "depth": 1,
+            "domain": "inc7.lookups.example",
+            "term": "-all",
+            "note": "matched: fail"
+          },
+          {
+            "depth": 0,
+            "domain": "lookups.example",
+            "term": "include:inc7.lookups.example",
+            "note": "no match"
+          },
+          {
+            "depth": 1,
+            "domain": "inc8.lookups.example",
+            "note": "record: v=spf1 ip4:198.51.100.8 -all"
+          },
+          {
+            "depth": 1,
+            "domain": "inc8.lookups.example",
+            "term": "ip4:198.51.100.8",
+            "note": "no match"
+          },
+          {
+            "depth": 1,
+            "domain": "inc8.lookups.example",
+            "term": "-all",
+            "note": "matched: fail"
+          },
+          {
+            "depth": 0,
+            "domain": "lookups.example",
+            "term": "include:inc8.lookups.example",
+            "note": "no match"
+          },
+          {
+            "depth": 1,
+            "domain": "inc9.lookups.example",
+            "note": "record: v=spf1 ip4:198.51.100.9 -all"
+          },
+          {
+            "depth": 1,
+            "domain": "inc9.lookups.example",
+            "term": "ip4:198.51.100.9",
+            "note": "no match"
+          },
+          {
+            "depth": 1,
+            "domain": "inc9.lookups.example",
+            "term": "-all",
+            "note": "matched: fail"
+          },
+          {
+            "depth": 0,
+            "domain": "lookups.example",
+            "term": "include:inc9.lookups.example",
+            "note": "no match"
+          },
+          {
+            "depth": 1,
+            "domain": "inc10.lookups.example",
+            "note": "record: v=spf1 ip4:198.51.100.10 -all"
+          },
+          {
+            "depth": 1,
+            "domain": "inc10.lookups.example",
+            "term": "ip4:198.51.100.10",
+            "note": "no match"
+          },
+          {
+            "depth": 1,
+            "domain": "inc10.lookups.example",
+            "term": "-all",
+            "note": "matched: fail"
+          },
+          {
+            "depth": 0,
+            "domain": "lookups.example",
+            "term": "include:inc10.lookups.example",
+            "note": "no match"
+          },
+          {
+            "depth": 0,
+            "domain": "lookups.example",
+            "term": "include:inc11.lookups.example",
+            "note": "permerror: more than 10 DNS-querying terms (limit exceeded at \"include:inc11.lookups.example\")"
+          }
+        ],
+        "lookup_limit_exceeded": true
+      },
+      "helo": {
+        "result": "none",
+        "reason": "no SPF record published for mail.lookups.example",
+        "domain": "mail.lookups.example",
+        "dns_lookups": 0,
+        "void_lookups": 0,
+        "trace": [
+          {
+            "depth": 0,
+            "domain": "mail.lookups.example",
+            "note": "no SPF record: none"
+          }
+        ]
+      },
+      "result": "permerror",
+      "domain": "lookups.example"
+    },
+    "dkim": [],
+    "dmarc": {
+      "result": "fail",
+      "reason": "no authenticated identifier is aligned with lookups.example",
+      "from_domain": "lookups.example",
+      "discovery": {
+        "domain": "lookups.example",
+        "organizational_domain": "lookups.example",
+        "policy_domain": "lookups.example",
+        "records": [
+          "v=DMARC1; p=reject"
+        ],
+        "record": {
+          "raw": "v=DMARC1; p=reject",
+          "tags": [
+            {
+              "name": "v",
+              "value": "DMARC1"
+            },
+            {
+              "name": "p",
+              "value": "reject"
+            }
+          ],
+          "p": "reject",
+          "pct": 100,
+          "adkim": "r",
+          "aspf": "r",
+          "fo": [
+            "0"
+          ],
+          "rf": "afrf",
+          "ri": 86400
+        }
+      },
+      "policy": "reject",
+      "pct": 100,
+      "disposition": "reject",
+      "spf_aligned": false,
+      "dkim_aligned": false,
+      "adkim": "r",
+      "aspf": "r"
+    },
+    "authentication_results": []
+  },
+  "findings": [
+    {
+      "id": "MAIL-DMARC-031",
+      "severity": "high",
+      "category": "security-weakness",
+      "component": "dmarc",
+      "title": "DMARC fail",
+      "subject": "lookups.example",
+      "description": "DMARC fail for lookups.example: neither SPF nor DKIM produced an aligned pass. The domain requests p=reject.",
+      "evidence": [
+        "header.from=lookups.example",
+        "policy_domain=lookups.example",
+        "p=reject sp=reject pct=100 adkim=r aspf=r",
+        "spf=permerror domain=lookups.example aligned=false"
+      ],
+      "recommendation": "The From domain could not be authenticated. Unless the message passed through a forwarder or mailing list that broke authentication, treat it as spoofed.",
+      "references": [
+        "https://www.rfc-editor.org/rfc/rfc7489#section-6.6.2"
+      ]
+    },
+    {
+      "id": "MAIL-SPF-034",
+      "severity": "high",
+      "category": "standard-violation",
+      "component": "spf",
+      "title": "SPF evaluation error",
+      "subject": "lookups.example",
+      "description": "SPF for MAIL FROM lookups.example from 192.0.2.10: permerror. more than 10 DNS-querying terms (limit exceeded at \"include:inc11.lookups.example\").",
+      "evidence": [
+        "client-ip=192.0.2.10",
+        "identity=mailfrom",
+        "domain=lookups.example"
+      ],
+      "recommendation": "SPF returned temperror or permerror; receivers may reject or ignore SPF for this domain. See the reason for details.",
+      "references": [
+        "https://www.rfc-editor.org/rfc/rfc7208#section-2.6.6",
+        "https://www.rfc-editor.org/rfc/rfc7208#section-2.6.7"
+      ]
+    },
+    {
+      "id": "MAIL-DKIM-025",
+      "severity": "medium",
+      "category": "security-weakness",
+      "component": "dkim",
+      "title": "Message is not DKIM-signed",
+      "description": "The message has no DKIM-Signature. Its content and From domain are not cryptographically authenticated.",
+      "recommendation": "Without DKIM, DMARC can only pass through SPF, which breaks on forwarding.",
+      "references": [
+        "https://www.rfc-editor.org/rfc/rfc6376"
+      ]
+    },
+    {
+      "id": "MAIL-AR-005",
+      "severity": "info",
+      "category": "informational",
+      "component": "authentication-results",
+      "title": "No Authentication-Results headers",
+      "description": "The message carries no Authentication-Results headers to compare with.",
+      "references": [
+        "https://www.rfc-editor.org/rfc/rfc8601"
+      ]
+    },
+    {
+      "id": "MAIL-SPF-035",
+      "severity": "info",
+      "category": "informational",
+      "component": "spf",
+      "title": "SPF inputs inferred from message headers",
+      "description": "SPF inputs were reconstructed from message headers, which the sender can forge above the receiving organization's boundary. Confirm them with --source-ip, --helo and --mail-from from the receiving MTA's logs.",
+      "evidence": [
+        "HELO mail.lookups.example (from received)",
+        "MAIL FROM bounce@lookups.example (from return-path)",
+        "client IP 192.0.2.10 (from received)"
+      ],
+      "references": [
+        "https://www.rfc-editor.org/rfc/rfc7208#section-9.1"
+      ]
+    }
+  ],
+  "errors": []
+}

@@ -1,0 +1,367 @@
+{
+  "schema_version": "1",
+  "tool": {
+    "name": "mailauthprobe",
+    "version": "VERSION"
+  },
+  "kind": "message",
+  "target": "testdata/messages/dmarc-strict-alignment-fail.eml",
+  "summary": {
+    "highest_severity": "high",
+    "counts": {
+      "critical": 0,
+      "high": 1,
+      "info": 2,
+      "low": 0,
+      "medium": 2,
+      "pass": 2
+    },
+    "dns_queries": 3
+  },
+  "message": {
+    "size": 1081,
+    "header_size": 1021,
+    "body_available": true,
+    "headers": {
+      "from": [
+        "Alerts <alerts@strict.example>"
+      ],
+      "return_path": [
+        "<bounce@mail.strict.example>"
+      ],
+      "to": [
+        "Bob <bob@receiver.example>"
+      ],
+      "subject": [
+        "Alert"
+      ],
+      "message_id": [
+        "<strict-1@strict.example>"
+      ],
+      "date": [
+        "Mon, 14 Sep 2026 10:00:00 +0000"
+      ],
+      "mime_version": [
+        "1.0"
+      ],
+      "content_type": [
+        "text/plain; charset=utf-8"
+      ]
+    },
+    "mime": {
+      "content_type": "text/plain",
+      "charset": "utf-8",
+      "size": 60,
+      "depth": 0
+    },
+    "received": {
+      "hops": [
+        {
+          "index": 1,
+          "raw": "from mail.strict.example (mail.strict.example [192.0.2.10])\tby mx.receiver.example (Postfix) with ESMTPS id FFC0D1E2F3\tfor <bob@receiver.example>; Mon, 14 Sep 2026 10:00:00 +0000",
+          "from_host": {
+            "value": "mail.strict.example",
+            "source": "stated"
+          },
+          "helo": {
+            "value": "mail.strict.example",
+            "source": "inferred"
+          },
+          "reverse_dns": {
+            "value": "mail.strict.example",
+            "source": "inferred"
+          },
+          "ip": {
+            "value": "192.0.2.10",
+            "source": "stated"
+          },
+          "by": {
+            "value": "mx.receiver.example",
+            "source": "stated"
+          },
+          "protocol": "ESMTPS",
+          "id": "FFC0D1E2F3",
+          "for": "bob@receiver.example",
+          "timestamp": "2026-09-14T10:00:00Z",
+          "tls": {
+            "used": true,
+            "source": "inferred"
+          }
+        }
+      ]
+    },
+    "spf": {
+      "inputs": {
+        "ip": {
+          "value": "192.0.2.10",
+          "source": "received",
+          "inferred": true
+        },
+        "helo": {
+          "value": "mail.strict.example",
+          "source": "received",
+          "inferred": true
+        },
+        "mail_from": {
+          "value": "bounce@mail.strict.example",
+          "source": "return-path",
+          "inferred": true
+        }
+      },
+      "mail_from": {
+        "result": "pass",
+        "reason": "192.0.2.10 matched \"ip4:192.0.2.0/24\" in the SPF record of mail.strict.example",
+        "domain": "mail.strict.example",
+        "matched_term": "ip4:192.0.2.0/24",
+        "matched_domain": "mail.strict.example",
+        "dns_lookups": 0,
+        "void_lookups": 0,
+        "trace": [
+          {
+            "depth": 0,
+            "domain": "mail.strict.example",
+            "note": "record: v=spf1 ip4:192.0.2.0/24 -all"
+          },
+          {
+            "depth": 0,
+            "domain": "mail.strict.example",
+            "term": "ip4:192.0.2.0/24",
+            "note": "matched: pass"
+          }
+        ]
+      },
+      "helo": {
+        "result": "pass",
+        "reason": "192.0.2.10 matched \"ip4:192.0.2.0/24\" in the SPF record of mail.strict.example",
+        "domain": "mail.strict.example",
+        "matched_term": "ip4:192.0.2.0/24",
+        "matched_domain": "mail.strict.example",
+        "dns_lookups": 0,
+        "void_lookups": 0,
+        "trace": [
+          {
+            "depth": 0,
+            "domain": "mail.strict.example",
+            "note": "record: v=spf1 ip4:192.0.2.0/24 -all"
+          },
+          {
+            "depth": 0,
+            "domain": "mail.strict.example",
+            "term": "ip4:192.0.2.0/24",
+            "note": "matched: pass"
+          }
+        ]
+      },
+      "result": "pass",
+      "domain": "mail.strict.example"
+    },
+    "dkim": [
+      {
+        "index": 1,
+        "result": "pass",
+        "reason": "valid rsa-sha256 signature by mail.strict.example (selector s2026)",
+        "domain": "mail.strict.example",
+        "selector": "s2026",
+        "algorithm": "rsa-sha256",
+        "auid": "@mail.strict.example",
+        "canonicalization": "relaxed/relaxed",
+        "signed_headers": [
+          "From",
+          "To",
+          "Subject",
+          "Date",
+          "Message-ID"
+        ],
+        "canonical_body_length": 59,
+        "timestamp": "2026-09-14T10:00:00Z",
+        "body_hash_ok": true,
+        "signature_ok": true,
+        "key_name": "s2026._domainkey.mail.strict.example",
+        "key": {
+          "raw": "v=DKIM1; k=rsa; p=MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA+lBF89/3lPYb2gLGaDdeppr63HMOxmUY17MmoiIYc9MYeIne5ZRa+EL2UaQFkVtsl7fitmnDwrGaOFAxPSARuuWOWRjgOTHvM7QTNFgJ2y7HEy+pWQ/TXunhXfMQI0QLAPnt4RPEir9VDqm2Shv8vlO7Ur5+aGUI/lqq+Io9UOkuVM8YWnEB6Bf9OACmk1MY+WPVveGbvpGECBy0xkUMj5guQ1TlqvaC6Q+9FSsdt6bx3XPTYEJhBN43kGCbG18b09dG9BflDlYQ8B9K4U6TpyLWZmoDeqYJ6zRctSmtg6erlfY27oxRrcrTGnK6OfEB/u9Pw1Oz8CemzBC3/SyNsQIDAQAB",
+          "version": "VERSION",
+          "key_type": "rsa",
+          "services": [
+            "*"
+          ],
+          "revoked": false,
+          "key_bits": 2048
+        },
+        "header_b": "5QxGtIjxt0T5"
+      }
+    ],
+    "dmarc": {
+      "result": "fail",
+      "reason": "no authenticated identifier is aligned with strict.example",
+      "from_domain": "strict.example",
+      "discovery": {
+        "domain": "strict.example",
+        "organizational_domain": "strict.example",
+        "policy_domain": "strict.example",
+        "records": [
+          "v=DMARC1; p=reject; adkim=s; aspf=s; rua=mailto:dmarc@strict.example"
+        ],
+        "record": {
+          "raw": "v=DMARC1; p=reject; adkim=s; aspf=s; rua=mailto:dmarc@strict.example",
+          "tags": [
+            {
+              "name": "v",
+              "value": "DMARC1"
+            },
+            {
+              "name": "p",
+              "value": "reject"
+            },
+            {
+              "name": "adkim",
+              "value": "s"
+            },
+            {
+              "name": "aspf",
+              "value": "s"
+            },
+            {
+              "name": "rua",
+              "value": "mailto:dmarc@strict.example"
+            }
+          ],
+          "p": "reject",
+          "pct": 100,
+          "adkim": "s",
+          "aspf": "s",
+          "rua": [
+            {
+              "uri": "mailto:dmarc@strict.example",
+              "scheme": "mailto",
+              "address": "dmarc@strict.example",
+              "domain": "strict.example"
+            }
+          ],
+          "fo": [
+            "0"
+          ],
+          "rf": "afrf",
+          "ri": 86400
+        }
+      },
+      "policy": "reject",
+      "pct": 100,
+      "disposition": "reject",
+      "spf_aligned": false,
+      "dkim_aligned": false,
+      "adkim": "s",
+      "aspf": "s"
+    },
+    "authentication_results": []
+  },
+  "findings": [
+    {
+      "id": "MAIL-DMARC-031",
+      "severity": "high",
+      "category": "security-weakness",
+      "component": "dmarc",
+      "title": "DMARC fail",
+      "subject": "strict.example",
+      "description": "DMARC fail for strict.example: neither SPF nor DKIM produced an aligned pass. The domain requests p=reject.",
+      "evidence": [
+        "header.from=strict.example",
+        "policy_domain=strict.example",
+        "p=reject sp=reject pct=100 adkim=s aspf=s",
+        "spf=pass domain=mail.strict.example aligned=false",
+        "dkim=pass d=mail.strict.example aligned=false"
+      ],
+      "recommendation": "The From domain could not be authenticated. Unless the message passed through a forwarder or mailing list that broke authentication, treat it as spoofed.",
+      "references": [
+        "https://www.rfc-editor.org/rfc/rfc7489#section-6.6.2"
+      ]
+    },
+    {
+      "id": "MAIL-DMARC-035",
+      "severity": "medium",
+      "category": "informational",
+      "component": "dmarc",
+      "title": "Strict alignment prevented a DMARC pass",
+      "subject": "strict.example",
+      "description": "DKIM passed for d=mail.strict.example, which is in the same organization as strict.example, but adkim=s requires an exact match.",
+      "recommendation": "An authenticated identifier from the same organization failed strict alignment. If the domain owner intends subdomains to send, relaxed alignment (adkim=r / aspf=r) would pass.",
+      "references": [
+        "https://www.rfc-editor.org/rfc/rfc7489#section-3.1"
+      ]
+    },
+    {
+      "id": "MAIL-DMARC-035",
+      "severity": "medium",
+      "category": "informational",
+      "component": "dmarc",
+      "title": "Strict alignment prevented a DMARC pass",
+      "subject": "strict.example",
+      "description": "SPF passed for mail.strict.example, which is in the same organization as strict.example, but aspf=s requires an exact match.",
+      "recommendation": "An authenticated identifier from the same organization failed strict alignment. If the domain owner intends subdomains to send, relaxed alignment (adkim=r / aspf=r) would pass.",
+      "references": [
+        "https://www.rfc-editor.org/rfc/rfc7489#section-3.1"
+      ]
+    },
+    {
+      "id": "MAIL-AR-005",
+      "severity": "info",
+      "category": "informational",
+      "component": "authentication-results",
+      "title": "No Authentication-Results headers",
+      "description": "The message carries no Authentication-Results headers to compare with.",
+      "references": [
+        "https://www.rfc-editor.org/rfc/rfc8601"
+      ]
+    },
+    {
+      "id": "MAIL-SPF-035",
+      "severity": "info",
+      "category": "informational",
+      "component": "spf",
+      "title": "SPF inputs inferred from message headers",
+      "description": "SPF inputs were reconstructed from message headers, which the sender can forge above the receiving organization's boundary. Confirm them with --source-ip, --helo and --mail-from from the receiving MTA's logs.",
+      "evidence": [
+        "HELO mail.strict.example (from received)",
+        "MAIL FROM bounce@mail.strict.example (from return-path)",
+        "client IP 192.0.2.10 (from received)"
+      ],
+      "references": [
+        "https://www.rfc-editor.org/rfc/rfc7208#section-9.1"
+      ]
+    },
+    {
+      "id": "MAIL-DKIM-020",
+      "severity": "pass",
+      "category": "informational",
+      "component": "dkim",
+      "title": "DKIM signature valid",
+      "subject": "s2026._domainkey.mail.strict.example",
+      "description": "DKIM signature #1: valid rsa-sha256 signature by mail.strict.example (selector s2026).",
+      "evidence": [
+        "d=mail.strict.example s=s2026 a=rsa-sha256 c=relaxed/relaxed",
+        "h=From:To:Subject:Date:Message-ID"
+      ],
+      "references": [
+        "https://www.rfc-editor.org/rfc/rfc6376#section-6"
+      ]
+    },
+    {
+      "id": "MAIL-SPF-030",
+      "severity": "pass",
+      "category": "informational",
+      "component": "spf",
+      "title": "SPF pass",
+      "subject": "mail.strict.example",
+      "description": "SPF for MAIL FROM mail.strict.example from 192.0.2.10: pass. 192.0.2.10 matched \"ip4:192.0.2.0/24\" in the SPF record of mail.strict.example.",
+      "evidence": [
+        "client-ip=192.0.2.10",
+        "identity=mailfrom",
+        "domain=mail.strict.example",
+        "matched=ip4:192.0.2.0/24 in mail.strict.example"
+      ],
+      "references": [
+        "https://www.rfc-editor.org/rfc/rfc7208#section-2.6.3"
+      ]
+    }
+  ],
+  "errors": []
+}

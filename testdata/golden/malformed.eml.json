@@ -1,0 +1,305 @@
+{
+  "schema_version": "1",
+  "tool": {
+    "name": "mailauthprobe",
+    "version": "VERSION"
+  },
+  "kind": "message",
+  "target": "testdata/messages/malformed.eml",
+  "summary": {
+    "highest_severity": "high",
+    "counts": {
+      "critical": 0,
+      "high": 1,
+      "info": 3,
+      "low": 1,
+      "medium": 2,
+      "pass": 0
+    },
+    "dns_queries": 2
+  },
+  "message": {
+    "size": 674,
+    "header_size": 424,
+    "body_available": true,
+    "headers": {
+      "from": [
+        "Alice <alice@test.example>"
+      ],
+      "to": [
+        "bob@receiver.example"
+      ],
+      "subject": [
+        "Malformed MIME"
+      ],
+      "message_id": [
+        "<malformed-1@test.example>"
+      ],
+      "date": [
+        "Mon, 14 Sep 2026 10:00:00 +0000"
+      ],
+      "mime_version": [
+        "1.0"
+      ],
+      "content_type": [
+        "multipart/mixed; boundary=\"outer\""
+      ]
+    },
+    "mime": {
+      "content_type": "multipart/mixed",
+      "boundary": "outer",
+      "size": 250,
+      "depth": 0,
+      "parts": [
+        {
+          "content_type": "multipart/alternative",
+          "size": 27,
+          "depth": 1
+        },
+        {
+          "content_type": "application/octet-stream",
+          "disposition": "attachment",
+          "filename": "payload.js",
+          "transfer_encoding": "x-custom",
+          "size": 8,
+          "depth": 1
+        }
+      ]
+    },
+    "defects": [
+      {
+        "kind": "mime-missing-boundary",
+        "detail": "multipart/alternative part without a boundary parameter"
+      },
+      {
+        "kind": "mime-unterminated-multipart",
+        "detail": "multipart/mixed body ends before its closing boundary: unexpected EOF"
+      },
+      {
+        "kind": "mime-invalid-transfer-encoding",
+        "detail": "unknown Content-Transfer-Encoding \"x-custom\""
+      }
+    ],
+    "received": {
+      "hops": [
+        {
+          "index": 1,
+          "raw": "from mail.test.example (mail.test.example [192.0.2.10])\tby mx.receiver.example (Postfix) with ESMTPS id 21E2F30415\tfor <bob@receiver.example>; Mon, 14 Sep 2026 10:00:00 +0000",
+          "from_host": {
+            "value": "mail.test.example",
+            "source": "stated"
+          },
+          "helo": {
+            "value": "mail.test.example",
+            "source": "inferred"
+          },
+          "reverse_dns": {
+            "value": "mail.test.example",
+            "source": "inferred"
+          },
+          "ip": {
+            "value": "192.0.2.10",
+            "source": "stated"
+          },
+          "by": {
+            "value": "mx.receiver.example",
+            "source": "stated"
+          },
+          "protocol": "ESMTPS",
+          "id": "21E2F30415",
+          "for": "bob@receiver.example",
+          "timestamp": "2026-09-14T10:00:00Z",
+          "tls": {
+            "used": true,
+            "source": "inferred"
+          }
+        }
+      ]
+    },
+    "spf": {
+      "inputs": {
+        "ip": {
+          "value": "192.0.2.10",
+          "source": "received",
+          "inferred": true
+        },
+        "helo": {
+          "value": "mail.test.example",
+          "source": "received",
+          "inferred": true
+        }
+      },
+      "helo": {
+        "result": "none",
+        "reason": "no SPF record published for mail.test.example",
+        "domain": "mail.test.example",
+        "dns_lookups": 0,
+        "void_lookups": 0,
+        "trace": [
+          {
+            "depth": 0,
+            "domain": "mail.test.example",
+            "note": "no SPF record: none"
+          }
+        ]
+      }
+    },
+    "dkim": [],
+    "dmarc": {
+      "result": "fail",
+      "reason": "no authenticated identifier is aligned with test.example",
+      "from_domain": "test.example",
+      "discovery": {
+        "domain": "test.example",
+        "organizational_domain": "test.example",
+        "policy_domain": "test.example",
+        "records": [
+          "v=DMARC1; p=reject; rua=mailto:dmarc@test.example"
+        ],
+        "record": {
+          "raw": "v=DMARC1; p=reject; rua=mailto:dmarc@test.example",
+          "tags": [
+            {
+              "name": "v",
+              "value": "DMARC1"
+            },
+            {
+              "name": "p",
+              "value": "reject"
+            },
+            {
+              "name": "rua",
+              "value": "mailto:dmarc@test.example"
+            }
+          ],
+          "p": "reject",
+          "pct": 100,
+          "adkim": "r",
+          "aspf": "r",
+          "rua": [
+            {
+              "uri": "mailto:dmarc@test.example",
+              "scheme": "mailto",
+              "address": "dmarc@test.example",
+              "domain": "test.example"
+            }
+          ],
+          "fo": [
+            "0"
+          ],
+          "rf": "afrf",
+          "ri": 86400
+        }
+      },
+      "policy": "reject",
+      "pct": 100,
+      "disposition": "reject",
+      "spf_aligned": false,
+      "dkim_aligned": false,
+      "adkim": "r",
+      "aspf": "r"
+    },
+    "authentication_results": []
+  },
+  "findings": [
+    {
+      "id": "MAIL-DMARC-031",
+      "severity": "high",
+      "category": "security-weakness",
+      "component": "dmarc",
+      "title": "DMARC fail",
+      "subject": "test.example",
+      "description": "DMARC fail for test.example: neither SPF nor DKIM produced an aligned pass. The domain requests p=reject.",
+      "evidence": [
+        "header.from=test.example",
+        "policy_domain=test.example",
+        "p=reject sp=reject pct=100 adkim=r aspf=r",
+        "spf=none domain=none aligned=false"
+      ],
+      "recommendation": "The From domain could not be authenticated. Unless the message passed through a forwarder or mailing list that broke authentication, treat it as spoofed.",
+      "references": [
+        "https://www.rfc-editor.org/rfc/rfc7489#section-6.6.2"
+      ]
+    },
+    {
+      "id": "MAIL-DKIM-025",
+      "severity": "medium",
+      "category": "security-weakness",
+      "component": "dkim",
+      "title": "Message is not DKIM-signed",
+      "description": "The message has no DKIM-Signature. Its content and From domain are not cryptographically authenticated.",
+      "recommendation": "Without DKIM, DMARC can only pass through SPF, which breaks on forwarding.",
+      "references": [
+        "https://www.rfc-editor.org/rfc/rfc6376"
+      ]
+    },
+    {
+      "id": "MAIL-MSG-010",
+      "severity": "medium",
+      "category": "security-weakness",
+      "component": "message",
+      "title": "Attachment with an executable or container file type",
+      "description": "The message carries attachments whose file types are commonly used to deliver malware.",
+      "evidence": [
+        "payload.js (application/octet-stream, 8 bytes)"
+      ],
+      "recommendation": "Do not open the attachment outside an isolated analysis environment. MailAuthProbe never extracts or executes attachments."
+    },
+    {
+      "id": "MAIL-MSG-002",
+      "severity": "low",
+      "category": "standard-violation",
+      "component": "message",
+      "title": "Malformed MIME structure",
+      "description": "The MIME structure is malformed.",
+      "evidence": [
+        "mime-missing-boundary: multipart/alternative part without a boundary parameter",
+        "mime-unterminated-multipart: multipart/mixed body ends before its closing boundary: unexpected EOF",
+        "mime-invalid-transfer-encoding: unknown Content-Transfer-Encoding \"x-custom\""
+      ],
+      "recommendation": "Broken MIME structure can make filters and mail clients see different content.",
+      "references": [
+        "https://www.rfc-editor.org/rfc/rfc2045",
+        "https://www.rfc-editor.org/rfc/rfc2046"
+      ]
+    },
+    {
+      "id": "MAIL-AR-005",
+      "severity": "info",
+      "category": "informational",
+      "component": "authentication-results",
+      "title": "No Authentication-Results headers",
+      "description": "The message carries no Authentication-Results headers to compare with.",
+      "references": [
+        "https://www.rfc-editor.org/rfc/rfc8601"
+      ]
+    },
+    {
+      "id": "MAIL-SPF-035",
+      "severity": "info",
+      "category": "informational",
+      "component": "spf",
+      "title": "SPF inputs inferred from message headers",
+      "description": "SPF inputs were reconstructed from message headers, which the sender can forge above the receiving organization's boundary. Confirm them with --source-ip, --helo and --mail-from from the receiving MTA's logs.",
+      "evidence": [
+        "HELO mail.test.example (from received)",
+        "client IP 192.0.2.10 (from received)"
+      ],
+      "references": [
+        "https://www.rfc-editor.org/rfc/rfc7208#section-9.1"
+      ]
+    },
+    {
+      "id": "MAIL-SPF-036",
+      "severity": "info",
+      "category": "informational",
+      "component": "spf",
+      "title": "SPF not evaluated",
+      "description": "The MAIL FROM identity is unknown, so the SPF result used by DMARC could not be computed (HELO mail.test.example: none). Pass --mail-from or analyse a message with a Return-Path header.",
+      "references": [
+        "https://www.rfc-editor.org/rfc/rfc7208#section-4.1"
+      ]
+    }
+  ],
+  "errors": []
+}

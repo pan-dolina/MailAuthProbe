@@ -1,0 +1,213 @@
+{
+  "schema_version": "1",
+  "tool": {
+    "name": "mailauthprobe",
+    "version": "VERSION"
+  },
+  "kind": "domain",
+  "target": "test.example",
+  "summary": {
+    "highest_severity": "low",
+    "counts": {
+      "critical": 0,
+      "high": 0,
+      "info": 1,
+      "low": 1,
+      "medium": 0,
+      "pass": 4
+    },
+    "dns_queries": 14
+  },
+  "domain": {
+    "name": "test.example",
+    "mx": {
+      "domain": "test.example",
+      "hosts": [
+        {
+          "name": "mx1.test.example",
+          "preference": 10,
+          "ipv4": [
+            "192.0.2.25"
+          ],
+          "ipv6": [
+            "2001:db8::25"
+          ]
+        },
+        {
+          "name": "mx2.test.example",
+          "preference": 20,
+          "ipv4": [
+            "192.0.2.26"
+          ],
+          "ipv6": [
+            "2001:db8::26"
+          ]
+        }
+      ],
+      "null_mx": false,
+      "implicit_mx": false
+    },
+    "spf": {
+      "domain": "test.example",
+      "record": "v=spf1 ip4:192.0.2.0/24 ip6:2001:db8::/48 -all",
+      "tree": {
+        "domain": "test.example",
+        "record": "v=spf1 ip4:192.0.2.0/24 ip6:2001:db8::/48 -all",
+        "lookups": 0,
+        "total_lookups": 0,
+        "void_lookups": 0
+      },
+      "total_lookups": 0,
+      "void_lookups": 0
+    },
+    "dkim": {
+      "selectors": [
+        {
+          "selector": "s2026",
+          "name": "s2026._domainkey.test.example",
+          "records": [
+            "v=DKIM1; k=rsa; p=MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA+lBF89/3lPYb2gLGaDdeppr63HMOxmUY17MmoiIYc9MYeIne5ZRa+EL2UaQFkVtsl7fitmnDwrGaOFAxPSARuuWOWRjgOTHvM7QTNFgJ2y7HEy+pWQ/TXunhXfMQI0QLAPnt4RPEir9VDqm2Shv8vlO7Ur5+aGUI/lqq+Io9UOkuVM8YWnEB6Bf9OACmk1MY+WPVveGbvpGECBy0xkUMj5guQ1TlqvaC6Q+9FSsdt6bx3XPTYEJhBN43kGCbG18b09dG9BflDlYQ8B9K4U6TpyLWZmoDeqYJ6zRctSmtg6erlfY27oxRrcrTGnK6OfEB/u9Pw1Oz8CemzBC3/SyNsQIDAQAB"
+          ],
+          "key": {
+            "raw": "v=DKIM1; k=rsa; p=MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA+lBF89/3lPYb2gLGaDdeppr63HMOxmUY17MmoiIYc9MYeIne5ZRa+EL2UaQFkVtsl7fitmnDwrGaOFAxPSARuuWOWRjgOTHvM7QTNFgJ2y7HEy+pWQ/TXunhXfMQI0QLAPnt4RPEir9VDqm2Shv8vlO7Ur5+aGUI/lqq+Io9UOkuVM8YWnEB6Bf9OACmk1MY+WPVveGbvpGECBy0xkUMj5guQ1TlqvaC6Q+9FSsdt6bx3XPTYEJhBN43kGCbG18b09dG9BflDlYQ8B9K4U6TpyLWZmoDeqYJ6zRctSmtg6erlfY27oxRrcrTGnK6OfEB/u9Pw1Oz8CemzBC3/SyNsQIDAQAB",
+            "version": "VERSION",
+            "key_type": "rsa",
+            "services": [
+              "*"
+            ],
+            "revoked": false,
+            "key_bits": 2048
+          }
+        }
+      ]
+    },
+    "dmarc": {
+      "discovery": {
+        "domain": "test.example",
+        "organizational_domain": "test.example",
+        "policy_domain": "test.example",
+        "records": [
+          "v=DMARC1; p=reject; rua=mailto:dmarc@test.example"
+        ],
+        "record": {
+          "raw": "v=DMARC1; p=reject; rua=mailto:dmarc@test.example",
+          "tags": [
+            {
+              "name": "v",
+              "value": "DMARC1"
+            },
+            {
+              "name": "p",
+              "value": "reject"
+            },
+            {
+              "name": "rua",
+              "value": "mailto:dmarc@test.example"
+            }
+          ],
+          "p": "reject",
+          "pct": 100,
+          "adkim": "r",
+          "aspf": "r",
+          "rua": [
+            {
+              "uri": "mailto:dmarc@test.example",
+              "scheme": "mailto",
+              "address": "dmarc@test.example",
+              "domain": "test.example"
+            }
+          ],
+          "fo": [
+            "0"
+          ],
+          "rf": "afrf",
+          "ri": 86400
+        }
+      }
+    },
+    "mta_sts": {
+      "domain": "test.example"
+    },
+    "tls_rpt": {
+      "name": "_smtp._tls.test.example"
+    }
+  },
+  "findings": [
+    {
+      "id": "MAIL-MTASTS-001",
+      "severity": "low",
+      "category": "hardening",
+      "component": "mta-sts",
+      "title": "MTA-STS not deployed",
+      "subject": "test.example",
+      "description": "test.example does not publish MTA-STS; senders may deliver mail over unauthenticated or plaintext connections.",
+      "recommendation": "Publish an MTA-STS policy (start with mode: testing and TLS-RPT) so that senders require authenticated TLS when delivering to your MX hosts.",
+      "references": [
+        "https://www.rfc-editor.org/rfc/rfc8461"
+      ]
+    },
+    {
+      "id": "MAIL-TLSRPT-001",
+      "severity": "info",
+      "category": "hardening",
+      "component": "tls-rpt",
+      "title": "TLS-RPT not configured",
+      "subject": "test.example",
+      "description": "test.example does not request SMTP TLS reports, so TLS delivery failures to its MX hosts go unnoticed.",
+      "recommendation": "Publish \"v=TLSRPTv1; rua=mailto:tls-reports@<domain>\" at _smtp._tls.<domain> to receive reports about failed TLS connections.",
+      "references": [
+        "https://www.rfc-editor.org/rfc/rfc8460#section-3"
+      ]
+    },
+    {
+      "id": "MAIL-DKIM-012",
+      "severity": "pass",
+      "category": "informational",
+      "component": "dkim",
+      "title": "DKIM key record is valid",
+      "subject": "s2026._domainkey.test.example",
+      "description": "Valid RSA key (2048 bits) for selector \"s2026\".",
+      "evidence": [
+        "v=DKIM1; k=rsa; p=MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA+lBF89/3lPYb2gLGaDdeppr63HMOxmUY17MmoiIYc9MYeIne5ZRa+EL2UaQFkVtsl7fitmnDwrGaOFAxPSARuuWOWRjgOTHvM7QTNFgJ2y7HEy+pWQ/TXunhXfMQI0QLAPnt4RPEir9VDqm2Shv8vlO7Ur5+aGUI/lqq+Io9UOkuVM8YWnEB6Bf9OACmk1MY+WPVveGbvpGECBy0xkUMj5guQ1TlqvaC6Q+9FSsdt6bx3XPTYEJhBN43kGCbG18b09dG9BflDlYQ8B9K4U6TpyLWZmoDeqYJ6zRctSmtg6erlfY27oxRrcrTGnK6OfEB/u9Pw1Oz8CemzBC3/SyNsQIDAQAB"
+      ]
+    },
+    {
+      "id": "MAIL-DMARC-017",
+      "severity": "pass",
+      "category": "informational",
+      "component": "dmarc",
+      "title": "DMARC policy is enforced",
+      "subject": "test.example",
+      "description": "DMARC is enforced for test.example with p=reject.",
+      "evidence": [
+        "v=DMARC1; p=reject; rua=mailto:dmarc@test.example"
+      ]
+    },
+    {
+      "id": "MAIL-MX-015",
+      "severity": "pass",
+      "category": "informational",
+      "component": "mx",
+      "title": "MX records are valid",
+      "subject": "test.example",
+      "description": "2 MX host(s) resolve to public addresses.",
+      "evidence": [
+        "mx1.test.example",
+        "mx2.test.example"
+      ]
+    },
+    {
+      "id": "MAIL-SPF-022",
+      "severity": "pass",
+      "category": "informational",
+      "component": "spf",
+      "title": "SPF record is valid",
+      "subject": "test.example",
+      "description": "The SPF record is valid and needs 0 of 10 DNS lookups.",
+      "evidence": [
+        "v=spf1 ip4:192.0.2.0/24 ip6:2001:db8::/48 -all"
+      ]
+    }
+  ],
+  "errors": []
+}

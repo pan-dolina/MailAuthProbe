@@ -1,0 +1,62 @@
+MailAuthProbe message: testdata/messages/dmarc-reject.eml
+
+Headers
+  From:              IT Support <support@test.example>
+  Return-Path:       <bounce@evil.example>
+  To:                Bob <bob@receiver.example>
+  Subject:           Your mailbox is full
+  Date:              Mon, 14 Sep 2026 10:00:00 +0000
+  Message-ID:        <spoof-1@evil.example>
+
+Verdicts
+  SPF:               pass (evil.example) inputs inferred
+  DKIM:              pass (1 of 1 signatures valid)
+  DMARC:             fail (test.example, policy reject)
+
+Transport path (origin first)
+  #1  mail.evil.example [203.0.113.66] → mx.receiver.example  2026-09-14T10:00:00Z
+       with ESMTPS, TLS (inferred), helo inferred, rdns mail.evil.example (inferred)
+
+DKIM signatures
+  #1 pass d=evil.example s=s1 rsa-sha256 relaxed/relaxed
+     valid rsa-sha256 signature by evil.example (selector s1)
+
+SPF
+  client IP:         203.0.113.66 (received, inferred)
+  HELO:              mail.evil.example (received, inferred)
+  MAIL FROM:         bounce@evil.example (return-path, inferred)
+  evil.example: pass via "ip4:203.0.113.0/24"
+  mail.evil.example: none
+
+Findings
+  HIGH     MAIL-DMARC-031  DMARC fail
+           DMARC fail for test.example: neither SPF nor DKIM produced an aligned pass. The domain
+           requests p=reject.
+           │ header.from=test.example
+           │ policy_domain=test.example
+           │ p=reject sp=reject pct=100 adkim=r aspf=r
+           │ spf=pass domain=evil.example aligned=false
+           │ dkim=pass d=evil.example aligned=false
+           → The From domain could not be authenticated. Unless the message passed through a
+             forwarder or mailing list that broke authentication, treat it as spoofed.
+  INFO     MAIL-AR-005  No Authentication-Results headers
+           The message carries no Authentication-Results headers to compare with.
+  INFO     MAIL-DMARC-036  SPF passed but is not aligned with From
+           SPF passed for evil.example, which is not aligned with test.example.
+  INFO     MAIL-DMARC-037  DKIM passed but is not aligned with From
+           DKIM passed for d=evil.example, which is not aligned with test.example.
+  INFO     MAIL-MSG-009  Return-Path domain differs from From domain
+           Return-Path: The envelope sender bounce@evil.example belongs to a different organization
+           than the From domain test.example (normal for mailing lists and email service providers).
+  INFO     MAIL-SPF-035  SPF inputs inferred from message headers
+           SPF inputs were reconstructed from message headers, which the sender can forge above the
+           receiving organization's boundary. Confirm them with --source-ip, --helo and --mail-from
+           from the receiving MTA's logs.
+           │ HELO mail.evil.example (from received)
+           │ MAIL FROM bounce@evil.example (from return-path)
+           │ client IP 203.0.113.66 (from received)
+  2 passing check(s) hidden; use --verbose to show them.
+
+Summary
+  0 critical, 1 high, 0 medium, 0 low, 5 info, 2 pass
+  4 DNS queries

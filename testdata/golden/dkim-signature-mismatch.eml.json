@@ -1,0 +1,325 @@
+{
+  "schema_version": "1",
+  "tool": {
+    "name": "mailauthprobe",
+    "version": "VERSION"
+  },
+  "kind": "message",
+  "target": "testdata/messages/dkim-signature-mismatch.eml",
+  "summary": {
+    "highest_severity": "high",
+    "counts": {
+      "critical": 0,
+      "high": 1,
+      "info": 2,
+      "low": 0,
+      "medium": 0,
+      "pass": 2
+    },
+    "dns_queries": 4
+  },
+  "message": {
+    "size": 1087,
+    "header_size": 1027,
+    "body_available": true,
+    "headers": {
+      "from": [
+        "Alice <alice@test.example>"
+      ],
+      "return_path": [
+        "<bounces@test.example>"
+      ],
+      "to": [
+        "Bob <bob@receiver.example>"
+      ],
+      "subject": [
+        "Urgent: update your payment details"
+      ],
+      "message_id": [
+        "<valid-1@test.example>"
+      ],
+      "date": [
+        "Mon, 14 Sep 2026 10:00:00 +0000"
+      ],
+      "mime_version": [
+        "1.0"
+      ],
+      "content_type": [
+        "text/plain; charset=utf-8"
+      ]
+    },
+    "mime": {
+      "content_type": "text/plain",
+      "charset": "utf-8",
+      "size": 60,
+      "depth": 0
+    },
+    "received": {
+      "hops": [
+        {
+          "index": 1,
+          "raw": "from mail.test.example (mail.test.example [192.0.2.10])\tby mx.receiver.example (Postfix) with ESMTPS id 5B2C3D4E5F\tfor <bob@receiver.example>; Mon, 14 Sep 2026 10:00:00 +0000",
+          "from_host": {
+            "value": "mail.test.example",
+            "source": "stated"
+          },
+          "helo": {
+            "value": "mail.test.example",
+            "source": "inferred"
+          },
+          "reverse_dns": {
+            "value": "mail.test.example",
+            "source": "inferred"
+          },
+          "ip": {
+            "value": "192.0.2.10",
+            "source": "stated"
+          },
+          "by": {
+            "value": "mx.receiver.example",
+            "source": "stated"
+          },
+          "protocol": "ESMTPS",
+          "id": "5B2C3D4E5F",
+          "for": "bob@receiver.example",
+          "timestamp": "2026-09-14T10:00:00Z",
+          "tls": {
+            "used": true,
+            "source": "inferred"
+          }
+        }
+      ]
+    },
+    "spf": {
+      "inputs": {
+        "ip": {
+          "value": "192.0.2.10",
+          "source": "received",
+          "inferred": true
+        },
+        "helo": {
+          "value": "mail.test.example",
+          "source": "received",
+          "inferred": true
+        },
+        "mail_from": {
+          "value": "bounces@test.example",
+          "source": "return-path",
+          "inferred": true
+        }
+      },
+      "mail_from": {
+        "result": "pass",
+        "reason": "192.0.2.10 matched \"ip4:192.0.2.0/24\" in the SPF record of test.example",
+        "domain": "test.example",
+        "matched_term": "ip4:192.0.2.0/24",
+        "matched_domain": "test.example",
+        "dns_lookups": 0,
+        "void_lookups": 0,
+        "trace": [
+          {
+            "depth": 0,
+            "domain": "test.example",
+            "note": "record: v=spf1 ip4:192.0.2.0/24 ip6:2001:db8::/48 -all"
+          },
+          {
+            "depth": 0,
+            "domain": "test.example",
+            "term": "ip4:192.0.2.0/24",
+            "note": "matched: pass"
+          }
+        ]
+      },
+      "helo": {
+        "result": "none",
+        "reason": "no SPF record published for mail.test.example",
+        "domain": "mail.test.example",
+        "dns_lookups": 0,
+        "void_lookups": 0,
+        "trace": [
+          {
+            "depth": 0,
+            "domain": "mail.test.example",
+            "note": "no SPF record: none"
+          }
+        ]
+      },
+      "result": "pass",
+      "domain": "test.example"
+    },
+    "dkim": [
+      {
+        "index": 1,
+        "result": "fail",
+        "failure": "signature-mismatch",
+        "reason": "the signature does not verify; signed header fields were modified or the wrong key is published",
+        "domain": "test.example",
+        "selector": "s2026",
+        "algorithm": "rsa-sha256",
+        "auid": "@test.example",
+        "canonicalization": "relaxed/relaxed",
+        "signed_headers": [
+          "From",
+          "To",
+          "Subject",
+          "Date",
+          "Message-ID"
+        ],
+        "canonical_body_length": 59,
+        "timestamp": "2026-09-14T10:00:00Z",
+        "body_hash_ok": true,
+        "signature_ok": false,
+        "key_name": "s2026._domainkey.test.example",
+        "key": {
+          "raw": "v=DKIM1; k=rsa; p=MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA+lBF89/3lPYb2gLGaDdeppr63HMOxmUY17MmoiIYc9MYeIne5ZRa+EL2UaQFkVtsl7fitmnDwrGaOFAxPSARuuWOWRjgOTHvM7QTNFgJ2y7HEy+pWQ/TXunhXfMQI0QLAPnt4RPEir9VDqm2Shv8vlO7Ur5+aGUI/lqq+Io9UOkuVM8YWnEB6Bf9OACmk1MY+WPVveGbvpGECBy0xkUMj5guQ1TlqvaC6Q+9FSsdt6bx3XPTYEJhBN43kGCbG18b09dG9BflDlYQ8B9K4U6TpyLWZmoDeqYJ6zRctSmtg6erlfY27oxRrcrTGnK6OfEB/u9Pw1Oz8CemzBC3/SyNsQIDAQAB",
+          "version": "VERSION",
+          "key_type": "rsa",
+          "services": [
+            "*"
+          ],
+          "revoked": false,
+          "key_bits": 2048
+        },
+        "header_b": "iOfW8eb7QOW+"
+      }
+    ],
+    "dmarc": {
+      "result": "pass",
+      "reason": "aligned SPF (test.example)",
+      "from_domain": "test.example",
+      "discovery": {
+        "domain": "test.example",
+        "organizational_domain": "test.example",
+        "policy_domain": "test.example",
+        "records": [
+          "v=DMARC1; p=reject; rua=mailto:dmarc@test.example"
+        ],
+        "record": {
+          "raw": "v=DMARC1; p=reject; rua=mailto:dmarc@test.example",
+          "tags": [
+            {
+              "name": "v",
+              "value": "DMARC1"
+            },
+            {
+              "name": "p",
+              "value": "reject"
+            },
+            {
+              "name": "rua",
+              "value": "mailto:dmarc@test.example"
+            }
+          ],
+          "p": "reject",
+          "pct": 100,
+          "adkim": "r",
+          "aspf": "r",
+          "rua": [
+            {
+              "uri": "mailto:dmarc@test.example",
+              "scheme": "mailto",
+              "address": "dmarc@test.example",
+              "domain": "test.example"
+            }
+          ],
+          "fo": [
+            "0"
+          ],
+          "rf": "afrf",
+          "ri": 86400
+        }
+      },
+      "policy": "reject",
+      "pct": 100,
+      "spf_aligned": true,
+      "dkim_aligned": false,
+      "adkim": "r",
+      "aspf": "r"
+    },
+    "authentication_results": []
+  },
+  "findings": [
+    {
+      "id": "MAIL-DKIM-021",
+      "severity": "high",
+      "category": "security-weakness",
+      "component": "dkim",
+      "title": "DKIM signature does not verify",
+      "subject": "s2026._domainkey.test.example",
+      "description": "DKIM signature #1: the signature does not verify; signed header fields were modified or the wrong key is published.",
+      "evidence": [
+        "d=test.example s=s2026 a=rsa-sha256 c=relaxed/relaxed",
+        "h=From:To:Subject:Date:Message-ID"
+      ],
+      "recommendation": "Signed header fields were changed after signing, or the signature was forged. Do not trust the signed identity.",
+      "references": [
+        "https://www.rfc-editor.org/rfc/rfc6376#section-6.1.3"
+      ]
+    },
+    {
+      "id": "MAIL-AR-005",
+      "severity": "info",
+      "category": "informational",
+      "component": "authentication-results",
+      "title": "No Authentication-Results headers",
+      "description": "The message carries no Authentication-Results headers to compare with.",
+      "references": [
+        "https://www.rfc-editor.org/rfc/rfc8601"
+      ]
+    },
+    {
+      "id": "MAIL-SPF-035",
+      "severity": "info",
+      "category": "informational",
+      "component": "spf",
+      "title": "SPF inputs inferred from message headers",
+      "description": "SPF inputs were reconstructed from message headers, which the sender can forge above the receiving organization's boundary. Confirm them with --source-ip, --helo and --mail-from from the receiving MTA's logs.",
+      "evidence": [
+        "HELO mail.test.example (from received)",
+        "MAIL FROM bounces@test.example (from return-path)",
+        "client IP 192.0.2.10 (from received)"
+      ],
+      "references": [
+        "https://www.rfc-editor.org/rfc/rfc7208#section-9.1"
+      ]
+    },
+    {
+      "id": "MAIL-DMARC-030",
+      "severity": "pass",
+      "category": "informational",
+      "component": "dmarc",
+      "title": "DMARC pass",
+      "subject": "test.example",
+      "description": "DMARC pass for test.example via SPF (test.example).",
+      "evidence": [
+        "header.from=test.example",
+        "policy_domain=test.example",
+        "p=reject sp=reject pct=100 adkim=r aspf=r",
+        "spf=pass domain=test.example aligned=true",
+        "dkim=fail d=test.example aligned=false"
+      ],
+      "references": [
+        "https://www.rfc-editor.org/rfc/rfc7489#section-4.2"
+      ]
+    },
+    {
+      "id": "MAIL-SPF-030",
+      "severity": "pass",
+      "category": "informational",
+      "component": "spf",
+      "title": "SPF pass",
+      "subject": "test.example",
+      "description": "SPF for MAIL FROM test.example from 192.0.2.10: pass. 192.0.2.10 matched \"ip4:192.0.2.0/24\" in the SPF record of test.example.",
+      "evidence": [
+        "client-ip=192.0.2.10",
+        "identity=mailfrom",
+        "domain=test.example",
+        "matched=ip4:192.0.2.0/24 in test.example"
+      ],
+      "references": [
+        "https://www.rfc-editor.org/rfc/rfc7208#section-2.6.3"
+      ]
+    }
+  ],
+  "errors": []
+}

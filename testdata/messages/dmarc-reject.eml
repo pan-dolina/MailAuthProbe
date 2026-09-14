@@ -1,0 +1,27 @@
+Return-Path: <bounce@evil.example>
+Received: from mail.evil.example (mail.evil.example [203.0.113.66])
+	by mx.receiver.example (Postfix) with ESMTPS id DDAEBFC0D1
+	for <bob@receiver.example>; Mon, 14 Sep 2026 10:00:00 +0000
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=evil.example; s=s1;
+	t=1789380000; h=From:To:Subject:Date:Message-ID;
+	bh=ea9f2yJXZI4+ZYxo5GswMrT1DAN0SKiiRfJMAz50vps=;
+	b=f0gixpIU15/0saLY+YmWgMn7QDIoWIDjO3VmMiMgyUvD/5R+Gej9NaAmxB2pfUb8
+	 MHmD1cljYkWWd+EthVdYsNKG/1iDg5PIm7knuH6VjJl5EdCeTiwH5CHQNv/yU1EY
+	 D/JuO+C+2u770HPjhlPaehNg01PT6TG82w8fIUuIKrledmPttgnjJU1snu8PTaQz
+	 VCY/Zid5SIOEcI2a+ypBDS7TptM4LzMPEwda+C0SHqMhIgpXFTMOF8cqF4ZiddBQ
+	 wH1goTsQKIaNJg6kAUherxrj7RgFVGadgdX7finvERLFBorbPu977bxNzAE1srbp
+	 qOoi9N/n3dw2y8xc7KJOJQ==
+From: IT Support <support@test.example>
+To: Bob <bob@receiver.example>
+Subject: Your mailbox is full
+Date: Mon, 14 Sep 2026 10:00:00 +0000
+Message-ID: <spoof-1@evil.example>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+
+Hello Bob,
+
+the quarterly report is ready.
+
+-- 
+Alice

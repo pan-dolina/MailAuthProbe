@@ -1,0 +1,27 @@
+Return-Path: <bounce@mail.relaxed.example>
+Received: from mail.relaxed.example (mail.relaxed.example [203.0.113.66])
+	by mx.receiver.example (Postfix) with ESMTPS id 10D1E2F304
+	for <bob@receiver.example>; Mon, 14 Sep 2026 10:00:00 +0000
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=mail.relaxed.example; s=s2026;
+	t=1789380000; h=From:To:Subject:Date:Message-ID;
+	bh=ea9f2yJXZI4+ZYxo5GswMrT1DAN0SKiiRfJMAz50vps=;
+	b=q+LA9qAsZg+uFF5TGutMW+0zaOBHy+rMNeEOv8CVu2JCVsGYmX6YEWSK43kFvT/+
+	 KqfX3NmN9xClR6FKoV1V6PC1kVZsC/SnQry3iSTHhOri4+iH+Fkzy00NwkSMEZ8V
+	 pd3tskZDdCgTds62NssOpUgvi7dyUgoFZlBYakmg3xNUwwLjCTaTJiT53E3qqA3I
+	 D3APaITJ0NgmPZifkrnZVHWpN/HgZIBBN5Y3jRnOXYjDmFr/ClWwK8sVrW2U1b7n
+	 b7o5CHgu82lV2JlLIqec8mUJlDicp3pESMT3Jl2ho2rsjkmvtOb+SgRcF+WXS4D2
+	 HHqxSlLOfYAc9/spDW2Jpg==
+From: Alerts <alerts@relaxed.example>
+To: Bob <bob@receiver.example>
+Subject: Alert
+Date: Mon, 14 Sep 2026 10:00:00 +0000
+Message-ID: <relaxed-1@relaxed.example>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+
+Hello Bob,
+
+the quarterly report is ready.
+
+-- 
+Alice

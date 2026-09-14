@@ -1,0 +1,310 @@
+{
+  "schema_version": "1",
+  "tool": {
+    "name": "mailauthprobe",
+    "version": "VERSION"
+  },
+  "kind": "message",
+  "target": "testdata/messages/dmarc-none.eml",
+  "summary": {
+    "highest_severity": "medium",
+    "counts": {
+      "critical": 0,
+      "high": 0,
+      "info": 4,
+      "low": 0,
+      "medium": 2,
+      "pass": 1
+    },
+    "dns_queries": 3
+  },
+  "message": {
+    "size": 520,
+    "header_size": 460,
+    "body_available": true,
+    "headers": {
+      "from": [
+        "Billing <billing@none.example>"
+      ],
+      "return_path": [
+        "<bounce@evil.example>"
+      ],
+      "to": [
+        "Bob <bob@receiver.example>"
+      ],
+      "subject": [
+        "Invoice overdue"
+      ],
+      "message_id": [
+        "<none-1@evil.example>"
+      ],
+      "date": [
+        "Mon, 14 Sep 2026 10:00:00 +0000"
+      ],
+      "mime_version": [
+        "1.0"
+      ],
+      "content_type": [
+        "text/plain; charset=utf-8"
+      ]
+    },
+    "mime": {
+      "content_type": "text/plain",
+      "charset": "utf-8",
+      "size": 60,
+      "depth": 0
+    },
+    "received": {
+      "hops": [
+        {
+          "index": 1,
+          "raw": "from mail.evil.example (mail.evil.example [203.0.113.66])\tby mx.receiver.example (Postfix) with ESMTPS id EEBFC0D1E2\tfor <bob@receiver.example>; Mon, 14 Sep 2026 10:00:00 +0000",
+          "from_host": {
+            "value": "mail.evil.example",
+            "source": "stated"
+          },
+          "helo": {
+            "value": "mail.evil.example",
+            "source": "inferred"
+          },
+          "reverse_dns": {
+            "value": "mail.evil.example",
+            "source": "inferred"
+          },
+          "ip": {
+            "value": "203.0.113.66",
+            "source": "stated"
+          },
+          "by": {
+            "value": "mx.receiver.example",
+            "source": "stated"
+          },
+          "protocol": "ESMTPS",
+          "id": "EEBFC0D1E2",
+          "for": "bob@receiver.example",
+          "timestamp": "2026-09-14T10:00:00Z",
+          "tls": {
+            "used": true,
+            "source": "inferred"
+          }
+        }
+      ]
+    },
+    "spf": {
+      "inputs": {
+        "ip": {
+          "value": "203.0.113.66",
+          "source": "received",
+          "inferred": true
+        },
+        "helo": {
+          "value": "mail.evil.example",
+          "source": "received",
+          "inferred": true
+        },
+        "mail_from": {
+          "value": "bounce@evil.example",
+          "source": "return-path",
+          "inferred": true
+        }
+      },
+      "mail_from": {
+        "result": "pass",
+        "reason": "203.0.113.66 matched \"ip4:203.0.113.0/24\" in the SPF record of evil.example",
+        "domain": "evil.example",
+        "matched_term": "ip4:203.0.113.0/24",
+        "matched_domain": "evil.example",
+        "dns_lookups": 0,
+        "void_lookups": 0,
+        "trace": [
+          {
+            "depth": 0,
+            "domain": "evil.example",
+            "note": "record: v=spf1 ip4:203.0.113.0/24 -all"
+          },
+          {
+            "depth": 0,
+            "domain": "evil.example",
+            "term": "ip4:203.0.113.0/24",
+            "note": "matched: pass"
+          }
+        ]
+      },
+      "helo": {
+        "result": "none",
+        "reason": "no SPF record published for mail.evil.example",
+        "domain": "mail.evil.example",
+        "dns_lookups": 0,
+        "void_lookups": 0,
+        "trace": [
+          {
+            "depth": 0,
+            "domain": "mail.evil.example",
+            "note": "no SPF record: none"
+          }
+        ]
+      },
+      "result": "pass",
+      "domain": "evil.example"
+    },
+    "dkim": [],
+    "dmarc": {
+      "result": "fail",
+      "reason": "no authenticated identifier is aligned with none.example",
+      "from_domain": "none.example",
+      "discovery": {
+        "domain": "none.example",
+        "organizational_domain": "none.example",
+        "policy_domain": "none.example",
+        "records": [
+          "v=DMARC1; p=none; rua=mailto:dmarc@none.example"
+        ],
+        "record": {
+          "raw": "v=DMARC1; p=none; rua=mailto:dmarc@none.example",
+          "tags": [
+            {
+              "name": "v",
+              "value": "DMARC1"
+            },
+            {
+              "name": "p",
+              "value": "none"
+            },
+            {
+              "name": "rua",
+              "value": "mailto:dmarc@none.example"
+            }
+          ],
+          "p": "none",
+          "pct": 100,
+          "adkim": "r",
+          "aspf": "r",
+          "rua": [
+            {
+              "uri": "mailto:dmarc@none.example",
+              "scheme": "mailto",
+              "address": "dmarc@none.example",
+              "domain": "none.example"
+            }
+          ],
+          "fo": [
+            "0"
+          ],
+          "rf": "afrf",
+          "ri": 86400
+        }
+      },
+      "policy": "none",
+      "pct": 100,
+      "disposition": "none",
+      "spf_aligned": false,
+      "dkim_aligned": false,
+      "adkim": "r",
+      "aspf": "r"
+    },
+    "authentication_results": []
+  },
+  "findings": [
+    {
+      "id": "MAIL-DKIM-025",
+      "severity": "medium",
+      "category": "security-weakness",
+      "component": "dkim",
+      "title": "Message is not DKIM-signed",
+      "description": "The message has no DKIM-Signature. Its content and From domain are not cryptographically authenticated.",
+      "recommendation": "Without DKIM, DMARC can only pass through SPF, which breaks on forwarding.",
+      "references": [
+        "https://www.rfc-editor.org/rfc/rfc6376"
+      ]
+    },
+    {
+      "id": "MAIL-DMARC-031",
+      "severity": "medium",
+      "category": "security-weakness",
+      "component": "dmarc",
+      "title": "DMARC fail",
+      "subject": "none.example",
+      "description": "DMARC fail for none.example: neither SPF nor DKIM produced an aligned pass. The domain requests p=none.",
+      "evidence": [
+        "header.from=none.example",
+        "policy_domain=none.example",
+        "p=none sp=none pct=100 adkim=r aspf=r",
+        "spf=pass domain=evil.example aligned=false"
+      ],
+      "recommendation": "The From domain could not be authenticated. Unless the message passed through a forwarder or mailing list that broke authentication, treat it as spoofed.",
+      "references": [
+        "https://www.rfc-editor.org/rfc/rfc7489#section-6.6.2"
+      ]
+    },
+    {
+      "id": "MAIL-AR-005",
+      "severity": "info",
+      "category": "informational",
+      "component": "authentication-results",
+      "title": "No Authentication-Results headers",
+      "description": "The message carries no Authentication-Results headers to compare with.",
+      "references": [
+        "https://www.rfc-editor.org/rfc/rfc8601"
+      ]
+    },
+    {
+      "id": "MAIL-DMARC-036",
+      "severity": "info",
+      "category": "informational",
+      "component": "dmarc",
+      "title": "SPF passed but is not aligned with From",
+      "subject": "none.example",
+      "description": "SPF passed for evil.example, which is not aligned with none.example.",
+      "references": [
+        "https://www.rfc-editor.org/rfc/rfc7489#section-3.1.2"
+      ]
+    },
+    {
+      "id": "MAIL-MSG-009",
+      "severity": "info",
+      "category": "informational",
+      "component": "message",
+      "title": "Return-Path domain differs from From domain",
+      "subject": "Return-Path",
+      "description": "The envelope sender bounce@evil.example belongs to a different organization than the From domain none.example (normal for mailing lists and email service providers).",
+      "references": [
+        "https://www.rfc-editor.org/rfc/rfc5321#section-4.4"
+      ]
+    },
+    {
+      "id": "MAIL-SPF-035",
+      "severity": "info",
+      "category": "informational",
+      "component": "spf",
+      "title": "SPF inputs inferred from message headers",
+      "description": "SPF inputs were reconstructed from message headers, which the sender can forge above the receiving organization's boundary. Confirm them with --source-ip, --helo and --mail-from from the receiving MTA's logs.",
+      "evidence": [
+        "HELO mail.evil.example (from received)",
+        "MAIL FROM bounce@evil.example (from return-path)",
+        "client IP 203.0.113.66 (from received)"
+      ],
+      "references": [
+        "https://www.rfc-editor.org/rfc/rfc7208#section-9.1"
+      ]
+    },
+    {
+      "id": "MAIL-SPF-030",
+      "severity": "pass",
+      "category": "informational",
+      "component": "spf",
+      "title": "SPF pass",
+      "subject": "evil.example",
+      "description": "SPF for MAIL FROM evil.example from 203.0.113.66: pass. 203.0.113.66 matched \"ip4:203.0.113.0/24\" in the SPF record of evil.example.",
+      "evidence": [
+        "client-ip=203.0.113.66",
+        "identity=mailfrom",
+        "domain=evil.example",
+        "matched=ip4:203.0.113.0/24 in evil.example"
+      ],
+      "references": [
+        "https://www.rfc-editor.org/rfc/rfc7208#section-2.6.3"
+      ]
+    }
+  ],
+  "errors": []
+}

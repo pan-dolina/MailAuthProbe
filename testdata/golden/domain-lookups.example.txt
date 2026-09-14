@@ -1,0 +1,73 @@
+MailAuthProbe domain: lookups.example
+
+MX
+  none
+
+SPF
+  v=spf1 include:inc1.lookups.example include:inc2.lookups.example include:inc3.lookups.example include:inc4.lookups.example include:inc5.lookups.example include:inc6.lookups.example include:inc7.lookups.example include:inc8.lookups.example include:inc9.lookups.example include:inc10.lookups.example include:inc11.lookups.example ip4:192.0.2.0/24 -all
+  DNS lookups: 11/10, void lookups: 0/2
+  Dependency tree:
+  lookups.example (11 lookup(s))
+  ├─ include:inc1.lookups.example (0 lookup(s))
+  ├─ include:inc2.lookups.example (0 lookup(s))
+  ├─ include:inc3.lookups.example (0 lookup(s))
+  ├─ include:inc4.lookups.example (0 lookup(s))
+  ├─ include:inc5.lookups.example (0 lookup(s))
+  ├─ include:inc6.lookups.example (0 lookup(s))
+  ├─ include:inc7.lookups.example (0 lookup(s))
+  ├─ include:inc8.lookups.example (0 lookup(s))
+  ├─ include:inc9.lookups.example (0 lookup(s))
+  ├─ include:inc10.lookups.example (0 lookup(s))
+  └─ include:inc11.lookups.example (0 lookup(s))
+
+DMARC
+  _dmarc.lookups.example: v=DMARC1; p=reject
+  policy reject, subdomains reject, pct 100, adkim=r, aspf=r
+
+DKIM
+  no selectors checked (use --dkim-selector)
+
+MTA-STS
+  not deployed
+
+TLS-RPT
+  not configured
+
+Findings
+  HIGH     MAIL-SPF-005  SPF exceeds the 10 DNS lookup limit
+           Evaluating the SPF policy of lookups.example can require 11 DNS lookups; the limit is 10.
+           │ lookups.example: 11 lookup(s), 11 in total
+           │   include:inc1.lookups.example: 0 lookup(s), 0 in total
+           │   include:inc2.lookups.example: 0 lookup(s), 0 in total
+           │   include:inc3.lookups.example: 0 lookup(s), 0 in total
+           │   include:inc4.lookups.example: 0 lookup(s), 0 in total
+           … 7 more (use --verbose)
+           → Reduce include, a, mx, ptr, exists and redirect terms: replace stable hosts with
+             ip4/ip6 ranges and remove unused includes. Receivers return permerror once the limit is
+             exceeded.
+  LOW      MAIL-DMARC-008  DMARC aggregate reports are not requested
+           lookups.example: The DMARC record does not request aggregate reports (rua).
+           │ v=DMARC1; p=reject
+           → Add rua=mailto:... to receive aggregate reports; without them you cannot see who sends
+             mail using the domain.
+  LOW      MAIL-MTASTS-001  MTA-STS not deployed
+           lookups.example does not publish MTA-STS; senders may deliver mail over unauthenticated
+           or plaintext connections.
+           → Publish an MTA-STS policy (start with mode: testing and TLS-RPT) so that senders
+             require authenticated TLS when delivering to your MX hosts.
+  LOW      MAIL-MX-002  Domain publishes neither MX nor address records
+           lookups.example: The domain has no MX records and no A/AAAA records, so it cannot receive
+           mail, but senders are not told so explicitly.
+           → If the domain does not receive mail, publish a null MX record ("0 .") so senders fail
+             fast instead of retrying.
+  INFO     MAIL-DKIM-001  DKIM audit incomplete: no selector specified
+           lookups.example: DKIM keys are published under selector names that cannot be enumerated
+           from DNS. Pass --dkim-selector to audit specific keys, or analyse a signed message to
+           discover the selectors in use.
+  INFO     MAIL-TLSRPT-001  TLS-RPT not configured
+           lookups.example does not request SMTP TLS reports, so TLS delivery failures to its MX
+           hosts go unnoticed.
+
+Summary
+  0 critical, 1 high, 0 medium, 3 low, 2 info, 0 pass
+  20 DNS queries

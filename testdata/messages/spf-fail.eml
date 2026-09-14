@@ -1,0 +1,18 @@
+Return-Path: <bounces@test.example>
+Received: from unknown.invalid (unknown.invalid [203.0.113.66])
+	by mx.receiver.example (Postfix) with ESMTPS id AA7B8C9DAE
+	for <bob@receiver.example>; Mon, 14 Sep 2026 10:00:00 +0000
+From: Alice <alice@test.example>
+To: Bob <bob@receiver.example>
+Subject: Password reset
+Date: Mon, 14 Sep 2026 10:00:00 +0000
+Message-ID: <spffail-1@test.example>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+
+Hello Bob,
+
+the quarterly report is ready.
+
+-- 
+Alice

@@ -1,0 +1,250 @@
+{
+  "schema_version": "1",
+  "tool": {
+    "name": "mailauthprobe",
+    "version": "VERSION"
+  },
+  "kind": "message",
+  "target": "testdata/messages/malformed-headers.eml",
+  "summary": {
+    "highest_severity": "high",
+    "counts": {
+      "critical": 0,
+      "high": 2,
+      "info": 3,
+      "low": 1,
+      "medium": 2,
+      "pass": 0
+    },
+    "dns_queries": 1
+  },
+  "message": {
+    "size": 416,
+    "header_size": 326,
+    "body_available": true,
+    "headers": {
+      "from": [
+        "Alice <alice@test.example>",
+        "Security Team <security@bank.example>"
+      ],
+      "subject": [
+        "Account verification"
+      ],
+      "date": [
+        "Mon, 14 Sep 2026 10:00:00 +0000"
+      ]
+    },
+    "mime": {
+      "content_type": "text/plain",
+      "charset": "us-ascii",
+      "size": 90,
+      "depth": 0
+    },
+    "defects": [
+      {
+        "kind": "leading-continuation-line",
+        "detail": "continuation line before the first header field"
+      },
+      {
+        "kind": "whitespace-before-colon",
+        "detail": "header field \"Subject\" has whitespace before the colon (obsolete syntax)"
+      },
+      {
+        "kind": "malformed-header-line",
+        "detail": "line \"This line is not a header: but looks like one\" is not a valid header field; treating it as the start of the body"
+      },
+      {
+        "kind": "no-body-separator",
+        "detail": "the header section is not terminated by an empty line"
+      }
+    ],
+    "received": {
+      "hops": [
+        {
+          "index": 1,
+          "raw": "from mail.test.example (mail.test.example [192.0.2.10]) by mx.receiver.example with ESMTPS id 32F3041526; Mon, 14 Sep 2026 10:00:00 +0000",
+          "from_host": {
+            "value": "mail.test.example",
+            "source": "stated"
+          },
+          "helo": {
+            "value": "mail.test.example",
+            "source": "inferred"
+          },
+          "reverse_dns": {
+            "value": "mail.test.example",
+            "source": "inferred"
+          },
+          "ip": {
+            "value": "192.0.2.10",
+            "source": "stated"
+          },
+          "by": {
+            "value": "mx.receiver.example",
+            "source": "stated"
+          },
+          "protocol": "ESMTPS",
+          "id": "32F3041526",
+          "timestamp": "2026-09-14T10:00:00Z",
+          "tls": {
+            "used": true,
+            "source": "inferred"
+          }
+        }
+      ]
+    },
+    "spf": {
+      "inputs": {
+        "ip": {
+          "value": "192.0.2.10",
+          "source": "received",
+          "inferred": true
+        },
+        "helo": {
+          "value": "mail.test.example",
+          "source": "received",
+          "inferred": true
+        }
+      },
+      "helo": {
+        "result": "none",
+        "reason": "no SPF record published for mail.test.example",
+        "domain": "mail.test.example",
+        "dns_lookups": 0,
+        "void_lookups": 0,
+        "trace": [
+          {
+            "depth": 0,
+            "domain": "mail.test.example",
+            "note": "no SPF record: none"
+          }
+        ]
+      }
+    },
+    "dkim": [],
+    "dmarc": {
+      "result": "permerror",
+      "reason": "The message has 2 From headers.",
+      "spf_aligned": false,
+      "dkim_aligned": false
+    },
+    "authentication_results": []
+  },
+  "findings": [
+    {
+      "id": "MAIL-DMARC-033",
+      "severity": "high",
+      "category": "standard-violation",
+      "component": "dmarc",
+      "title": "From header unusable for DMARC",
+      "description": "The message has 2 From headers. DMARC cannot be applied reliably; receivers commonly reject such messages.",
+      "evidence": [
+        "Alice <alice@test.example>",
+        "Security Team <security@bank.example>"
+      ],
+      "recommendation": "A message must have exactly one From header with one mailbox. Multiple or malformed From headers are a common spoofing technique.",
+      "references": [
+        "https://www.rfc-editor.org/rfc/rfc7489#section-6.6.1",
+        "https://www.rfc-editor.org/rfc/rfc5322#section-3.6"
+      ]
+    },
+    {
+      "id": "MAIL-MSG-006",
+      "severity": "high",
+      "category": "standard-violation",
+      "component": "message",
+      "title": "Header that must be unique appears more than once",
+      "subject": "From",
+      "description": "The From header appears 2 times.",
+      "evidence": [
+        "Alice <alice@test.example>",
+        "Security Team <security@bank.example>"
+      ],
+      "recommendation": "Different software picks different instances of duplicated headers; this is used to show one identity to filters and another to users.",
+      "references": [
+        "https://www.rfc-editor.org/rfc/rfc5322#section-3.6"
+      ]
+    },
+    {
+      "id": "MAIL-DKIM-025",
+      "severity": "medium",
+      "category": "security-weakness",
+      "component": "dkim",
+      "title": "Message is not DKIM-signed",
+      "description": "The message has no DKIM-Signature. Its content and From domain are not cryptographically authenticated.",
+      "recommendation": "Without DKIM, DMARC can only pass through SPF, which breaks on forwarding.",
+      "references": [
+        "https://www.rfc-editor.org/rfc/rfc6376"
+      ]
+    },
+    {
+      "id": "MAIL-MSG-001",
+      "severity": "medium",
+      "category": "standard-violation",
+      "component": "message",
+      "title": "Malformed header section",
+      "description": "The header section does not conform to RFC 5322.",
+      "evidence": [
+        "leading-continuation-line: continuation line before the first header field",
+        "whitespace-before-colon: header field \"Subject\" has whitespace before the colon (obsolete syntax)",
+        "malformed-header-line: line \"This line is not a header: but looks like one\" is not a valid header field; treating it as the start of the body",
+        "no-body-separator: the header section is not terminated by an empty line"
+      ],
+      "recommendation": "Malformed headers are parsed differently by different software and are used to hide or smuggle header fields. Treat the message with suspicion.",
+      "references": [
+        "https://www.rfc-editor.org/rfc/rfc5322#section-2.2"
+      ]
+    },
+    {
+      "id": "MAIL-MSG-005",
+      "severity": "low",
+      "category": "standard-violation",
+      "component": "message",
+      "title": "Message-ID missing",
+      "subject": "Message-ID",
+      "description": "The message has no Message-ID header.",
+      "recommendation": "Legitimate mail systems add a Message-ID; its absence is common in bulk and malicious mail.",
+      "references": [
+        "https://www.rfc-editor.org/rfc/rfc5322#section-3.6.4"
+      ]
+    },
+    {
+      "id": "MAIL-AR-005",
+      "severity": "info",
+      "category": "informational",
+      "component": "authentication-results",
+      "title": "No Authentication-Results headers",
+      "description": "The message carries no Authentication-Results headers to compare with.",
+      "references": [
+        "https://www.rfc-editor.org/rfc/rfc8601"
+      ]
+    },
+    {
+      "id": "MAIL-SPF-035",
+      "severity": "info",
+      "category": "informational",
+      "component": "spf",
+      "title": "SPF inputs inferred from message headers",
+      "description": "SPF inputs were reconstructed from message headers, which the sender can forge above the receiving organization's boundary. Confirm them with --source-ip, --helo and --mail-from from the receiving MTA's logs.",
+      "evidence": [
+        "HELO mail.test.example (from received)",
+        "client IP 192.0.2.10 (from received)"
+      ],
+      "references": [
+        "https://www.rfc-editor.org/rfc/rfc7208#section-9.1"
+      ]
+    },
+    {
+      "id": "MAIL-SPF-036",
+      "severity": "info",
+      "category": "informational",
+      "component": "spf",
+      "title": "SPF not evaluated",
+      "description": "The MAIL FROM identity is unknown, so the SPF result used by DMARC could not be computed (HELO mail.test.example: none). Pass --mail-from or analyse a message with a Return-Path header.",
+      "references": [
+        "https://www.rfc-editor.org/rfc/rfc7208#section-4.1"
+      ]
+    }
+  ],
+  "errors": []
+}

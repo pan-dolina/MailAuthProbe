@@ -1,0 +1,37 @@
+MailAuthProbe domain: test.example
+
+MX
+     10  mx1.test.example                 192.0.2.25, 2001:db8::25
+     20  mx2.test.example                 192.0.2.26, 2001:db8::26
+
+SPF
+  v=spf1 ip4:192.0.2.0/24 ip6:2001:db8::/48 -all
+  DNS lookups: 0/10, void lookups: 0/2
+
+DMARC
+  _dmarc.test.example: v=DMARC1; p=reject; rua=mailto:dmarc@test.example
+  policy reject, subdomains reject, pct 100, adkim=r, aspf=r
+
+DKIM
+  s2026._domainkey.test.example: RSA 2048 bits
+
+MTA-STS
+  not deployed
+
+TLS-RPT
+  not configured
+
+Findings
+  LOW      MAIL-MTASTS-001  MTA-STS not deployed
+           test.example does not publish MTA-STS; senders may deliver mail over unauthenticated or
+           plaintext connections.
+           → Publish an MTA-STS policy (start with mode: testing and TLS-RPT) so that senders
+             require authenticated TLS when delivering to your MX hosts.
+  INFO     MAIL-TLSRPT-001  TLS-RPT not configured
+           test.example does not request SMTP TLS reports, so TLS delivery failures to its MX hosts
+           go unnoticed.
+  4 passing check(s) hidden; use --verbose to show them.
+
+Summary
+  0 critical, 0 high, 0 medium, 1 low, 1 info, 4 pass
+  14 DNS queries

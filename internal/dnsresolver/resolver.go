@@ -138,12 +138,12 @@ func IsTemporary(err error) bool {
 	return true
 }
 
-// IsInfrastructure reports whether err indicates that the resolver itself
-// could not be used (network failure, timeout, refusal), as opposed to a
-// property of the queried data.
+// IsInfrastructure reports whether err indicates that DNS resolution itself
+// failed (network failure, timeout, refusal, malformed or oversized
+// responses), as opposed to a property of the queried data such as NXDOMAIN.
 func IsInfrastructure(err error) bool {
 	switch KindOf(err) {
-	case KindTemporary, KindRefused:
+	case KindTemporary, KindRefused, KindMalformed, KindTooLarge:
 		return true
 	case 0:
 		return err != nil
