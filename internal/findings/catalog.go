@@ -808,3 +808,67 @@ var (
 		References: []string{RFC5321 + "#section-4.4"},
 	})
 )
+
+// SPF message verification rules.
+var (
+	SPFMessagePass = register(Rule{
+		ID:         "MAIL-SPF-030",
+		Component:  ComponentSPF,
+		Category:   CategoryInformational,
+		Severity:   SeverityPass,
+		Title:      "SPF pass",
+		References: []string{RFC7208 + "#section-2.6.3"},
+	})
+	SPFMessageFail = register(Rule{
+		ID:             "MAIL-SPF-031",
+		Component:      ComponentSPF,
+		Category:       CategoryWeakness,
+		Severity:       SeverityHigh,
+		Title:          "SPF fail: sending host is not authorized",
+		Recommendation: "The client is explicitly not authorized to send for this domain. Unless the message was forwarded, treat it as spoofed.",
+		References:     []string{RFC7208 + "#section-2.6.2"},
+	})
+	SPFMessageSoftFail = register(Rule{
+		ID:             "MAIL-SPF-032",
+		Component:      ComponentSPF,
+		Category:       CategoryWeakness,
+		Severity:       SeverityMedium,
+		Title:          "SPF softfail: sending host is probably not authorized",
+		Recommendation: "The domain owner believes this host is not authorized. Check DKIM and DMARC before trusting the message.",
+		References:     []string{RFC7208 + "#section-2.6.5"},
+	})
+	SPFMessageNeutral = register(Rule{
+		ID:             "MAIL-SPF-033",
+		Component:      ComponentSPF,
+		Category:       CategoryInformational,
+		Severity:       SeverityLow,
+		Title:          "SPF neutral or none: sender not verified",
+		Recommendation: "SPF gives no assurance for this message; rely on DKIM and DMARC.",
+		References:     []string{RFC7208 + "#section-2.6.1"},
+	})
+	SPFMessageError = register(Rule{
+		ID:             "MAIL-SPF-034",
+		Component:      ComponentSPF,
+		Category:       CategoryViolation,
+		Severity:       SeverityMedium,
+		Title:          "SPF evaluation error",
+		Recommendation: "SPF returned temperror or permerror; receivers may reject or ignore SPF for this domain. See the reason for details.",
+		References:     []string{RFC7208 + "#section-2.6.6", RFC7208 + "#section-2.6.7"},
+	})
+	SPFInputsInferred = register(Rule{
+		ID:         "MAIL-SPF-035",
+		Component:  ComponentSPF,
+		Category:   CategoryInformational,
+		Severity:   SeverityInfo,
+		Title:      "SPF inputs inferred from message headers",
+		References: []string{RFC7208 + "#section-9.1"},
+	})
+	SPFNotEvaluated = register(Rule{
+		ID:         "MAIL-SPF-036",
+		Component:  ComponentSPF,
+		Category:   CategoryInformational,
+		Severity:   SeverityInfo,
+		Title:      "SPF not evaluated",
+		References: []string{RFC7208 + "#section-4.1"},
+	})
+)

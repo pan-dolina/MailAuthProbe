@@ -57,6 +57,13 @@ finding.
 | `MAIL-SPF-023` | info | informational | SPF term depends on message data and cannot be followed statically |
 | `MAIL-SPF-024` | low | hardening | SPF record is longer than 450 octets |
 | `MAIL-SPF-025` | low | hardening | SPF mechanism references a name without records |
+| `MAIL-SPF-030` | pass | informational | SPF pass |
+| `MAIL-SPF-031` | high | security-weakness | SPF fail: sending host is not authorized |
+| `MAIL-SPF-032` | medium | security-weakness | SPF softfail: sending host is probably not authorized |
+| `MAIL-SPF-033` | low | informational | SPF neutral or none: sender not verified |
+| `MAIL-SPF-034` | medium | standard-violation | SPF evaluation error |
+| `MAIL-SPF-035` | info | informational | SPF inputs inferred from message headers |
+| `MAIL-SPF-036` | info | informational | SPF not evaluated |
 
 ## dkim
 
