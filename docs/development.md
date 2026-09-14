@@ -33,12 +33,27 @@ MailAuthProbe. Newest entries at the bottom of each section.
   would turn a harmless race into a `temperror`.
 - Resolver wrappers are composed as `Cache(Budget(Client))`: cached answers do
   not consume budget, so repeated checks of the same record are free.
+- SPF has two evaluation modes. `Checker.CheckHost` is a faithful
+  `check_host()` for one client IP and stops at the first match.
+  `Analyzer.Analyze` walks the whole include/redirect tree to compute the
+  worst-case lookup count a receiver may need; terms after `all` and a
+  redirect next to `all` are not counted because receivers never evaluate
+  them. Terms whose domain depends on sender or client macros are counted but
+  not followed.
+- Include loops are detected explicitly (domain already on the evaluation
+  stack) instead of relying on the lookup limit, so the report can show the
+  actual cycle. Including the same domain twice on different branches is
+  legal and is not reported as a loop.
 - Owner names in answers are compared case-insensitively: servers and
   forwarders using 0x20 case randomisation return names in mixed case.
 
 ## Problems and fixes
 
-_None yet._
+- SPF static analysis: the first version bounded hostile dependency trees by
+  counting analysed *records*. `TestAnalyzeBoundsHostileTrees` (a tree where
+  every record includes ten others, most of them non-existent) still issued
+  614 DNS queries, because failed include targets were not counted. The bound
+  now counts every include/redirect target fetched.
 
 ## Fuzzing
 
