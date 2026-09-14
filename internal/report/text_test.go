@@ -114,3 +114,26 @@ c.tree.example.   TXT "v=spf1 ip4:192.0.2.2 -all"
 		t.Errorf("tree not rendered as expected:\n%s", out)
 	}
 }
+
+func TestTextEscapesHostileContent(t *testing.T) {
+	raw := "From: Alice <alice@test.example>\r\n" +
+		"Subject: hi\x1b]0;owned\x07\x1b[2J\x1b[31mFAKE: DMARC pass\x1b[0m ‮evil‬ \x9b1m\xff\r\n" +
+		"Date: Mon, 14 Sep 2026 10:00:00 +0000\r\n\r\nbody\r\n"
+	rep, err := analyzer.Message(context.Background(), strings.NewReader(raw), "x\x1b[1m.eml", false, analyzer.Options{Resolver: zone(t), Now: time.Unix(1789380000, 0)})
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, color := range []bool{false, true} {
+		out := render(t, rep, report.TextOptions{Color: color, Verbose: true})
+		for _, bad := range []string{"\x1b]", "\x1b[2J", "\x1b[31mFAKE", "\x07", "‮", "\xc2\x9b", "\xff"} {
+			if strings.Contains(out, bad) {
+				t.Errorf("color=%v: output contains raw %q", color, bad)
+			}
+		}
+		for _, want := range []string{`\x1b]0;owned\x07`, `\u202E`, `\xff`, `x\x1b[1m.eml`} {
+			if !strings.Contains(out, want) {
+				t.Errorf("color=%v: output lacks escaped %q", color, want)
+			}
+		}
+	}
+}

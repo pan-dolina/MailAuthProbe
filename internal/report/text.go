@@ -5,6 +5,7 @@ import (
 	"io"
 	"strings"
 	"time"
+	"unicode/utf8"
 
 	"github.com/marcindolinski/mailauthprobe/internal/findings"
 	"github.com/marcindolinski/mailauthprobe/internal/mailparser"
@@ -37,25 +38,89 @@ type textWriter struct {
 	err  error
 }
 
+// styled is text that is safe to write to a terminal: untrusted content in it
+// has been escaped and any escape sequences were added by the renderer.
+type styled string
+
+// printf writes formatted output. String arguments are treated as untrusted
+// and escaped; styled arguments are written as they are.
 func (t *textWriter) printf(format string, args ...any) {
 	if t.err != nil {
 		return
 	}
+	for i, a := range args {
+		switch v := a.(type) {
+		case styled:
+			args[i] = string(v)
+		case string:
+			args[i] = escapeTerminal(v)
+		}
+	}
 	_, t.err = fmt.Fprintf(t.w, format, args...)
 }
 
-func (t *textWriter) style(code, s string) string {
+// plain escapes untrusted text for inclusion in styled output.
+func plain(s string) styled { return styled(escapeTerminal(s)) }
+
+func (t *textWriter) style(code, s string) styled {
 	if !t.opts.Color || s == "" {
+		return plain(s)
+	}
+	return styled(code + escapeTerminal(s) + ansiReset)
+}
+
+// escapeTerminal neutralises data from messages, DNS and HTTP before it is
+// printed: control characters (which include the ESC that starts terminal
+// escape sequences), DEL, C1 controls, invalid UTF-8 and Unicode
+// bidirectional overrides are replaced by visible escapes. Without this a
+// crafted Subject header or TXT record could rewrite the verdicts shown on
+// screen.
+func escapeTerminal(s string) string {
+	clean := true
+	for _, r := range s {
+		if needsEscape(r) {
+			clean = false
+			break
+		}
+	}
+	if clean {
 		return s
 	}
-	return code + s + ansiReset
+	var b strings.Builder
+	for i, r := range s {
+		switch {
+		case r == utf8.RuneError && len(s[i:]) > 0 && !strings.HasPrefix(s[i:], "\uFFFD"):
+			fmt.Fprintf(&b, "\\x%02x", s[i])
+		case r < 0x80 && needsEscape(r):
+			fmt.Fprintf(&b, "\\x%02x", r)
+		case needsEscape(r):
+			fmt.Fprintf(&b, "\\u%04X", r)
+		default:
+			b.WriteRune(r)
+		}
+	}
+	return b.String()
+}
+
+func needsEscape(r rune) bool {
+	switch {
+	case r == '\t':
+		return false
+	case r < 0x20, r == 0x7f, r >= 0x80 && r <= 0x9f:
+		return true
+	case r >= 0x202a && r <= 0x202e, r >= 0x2066 && r <= 0x2069, r == 0x200e, r == 0x200f:
+		return true
+	case r == utf8.RuneError:
+		return true
+	}
+	return false
 }
 
 func (t *textWriter) heading(s string) {
 	t.printf("\n%s\n", t.style(ansiBold, s))
 }
 
-func (t *textWriter) kv(key, value string) {
+func (t *textWriter) kv(key string, value styled) {
 	if value == "" {
 		return
 	}
@@ -71,12 +136,12 @@ var severityColors = map[findings.Severity]string{
 	findings.SeverityPass:     ansiGreen,
 }
 
-func (t *textWriter) severity(s findings.Severity) string {
+func (t *textWriter) severity(s findings.Severity) styled {
 	label := fmt.Sprintf("%-8s", strings.ToUpper(s.String()))
 	return t.style(severityColors[s], label)
 }
 
-func (t *textWriter) result(r string) string {
+func (t *textWriter) result(r string) styled {
 	switch r {
 	case "pass":
 		return t.style(ansiGreen, r)
@@ -87,7 +152,7 @@ func (t *textWriter) result(r string) string {
 	case "", "none":
 		return t.style(ansiDim, "none")
 	}
-	return r
+	return plain(r)
 }
 
 // WriteText renders rep for a terminal.
@@ -114,13 +179,13 @@ func (t *textWriter) summary(rep *Report) {
 	var parts []string
 	for _, s := range findings.Severities() {
 		n := rep.Summary.Counts[s.String()]
-		label := fmt.Sprintf("%d %s", n, s)
+		label := plain(fmt.Sprintf("%d %s", n, s))
 		if n > 0 {
-			label = t.style(severityColors[s], label)
+			label = t.style(severityColors[s], string(label))
 		}
-		parts = append(parts, label)
+		parts = append(parts, string(label))
 	}
-	t.printf("  %s\n", strings.Join(parts, ", "))
+	t.printf("  %s\n", styled(strings.Join(parts, ", ")))
 	t.printf("  %s\n", t.style(ansiDim, fmt.Sprintf("%d DNS queries", rep.Summary.DNSQueries)))
 	for _, e := range rep.Errors {
 		t.printf("  %s %s: %s\n", t.style(ansiRed, "error"), e.Component, e.Message)
@@ -164,7 +229,7 @@ func (t *textWriter) findings(rep *Report) {
 		}
 		if f.Recommendation != "" && f.Severity > findings.SeverityInfo {
 			for i, line := range wrap(f.Recommendation, t.opts.Width-len(indent)-2) {
-				prefix := "  "
+				prefix := styled("  ")
 				if i == 0 {
 					prefix = t.style(ansiMag, "→ ")
 				}
@@ -228,14 +293,14 @@ func (t *textWriter) domain(d *Domain) {
 			if d.MX.Implicit {
 				pref = "impl."
 			}
-			line := fmt.Sprintf("  %s  %-32s %s", pref, h.Name, strings.Join(addrs, ", "))
+			line := plain(strings.TrimRight(fmt.Sprintf("  %s  %-32s %s", pref, h.Name, strings.Join(addrs, ", ")), " "))
 			if h.CNAME != "" {
 				line += t.style(ansiYellow, " (CNAME → "+h.CNAME+")")
 			}
 			if h.Error != "" {
 				line += t.style(ansiRed, " ("+h.Error+")")
 			}
-			t.printf("%s\n", strings.TrimRight(line, " "))
+			t.printf("%s\n", line)
 		}
 	}
 	if d.SPF != nil {
@@ -314,17 +379,18 @@ func (t *textWriter) spfTree(n *spf.Node, indent, prefix string, last bool) {
 	if n.Via != "" {
 		label = n.Via
 	}
-	info := fmt.Sprintf("%d lookup(s)", n.Lookups)
+	counts := fmt.Sprintf("%d lookup(s)", n.Lookups)
 	if n.TotalLookups != n.Lookups {
-		info += fmt.Sprintf(", %d with includes", n.TotalLookups)
+		counts += fmt.Sprintf(", %d with includes", n.TotalLookups)
 	}
+	info := t.style(ansiDim, "("+counts+")")
 	switch {
 	case n.Loop:
-		info = t.style(ansiRed, "loop")
+		info = t.style(ansiRed, "(loop)")
 	case n.Dynamic:
-		info = t.style(ansiDim, "depends on message data")
+		info = t.style(ansiDim, "(depends on message data)")
 	case n.Error != "":
-		info += ", " + t.style(ansiRed, n.Error)
+		info = t.style(ansiDim, "("+counts+", ") + t.style(ansiRed, n.Error) + t.style(ansiDim, ")")
 	}
 	branch := ""
 	if prefix != "" || n.Via != "" {
@@ -333,7 +399,7 @@ func (t *textWriter) spfTree(n *spf.Node, indent, prefix string, last bool) {
 			branch = "└─ "
 		}
 	}
-	t.printf("%s%s%s%s %s\n", indent, prefix, branch, label, t.style(ansiDim, "("+info+")"))
+	t.printf("%s%s%s%s %s\n", indent, prefix, branch, label, info)
 	childPrefix := prefix
 	if branch != "" {
 		if last {
@@ -360,22 +426,22 @@ func first(vals []string) string {
 func (t *textWriter) message(m *Message) {
 	t.heading("Headers")
 	h := m.Headers
-	t.kv("From", first(h.From))
-	t.kv("Sender", first(h.Sender))
-	t.kv("Reply-To", first(h.ReplyTo))
-	t.kv("Return-Path", first(h.ReturnPath))
-	t.kv("To", first(h.To))
-	t.kv("Subject", first(h.Subject))
-	t.kv("Date", first(h.Date))
-	t.kv("Message-ID", first(h.MessageID))
+	t.kv("From", plain(first(h.From)))
+	t.kv("Sender", plain(first(h.Sender)))
+	t.kv("Reply-To", plain(first(h.ReplyTo)))
+	t.kv("Return-Path", plain(first(h.ReturnPath)))
+	t.kv("To", plain(first(h.To)))
+	t.kv("Subject", plain(first(h.Subject)))
+	t.kv("Date", plain(first(h.Date)))
+	t.kv("Message-ID", plain(first(h.MessageID)))
 	if m.MIME != nil && t.opts.Verbose {
-		t.kv("Content-Type", m.MIME.ContentType)
+		t.kv("Content-Type", plain(m.MIME.ContentType))
 	}
 
 	t.heading("Verdicts")
-	spfRes := "not evaluated"
+	spfRes := plain("not evaluated")
 	if m.SPF != nil && m.SPF.Result != "" {
-		spfRes = t.result(string(m.SPF.Result)) + " (" + m.SPF.Domain + ")"
+		spfRes = t.result(string(m.SPF.Result)) + plain(" ("+m.SPF.Domain+")")
 		if m.SPF.Inputs.IP != nil && m.SPF.Inputs.IP.Inferred {
 			spfRes += t.style(ansiDim, " inputs inferred")
 		}
@@ -393,17 +459,17 @@ func (t *textWriter) message(m *Message) {
 		if passing > 0 {
 			res = "pass"
 		}
-		dkimRes = fmt.Sprintf("%s (%d of %d signatures valid)", t.result(res), passing, len(m.DKIM))
+		dkimRes = t.result(res) + plain(fmt.Sprintf(" (%d of %d signatures valid)", passing, len(m.DKIM)))
 	}
 	t.kv("DKIM", dkimRes)
 	if m.DMARC != nil {
 		d := t.result(m.DMARC.Result)
 		if m.DMARC.FromDomain != "" {
-			d += " (" + m.DMARC.FromDomain
+			detail := " (" + m.DMARC.FromDomain
 			if m.DMARC.Policy != "" {
-				d += ", policy " + string(m.DMARC.Policy)
+				detail += ", policy " + string(m.DMARC.Policy)
 			}
-			d += ")"
+			d += plain(detail + ")")
 		}
 		t.kv("DMARC", d)
 	}
@@ -487,7 +553,7 @@ func (t *textWriter) message(m *Message) {
 			if x.in.Inferred {
 				src += ", inferred"
 			}
-			t.kv(x.name, x.in.Value+t.style(ansiDim, " ("+src+")"))
+			t.kv(x.name, plain(x.in.Value)+t.style(ansiDim, " ("+src+")"))
 		}
 		if in.NullSender {
 			t.kv("MAIL FROM", "<> (null sender)")
@@ -518,13 +584,13 @@ func (t *textWriter) message(m *Message) {
 			}
 			var rs []string
 			for _, r := range p.Header.Results {
-				rs = append(rs, r.Method+"="+t.result(r.Result))
+				rs = append(rs, string(plain(r.Method+"=")+t.result(r.Result)))
 			}
 			id := p.Header.AuthServID
 			if id == "" {
 				id = "(no authserv-id)"
 			}
-			t.printf("  #%d %s: %s\n", p.Index, id, strings.Join(rs, " "))
+			t.printf("  #%d %s: %s\n", p.Index, id, styled(strings.Join(rs, " ")))
 		}
 	}
 
