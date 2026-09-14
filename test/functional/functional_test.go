@@ -147,7 +147,9 @@ func (r jsonReport) ids() []string {
 	return out
 }
 
-func fixture(name string) string { return filepath.Join("testdata", "messages", name) }
+// fixture returns a slash-separated path so that the target echoed in reports
+// matches the golden files on every platform.
+func fixture(name string) string { return "testdata/messages/" + name }
 
 func TestMessageFixtures(t *testing.T) {
 	tests := []struct {
