@@ -191,3 +191,47 @@ func TestDomainBudgetIsDeterministic(t *testing.T) {
 		}
 	}
 }
+
+func TestForgedReceivedSPFIsIgnored(t *testing.T) {
+	raw := "Received: from attacker.example (attacker.example [203.0.113.66]) by mx.receiver.example with ESMTPS id 1; Mon, 14 Sep 2026 10:00:00 +0000\r\n" +
+		"Received-SPF: pass client-ip=192.0.2.10; envelope-from=bounces@test.example; helo=mail.test.example\r\n" +
+		"Return-Path: <bounces@test.example>\r\n" +
+		"From: Alice <alice@test.example>\r\n" +
+		"Date: Mon, 14 Sep 2026 10:00:00 +0000\r\nMessage-ID: <x@test.example>\r\n\r\nbody\r\n"
+	rep, err := Message(context.Background(), strings.NewReader(raw), "-", false, Options{Resolver: fixtureZone(t), Now: fixedNow})
+	if err != nil {
+		t.Fatal(err)
+	}
+	m := rep.Message
+	if m.SPF.Inputs.IP.Value != "203.0.113.66" || m.SPF.Result != "fail" || m.DMARC.Result != "fail" {
+		t.Errorf("ip=%s spf=%s dmarc=%s", m.SPF.Inputs.IP.Value, m.SPF.Result, m.DMARC.Result)
+	}
+	if m.SPF.Inputs.HELO != nil && m.SPF.Inputs.HELO.Source == "received-spf" {
+		t.Error("HELO taken from a Received-SPF header for a different client")
+	}
+}
+
+func TestReceivedSPFForSameClientIsUsed(t *testing.T) {
+	raw := "Received-SPF: pass client-ip=192.0.2.10; envelope-from=\"bounces@test.example\"; helo=mail.test.example\r\n" +
+		"Received: from x (mail.test.example [192.0.2.10]) by mx.receiver.example with ESMTPS id 1; Mon, 14 Sep 2026 10:00:00 +0000\r\n" +
+		"From: Alice <alice@test.example>\r\nDate: Mon, 14 Sep 2026 10:00:00 +0000\r\nMessage-ID: <x@test.example>\r\n\r\nbody\r\n"
+	rep, err := Message(context.Background(), strings.NewReader(raw), "-", false, Options{Resolver: fixtureZone(t), Now: fixedNow})
+	if err != nil {
+		t.Fatal(err)
+	}
+	in := rep.Message.SPF.Inputs
+	if in.HELO == nil || in.HELO.Source != "received-spf" || in.MailFrom == nil || in.MailFrom.Value != "bounces@test.example" {
+		t.Errorf("inputs = %+v %+v", in.HELO, in.MailFrom)
+	}
+}
+
+func TestOversizedEnvelopeFromIsRejected(t *testing.T) {
+	for _, addr := range []string{strings.Repeat("a", 65) + "@test.example", "a@" + strings.Repeat("b", 300) + ".example", "a b@test.example", "@test.example"} {
+		if validMailFrom(addr) {
+			t.Errorf("validMailFrom(%.40q) = true", addr)
+		}
+	}
+	if !validMailFrom("bounce+tag@mail.test.example") {
+		t.Error("valid address rejected")
+	}
+}

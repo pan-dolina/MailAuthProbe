@@ -160,42 +160,66 @@ func (s *session) spfInputs(msg *mailparser.Message, m *report.Message) spf.Mess
 		}
 	}
 
-	// Received-SPF written by the receiving MTA carries all three values.
-	if len(m.ReceivedSPF) > 0 {
-		rs := m.ReceivedSPF[0]
-		inferred := func(v string) *spf.Input { return &spf.Input{Value: v, Source: spf.SourceReceivedSPF, Inferred: true} }
-		if in.IP == nil {
-			if ip, err := netip.ParseAddr(rs.Params["client-ip"]); err == nil {
-				in.IP = inferred(ip.String())
+	// The client address comes from the operator or, failing that, from the
+	// Received chain. Received-SPF headers are never trusted for the address
+	// itself: any sender can add one claiming an authorized client-ip.
+	src, haveSrc := m.Received.InferSource()
+	if in.IP == nil && haveSrc {
+		in.IP = &spf.Input{Value: src.IP, Source: spf.SourceReceived, Inferred: true}
+	}
+
+	// A Received-SPF header is used for HELO and MAIL FROM only when it
+	// describes the same client, i.e. it was plausibly written by the MTA
+	// that accepted the connection recorded in the Received chain.
+	if in.IP != nil {
+		for _, rs := range m.ReceivedSPF {
+			ip, err := netip.ParseAddr(rs.Params["client-ip"])
+			if err != nil || ip.Unmap().String() != in.IP.Value {
+				continue
 			}
-		}
-		if in.HELO == nil && rs.Params["helo"] != "" {
-			in.HELO = inferred(rs.Params["helo"])
-		}
-		if in.MailFrom == nil && !in.NullSender && strings.Contains(rs.Params["envelope-from"], "@") {
-			in.MailFrom = inferred(strings.Trim(rs.Params["envelope-from"], "<>"))
+			if in.HELO == nil && validHELO(rs.Params["helo"]) {
+				in.HELO = &spf.Input{Value: rs.Params["helo"], Source: spf.SourceReceivedSPF, Inferred: true}
+			}
+			if from := strings.Trim(rs.Params["envelope-from"], "<>"); in.MailFrom == nil && !in.NullSender && validMailFrom(from) {
+				in.MailFrom = &spf.Input{Value: from, Source: spf.SourceReceivedSPF, Inferred: true}
+			}
+			break
 		}
 	}
-	if in.IP == nil || in.HELO == nil {
-		if src, ok := m.Received.InferSource(); ok {
-			if in.IP == nil {
-				in.IP = &spf.Input{Value: src.IP, Source: spf.SourceReceived, Inferred: true}
-			}
-			if in.HELO == nil && src.HELO != "" && dnsresolver.ValidDomain(src.HELO) {
-				in.HELO = &spf.Input{Value: src.HELO, Source: spf.SourceReceived, Inferred: true}
-			}
-		}
+	if in.HELO == nil && haveSrc && in.IP != nil && in.IP.Value == src.IP && validHELO(src.HELO) {
+		in.HELO = &spf.Input{Value: src.HELO, Source: spf.SourceReceived, Inferred: true}
 	}
 	if in.MailFrom == nil && !in.NullSender && len(m.Headers.ReturnPath) > 0 {
 		addr, err := mailparser.ParseReturnPath(m.Headers.ReturnPath[0])
 		switch {
 		case errors.Is(err, mailparser.ErrNullReversePath):
 			in.NullSender = true
-		case err == nil:
+		case err == nil && validMailFrom(addr):
 			in.MailFrom = &spf.Input{Value: addr, Source: spf.SourceReturnPath, Inferred: true}
 		}
 	}
 	return in
+}
+
+// validHELO accepts a HELO name that can be used as an SPF domain.
+func validHELO(h string) bool {
+	return h != "" && len(h) <= 253 && dnsresolver.ValidDomain(h)
+}
+
+// validMailFrom bounds values taken from message headers before they are fed
+// to SPF macro expansion (RFC 5321 section 4.5.3.1: local part 64 octets,
+// path 256 octets).
+func validMailFrom(addr string) bool {
+	at := strings.LastIndexByte(addr, '@')
+	if at <= 0 || at > 64 || len(addr) > 254 {
+		return false
+	}
+	for i := 0; i < at; i++ {
+		if c := addr[i]; c <= ' ' || c >= 0x7f {
+			return false
+		}
+	}
+	return dnsresolver.ValidDomain(addr[at+1:])
 }
 
 func (s *session) dkimFindings(msg *mailparser.Message, m *report.Message) {
