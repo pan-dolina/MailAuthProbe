@@ -44,6 +44,17 @@ MailAuthProbe. Newest entries at the bottom of each section.
   stack) instead of relying on the lookup limit, so the report can show the
   actual cycle. Including the same domain twice on different branches is
   legal and is not reported as a loop.
+- The message parser keeps each header field's raw bytes (`Header.Raw`)
+  next to the unfolded value. DKIM canonicalization must operate on the bytes
+  that were signed; reconstructing them from parsed values loses folding and
+  whitespace.
+- A line in the header section that is neither a field nor a continuation is
+  treated as the start of the body, matching what Postfix and Exim do. The
+  alternative (skipping the line) would let an attacker hide header fields
+  from MailAuthProbe that receivers never saw.
+- Message size and header section limits are hard errors (exit code 3);
+  MIME depth and part limits are defects. Authentication does not depend on
+  MIME structure, so a message with 10 000 parts can still be verified.
 - Owner names in answers are compared case-insensitively: servers and
   forwarders using 0x20 case randomisation return names in mixed case.
 

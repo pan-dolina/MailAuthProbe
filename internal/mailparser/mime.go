@@ -51,16 +51,20 @@ func (h messageHeaders) Get(key string) string {
 }
 
 type mimeWalker struct {
-	m     *Message
-	parts int
+	m      *Message
+	limits Limits
+	parts  int
+	// stopped is set once a MIME limit is hit; the remaining structure is
+	// not examined.
+	stopped bool
 }
 
-func parseMIME(m *Message) {
+func parseMIME(m *Message, limits Limits) {
 	if _, ok := m.First("Content-Type"); !ok {
 		m.MIME = &Part{ContentType: "text/plain", Charset: "us-ascii", Size: len(m.Body)}
 		return
 	}
-	w := &mimeWalker{m: m}
+	w := &mimeWalker{m: m, limits: limits}
 	m.MIME = w.part(messageHeaders{m}, m.Body, 0)
 	if _, ok := m.First("MIME-Version"); !ok && strings.HasPrefix(m.MIME.ContentType, "multipart/") {
 		m.defect(DefectMIMEMissingVersion, "multipart message without a MIME-Version header")
@@ -107,6 +111,13 @@ func (w *mimeWalker) part(h headerGetter, body []byte, depth int) *Part {
 	if !strings.HasPrefix(p.ContentType, "multipart/") {
 		return p
 	}
+	if depth >= w.limits.MaxMIMEDepth {
+		if !w.stopped {
+			w.m.defect(DefectMIMEDepthExceeded, "multipart nesting deeper than %d levels; inner parts were not examined", w.limits.MaxMIMEDepth)
+		}
+		w.stopped = true
+		return p
+	}
 	if p.Boundary == "" {
 		w.m.defect(DefectMIMEMissingBoundary, "%s part without a boundary parameter", p.ContentType)
 		return p
@@ -117,7 +128,12 @@ func (w *mimeWalker) part(h headerGetter, body []byte, depth int) *Part {
 	}
 
 	mr := multipart.NewReader(bytes.NewReader(body), p.Boundary)
-	for {
+	for !w.stopped {
+		if w.parts >= w.limits.MaxMIMEParts {
+			w.m.defect(DefectMIMEPartsExceeded, "more than %d MIME parts; remaining parts were not examined", w.limits.MaxMIMEParts)
+			w.stopped = true
+			break
+		}
 		child, err := mr.NextRawPart()
 		if errors.Is(err, io.EOF) {
 			break
@@ -134,7 +150,7 @@ func (w *mimeWalker) part(h headerGetter, body []byte, depth int) *Part {
 		}
 		p.Parts = append(p.Parts, w.part(child.Header, content, depth+1))
 	}
-	if len(p.Parts) == 0 {
+	if len(p.Parts) == 0 && !w.stopped {
 		w.m.defect(DefectMIMENoParts, "%s body contains no parts", p.ContentType)
 	}
 	return p

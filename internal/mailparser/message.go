@@ -100,11 +100,15 @@ type Options struct {
 	// HeadersOnly treats the whole input as a header section; used for
 	// files that contain just the headers of a message.
 	HeadersOnly bool
+	// Limits; zero fields take the values from DefaultLimits.
+	Limits Limits
 }
 
-// Parse reads and parses a message.
+// Parse reads and parses a message. Reading stops as soon as the input
+// exceeds Limits.MaxMessageBytes.
 func Parse(r io.Reader, opts Options) (*Message, error) {
-	data, err := io.ReadAll(r)
+	limits := opts.Limits.withDefaults()
+	data, err := io.ReadAll(io.LimitReader(r, limits.MaxMessageBytes+1))
 	if err != nil {
 		return nil, fmt.Errorf("reading message: %w", err)
 	}
@@ -114,13 +118,20 @@ func Parse(r io.Reader, opts Options) (*Message, error) {
 // ParseBytes parses a message held in memory. The returned message
 // references data; callers must not modify it afterwards.
 func ParseBytes(data []byte, opts Options) (*Message, error) {
+	limits := opts.Limits.withDefaults()
+	if int64(len(data)) > limits.MaxMessageBytes {
+		return nil, &LimitError{Limit: "message size", Max: limits.MaxMessageBytes}
+	}
 	m := &Message{Headers: []Header{}, Size: len(data)}
 	checkLineEndings(m, data)
 	if bytes.IndexByte(data, 0) >= 0 {
 		m.defect(DefectNULByte, "the message contains NUL bytes")
 	}
 
-	offset := parseHeaderSection(m, data)
+	offset, err := parseHeaderSection(m, data, limits)
+	if err != nil {
+		return nil, err
+	}
 	m.HeaderSize = offset
 	if offset < len(data) {
 		m.HasBody = true
@@ -129,7 +140,7 @@ func ParseBytes(data []byte, opts Options) (*Message, error) {
 	if opts.HeadersOnly {
 		return m, nil
 	}
-	parseMIME(m)
+	parseMIME(m, limits)
 	return m, nil
 }
 
@@ -161,7 +172,7 @@ func trimEOL(line []byte) []byte {
 
 // parseHeaderSection parses header fields and returns the offset at which
 // the body starts.
-func parseHeaderSection(m *Message, data []byte) int {
+func parseHeaderSection(m *Message, data []byte, limits Limits) (int, error) {
 	off := 0
 	var cur *Header
 	var curStart int
@@ -176,6 +187,9 @@ func parseHeaderSection(m *Message, data []byte) int {
 	}
 
 	for off < len(data) {
+		if off > limits.MaxHeaderBytes {
+			return 0, &LimitError{Limit: "header section size", Max: int64(limits.MaxHeaderBytes)}
+		}
 		line, next := nextLine(data, off)
 		content := trimEOL(line)
 		if len(content) > 998 {
@@ -184,7 +198,7 @@ func parseHeaderSection(m *Message, data []byte) int {
 
 		if len(content) == 0 {
 			flush(off)
-			return next
+			return next, nil
 		}
 		if content[0] == ' ' || content[0] == '\t' {
 			if cur == nil {
@@ -206,18 +220,24 @@ func parseHeaderSection(m *Message, data []byte) int {
 			flush(off)
 			m.defect(DefectMalformedHeaderLine, "line %q is not a valid header field; treating it as the start of the body", truncate(content, 60))
 			m.defect(DefectNoBodySeparator, "the header section is not terminated by an empty line")
-			return off
+			return off, nil
 		}
 		if len(trimmed) != len(name) {
 			m.defect(DefectWhitespaceBeforeColon, "header field %q has whitespace before the colon (obsolete syntax)", trimmed)
 		}
 		flush(off)
+		if len(m.Headers) >= limits.MaxHeaders {
+			return 0, &LimitError{Limit: "header field count", Max: int64(limits.MaxHeaders)}
+		}
 		cur = &Header{Name: string(trimmed)}
 		curStart = off
 		off = next
 	}
+	if len(data) > limits.MaxHeaderBytes {
+		return 0, &LimitError{Limit: "header section size", Max: int64(limits.MaxHeaderBytes)}
+	}
 	flush(len(data))
-	return len(data)
+	return len(data), nil
 }
 
 // validFieldName: printable US-ASCII except ':' (RFC 5322 section 2.2).
