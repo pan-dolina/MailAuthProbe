@@ -21,5 +21,11 @@ if ! diff "$a/SHA256SUMS" "$b/SHA256SUMS"; then
   echo "release build is not reproducible" >&2
   exit 1
 fi
+# Optionally compare with an existing build, e.g. the artifacts about to be
+# published.
+if [ -n "${REFERENCE:-}" ] && ! diff "$REFERENCE" "$a/SHA256SUMS"; then
+  echo "rebuild differs from $REFERENCE" >&2
+  exit 1
+fi
 echo "reproducible:"
 cat "$a/SHA256SUMS"

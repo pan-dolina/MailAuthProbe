@@ -2,6 +2,8 @@ module github.com/marcindolinski/mailauthprobe
 
 go 1.26.0
 
+toolchain go1.27.1
+
 require (
 	github.com/spf13/cobra v1.10.2
 	golang.org/x/net v0.59.0

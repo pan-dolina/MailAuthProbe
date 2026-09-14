@@ -22,7 +22,7 @@ export SYFT_CHECK_FOR_APP_UPDATE=false
 if [ "$#" -eq 0 ]; then
   out="$(cd "$out" && pwd)"
   cd "$(dirname "$0")/.."
-  syft scan dir:. --source-name mailauthprobe \
+  syft scan dir:. --source-name mailauthprobe --source-version "${VERSION:-unknown}" \
     --override-default-catalogers go-module-file-cataloger --select-catalogers -file \
     -o "spdx-json=$out/mailauthprobe.spdx.json" \
     -o "cyclonedx-json=$out/mailauthprobe.cdx.json"
@@ -35,7 +35,7 @@ for bin in "$@"; do
   name="${SBOM_NAME:-${file%.exe}}"
   # Scan from the binary's directory so that no local paths end up in the
   # SBOM.
-  (cd "$(dirname "$bin")" && syft scan "file:$file" --source-name "$name" \
+  (cd "$(dirname "$bin")" && syft scan "file:$file" --source-name "$name" --select-catalogers -file \
     -o "spdx-json=$out/$name.spdx.json" \
     -o "cyclonedx-json=$out/$name.cdx.json")
 done

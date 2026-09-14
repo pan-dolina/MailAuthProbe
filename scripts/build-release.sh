@@ -5,7 +5,8 @@
 # archives and SHA256SUMS are byte-for-byte identical. Inputs that would
 # otherwise vary (paths, build IDs, timestamps) are fixed:
 #   - go build -trimpath, -buildid= and CGO_ENABLED=0
-#   - version metadata taken from git (tag, commit, commit date)
+#   - version metadata taken from git (tag, commit, commit date); VCS stamping
+#     records the same revision in the Go build information used by SBOMs
 #   - archive entries timestamped with the commit time (SOURCE_DATE_EPOCH)
 #
 # Environment:
@@ -17,7 +18,16 @@ cd "$(dirname "$0")/.."
 
 DIST="${DIST:-dist}"
 COMMIT="$(git rev-parse HEAD)"
-SOURCE_DATE_EPOCH="${SOURCE_DATE_EPOCH:-$(git log -1 --format=%ct)}"
+# Always the commit time: a SOURCE_DATE_EPOCH inherited from the environment
+# would make archives differ from the published ones.
+SOURCE_DATE_EPOCH="$(git log -1 --format=%ct)"
+
+# Pin every input that changes the binaries: the toolchain from go.mod, no
+# user go.env, baseline CPU feature levels, no experiments.
+toolchain="$(sed -n 's/^toolchain //p' go.mod)"
+export GOTOOLCHAIN="${toolchain:-local}"
+export GOENV=off GOAMD64=v1 GOARM64=v8.0 GOEXPERIMENT=
+echo "toolchain: $(go version)"
 DATE="$(git log -1 --format=%cI)"
 VERSION="${VERSION:-$(git describe --tags --exact-match 2>/dev/null || echo "v0.0.0-${COMMIT:0:12}")}"
 TARGETS="${TARGETS:-linux/amd64 linux/arm64 darwin/amd64 darwin/arm64 windows/amd64}"
@@ -45,8 +55,8 @@ for target in $TARGETS; do
 
   echo "building $name"
   mkdir -p "$work/$name"
-  CGO_ENABLED=0 GOOS="$goos" GOARCH="$goarch" GOFLAGS=-mod=readonly \
-    go build -trimpath -buildvcs=false -ldflags "$ldflags" -o "$work/$name/$exe" ./cmd/mailauthprobe
+  CGO_ENABLED=0 GOOS="$goos" GOARCH="$goarch" GOFLAGS="${GOFLAGS:+$GOFLAGS }-mod=readonly" \
+    go build -trimpath -buildvcs=true -ldflags "$ldflags" -o "$work/$name/$exe" ./cmd/mailauthprobe
 
   ext="tar.gz"
   [ "$goos" = "windows" ] && ext="zip"

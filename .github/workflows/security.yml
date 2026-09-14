@@ -41,9 +41,9 @@ jobs:
 
       - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
         with:
-          # Scan against the latest patch release: govulncheck also reports
-          # standard library vulnerabilities of the toolchain in use.
-          go-version: stable
+          # govulncheck reports standard library vulnerabilities of the
+          # toolchain in use, so scan with the release toolchain from go.mod.
+          go-version-file: go.mod
           check-latest: true
 
       - name: govulncheck

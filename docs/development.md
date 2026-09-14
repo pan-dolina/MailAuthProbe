@@ -128,8 +128,12 @@ MailAuthProbe. Newest entries at the bottom of each section.
 - Reproducibility: `-trimpath`, `-buildid=`, `CGO_ENABLED=0`, version,
   commit and date injected from git (commit date, not build time), and
   archive entries with fixed owner, mode and `SOURCE_DATE_EPOCH` mtime.
-  `-buildvcs=false` because the same information is injected explicitly and
-  VCS stamping would record whether unrelated untracked files exist.
+  The first version used `-buildvcs=false`; the supply-chain review showed
+  that with `-trimpath` this leaves the main module version as `(devel)` in
+  the build information, so SBOMs of the binaries had no product version.
+  Release builds now use `-buildvcs=true` and pin the toolchain from the
+  `toolchain` line in go.mod, `GOENV=off`, `GOAMD64=v1`, `GOARM64=v8.0` and
+  an empty `GOEXPERIMENT`.
 - `scripts/verify-reproducible.sh` builds twice, the second time with an empty
   module and build cache, and compares SHA256SUMS. First local run (Go
   1.27.1, darwin/arm64 host, all five targets): identical checksums.

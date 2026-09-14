@@ -23,6 +23,10 @@ jobs:
         go: [stable, oldstable]
     runs-on: ${{ matrix.os }}
     timeout-minutes: 20
+    env:
+      # Test with the toolchain selected by the matrix, not the release
+      # toolchain named in go.mod.
+      GOTOOLCHAIN: local
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
