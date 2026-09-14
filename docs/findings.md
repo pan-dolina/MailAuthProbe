@@ -58,6 +58,29 @@ finding.
 | `MAIL-SPF-024` | low | hardening | SPF record is longer than 450 octets |
 | `MAIL-SPF-025` | low | hardening | SPF mechanism references a name without records |
 
+## dmarc
+
+| ID | Default severity | Category | Title |
+|----|------------------|----------|-------|
+| `MAIL-DMARC-001` | high | security-weakness | No DMARC record |
+| `MAIL-DMARC-002` | high | standard-violation | Multiple DMARC records |
+| `MAIL-DMARC-003` | high | standard-violation | Invalid DMARC record |
+| `MAIL-DMARC-004` | medium | security-weakness | DMARC policy is p=none (monitoring only) |
+| `MAIL-DMARC-005` | low | hardening | DMARC policy is p=quarantine |
+| `MAIL-DMARC-006` | medium | security-weakness | DMARC policy applies to only part of the mail (pct < 100) |
+| `MAIL-DMARC-007` | medium | security-weakness | DMARC subdomain policy is weaker than the domain policy |
+| `MAIL-DMARC-008` | low | hardening | DMARC aggregate reports are not requested |
+| `MAIL-DMARC-009` | info | informational | DMARC failure reports (ruf) requested |
+| `MAIL-DMARC-010` | medium | standard-violation | DMARC tag has an invalid value |
+| `MAIL-DMARC-011` | medium | standard-violation | DMARC tag appears more than once |
+| `MAIL-DMARC-012` | info | informational | DMARC record contains an unknown tag |
+| `MAIL-DMARC-013` | medium | standard-violation | DMARC report URI is invalid |
+| `MAIL-DMARC-014` | medium | standard-violation | External DMARC report destination is not authorized |
+| `MAIL-DMARC-015` | info | informational | DMARC policy inherited from the organizational domain |
+| `MAIL-DMARC-016` | info | informational | DMARC requires strict identifier alignment |
+| `MAIL-DMARC-017` | pass | informational | DMARC policy is enforced |
+| `MAIL-DMARC-018` | info | informational | DMARC fo tag has no effect without ruf |
+
 ## dns
 
 | ID | Default severity | Category | Title |
