@@ -82,6 +82,10 @@ MailAuthProbe. Newest entries at the bottom of each section.
   table test with a Postfix local-delivery header. Also, Exim writes
   `with esmtps (TLS1.3) tls <cipher>`, so the protocol is now the words before
   the first comment in the clause.
+- ARC summary: a message whose ARC headers all carried invalid instance
+  numbers produced an empty set list, and the summary indexed the last set
+  unconditionally (index out of range). Caught by the "bad instance" table
+  case before the code was ever run on real input.
 
 ## Fuzzing
 

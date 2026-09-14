@@ -84,6 +84,18 @@ finding.
 | `MAIL-DKIM-013` | medium | standard-violation | Multiple TXT records at a DKIM selector |
 | `MAIL-DKIM-014` | info | informational | DKIM key record contains an unknown tag |
 | `MAIL-DKIM-015` | low | hardening | DKIM RSA key is not in SubjectPublicKeyInfo format |
+| `MAIL-DKIM-020` | pass | informational | DKIM signature valid |
+| `MAIL-DKIM-021` | high | security-weakness | DKIM signature does not verify |
+| `MAIL-DKIM-022` | high | security-weakness | DKIM body hash mismatch |
+| `MAIL-DKIM-023` | medium | standard-violation | DKIM signature cannot be verified |
+| `MAIL-DKIM-024` | medium | informational | DKIM key lookup failed temporarily |
+| `MAIL-DKIM-025` | medium | security-weakness | Message is not DKIM-signed |
+| `MAIL-DKIM-026` | high | security-weakness | DKIM signature uses rsa-sha1 |
+| `MAIL-DKIM-027` | medium | security-weakness | DKIM signature covers only part of the body (l=) |
+| `MAIL-DKIM-028` | low | hardening | DKIM signature does not cover important headers |
+| `MAIL-DKIM-029` | medium | informational | DKIM signature has expired |
+| `MAIL-DKIM-030` | low | informational | Too many DKIM signatures |
+| `MAIL-DKIM-031` | info | informational | DKIM header signature valid; body not checked |
 
 ## dmarc
 
@@ -146,6 +158,25 @@ finding.
 | `MAIL-TLSRPT-003` | medium | standard-violation | Invalid TLS-RPT report URI |
 | `MAIL-TLSRPT-004` | pass | informational | TLS-RPT is configured |
 
+## message
+
+| ID | Default severity | Category | Title |
+|----|------------------|----------|-------|
+| `MAIL-MSG-001` | medium | standard-violation | Malformed header section |
+| `MAIL-MSG-002` | low | standard-violation | Malformed MIME structure |
+| `MAIL-MSG-003` | info | informational | Non-CRLF line endings |
+| `MAIL-MSG-004` | medium | standard-violation | Required header missing |
+| `MAIL-MSG-005` | low | standard-violation | Message-ID missing |
+| `MAIL-MSG-006` | medium | standard-violation | Header that must be unique appears more than once |
+| `MAIL-MSG-007` | info | informational | Reply-To domain differs from From domain |
+| `MAIL-MSG-008` | info | informational | Sender domain differs from From domain |
+| `MAIL-MSG-009` | info | informational | Return-Path domain differs from From domain |
+| `MAIL-MSG-010` | medium | security-weakness | Attachment with an executable or container file type |
+| `MAIL-MSG-011` | medium | informational | MIME structure exceeds analysis limits |
+| `MAIL-MSG-012` | low | standard-violation | Invalid Date header |
+| `MAIL-MSG-013` | low | standard-violation | Message contains NUL bytes |
+| `MAIL-MSG-014` | info | informational | Message body not available |
+
 ## received
 
 | ID | Default severity | Category | Title |
@@ -167,6 +198,14 @@ finding.
 | `MAIL-AR-003` | pass | informational | Authentication-Results agree with independent verification |
 | `MAIL-AR-004` | low | standard-violation | Authentication-Results header cannot be parsed |
 | `MAIL-AR-005` | info | informational | No Authentication-Results headers |
+
+## arc
+
+| ID | Default severity | Category | Title |
+|----|------------------|----------|-------|
+| `MAIL-ARC-001` | info | informational | ARC chain present |
+| `MAIL-ARC-002` | low | informational | ARC chain validation failed at an intermediary |
+| `MAIL-ARC-003` | low | standard-violation | ARC header set is structurally invalid |
 
 ## dns
 

@@ -1174,3 +1174,266 @@ var (
 		Title:     "TLS-RPT is configured",
 	})
 )
+
+// ARC rules.
+var (
+	ARCPresent = register(Rule{
+		ID:         "MAIL-ARC-001",
+		Component:  ComponentARC,
+		Category:   CategoryInformational,
+		Severity:   SeverityInfo,
+		Title:      "ARC chain present",
+		References: []string{RFC8617},
+	})
+	ARCFail = register(Rule{
+		ID:             "MAIL-ARC-002",
+		Component:      ComponentARC,
+		Category:       CategoryInformational,
+		Severity:       SeverityLow,
+		Title:          "ARC chain validation failed at an intermediary",
+		Recommendation: "An intermediary reported cv=fail. Authentication results carried in the ARC chain cannot be relied upon.",
+		References:     []string{RFC8617 + "#section-5.2"},
+	})
+	ARCInvalid = register(Rule{
+		ID:             "MAIL-ARC-003",
+		Component:      ComponentARC,
+		Category:       CategoryViolation,
+		Severity:       SeverityLow,
+		Title:          "ARC header set is structurally invalid",
+		Recommendation: "Missing, duplicated or misnumbered ARC headers indicate a broken intermediary or tampering.",
+		References:     []string{RFC8617 + "#section-4.2"},
+	})
+)
+
+// Message structure rules.
+var (
+	MsgMalformedHeaders = register(Rule{
+		ID:             "MAIL-MSG-001",
+		Component:      ComponentMessage,
+		Category:       CategoryViolation,
+		Severity:       SeverityMedium,
+		Title:          "Malformed header section",
+		Recommendation: "Malformed headers are parsed differently by different software and are used to hide or smuggle header fields. Treat the message with suspicion.",
+		References:     []string{RFC5322 + "#section-2.2"},
+	})
+	MsgMalformedMIME = register(Rule{
+		ID:             "MAIL-MSG-002",
+		Component:      ComponentMessage,
+		Category:       CategoryViolation,
+		Severity:       SeverityLow,
+		Title:          "Malformed MIME structure",
+		Recommendation: "Broken MIME structure can make filters and mail clients see different content.",
+		References:     []string{RFC2045, RFC2046},
+	})
+	MsgLineEndings = register(Rule{
+		ID:         "MAIL-MSG-003",
+		Component:  ComponentMessage,
+		Category:   CategoryInformational,
+		Severity:   SeverityInfo,
+		Title:      "Non-CRLF line endings",
+		References: []string{RFC5322 + "#section-2.1"},
+	})
+	MsgMissingRequired = register(Rule{
+		ID:             "MAIL-MSG-004",
+		Component:      ComponentMessage,
+		Category:       CategoryViolation,
+		Severity:       SeverityMedium,
+		Title:          "Required header missing",
+		Recommendation: "RFC 5322 requires exactly one From and one Date header.",
+		References:     []string{RFC5322 + "#section-3.6"},
+	})
+	MsgMissingMessageID = register(Rule{
+		ID:             "MAIL-MSG-005",
+		Component:      ComponentMessage,
+		Category:       CategoryViolation,
+		Severity:       SeverityLow,
+		Title:          "Message-ID missing",
+		Recommendation: "Legitimate mail systems add a Message-ID; its absence is common in bulk and malicious mail.",
+		References:     []string{RFC5322 + "#section-3.6.4"},
+	})
+	MsgDuplicateHeader = register(Rule{
+		ID:             "MAIL-MSG-006",
+		Component:      ComponentMessage,
+		Category:       CategoryViolation,
+		Severity:       SeverityMedium,
+		Title:          "Header that must be unique appears more than once",
+		Recommendation: "Different software picks different instances of duplicated headers; this is used to show one identity to filters and another to users.",
+		References:     []string{RFC5322 + "#section-3.6"},
+	})
+	MsgReplyToMismatch = register(Rule{
+		ID:         "MAIL-MSG-007",
+		Component:  ComponentMessage,
+		Category:   CategoryInformational,
+		Severity:   SeverityInfo,
+		Title:      "Reply-To domain differs from From domain",
+		References: []string{RFC5322 + "#section-3.6.2"},
+	})
+	MsgSenderMismatch = register(Rule{
+		ID:         "MAIL-MSG-008",
+		Component:  ComponentMessage,
+		Category:   CategoryInformational,
+		Severity:   SeverityInfo,
+		Title:      "Sender domain differs from From domain",
+		References: []string{RFC5322 + "#section-3.6.2"},
+	})
+	MsgReturnPathMismatch = register(Rule{
+		ID:         "MAIL-MSG-009",
+		Component:  ComponentMessage,
+		Category:   CategoryInformational,
+		Severity:   SeverityInfo,
+		Title:      "Return-Path domain differs from From domain",
+		References: []string{RFC5321 + "#section-4.4"},
+	})
+	MsgRiskyAttachment = register(Rule{
+		ID:             "MAIL-MSG-010",
+		Component:      ComponentMessage,
+		Category:       CategoryWeakness,
+		Severity:       SeverityMedium,
+		Title:          "Attachment with an executable or container file type",
+		Recommendation: "Do not open the attachment outside an isolated analysis environment. MailAuthProbe never extracts or executes attachments.",
+	})
+	MsgMIMELimit = register(Rule{
+		ID:             "MAIL-MSG-011",
+		Component:      ComponentMessage,
+		Category:       CategoryInformational,
+		Severity:       SeverityMedium,
+		Title:          "MIME structure exceeds analysis limits",
+		Recommendation: "Extreme nesting or part counts are used to evade content scanners. Authentication results remain valid.",
+	})
+	MsgInvalidDate = register(Rule{
+		ID:             "MAIL-MSG-012",
+		Component:      ComponentMessage,
+		Category:       CategoryViolation,
+		Severity:       SeverityLow,
+		Title:          "Invalid Date header",
+		Recommendation: "The Date header does not follow RFC 5322 date-time syntax.",
+		References:     []string{RFC5322 + "#section-3.3"},
+	})
+	MsgBadBytes = register(Rule{
+		ID:             "MAIL-MSG-013",
+		Component:      ComponentMessage,
+		Category:       CategoryViolation,
+		Severity:       SeverityLow,
+		Title:          "Message contains NUL bytes",
+		Recommendation: "NUL bytes are not allowed in Internet messages and truncate strings in some software.",
+		References:     []string{RFC5322 + "#section-2.1"},
+	})
+	MsgHeadersOnly = register(Rule{
+		ID:         "MAIL-MSG-014",
+		Component:  ComponentMessage,
+		Category:   CategoryInformational,
+		Severity:   SeverityInfo,
+		Title:      "Message body not available",
+		References: []string{RFC6376 + "#section-3.7"},
+	})
+)
+
+// DKIM message verification rules.
+var (
+	DKIMSignatureValid = register(Rule{
+		ID:         "MAIL-DKIM-020",
+		Component:  ComponentDKIM,
+		Category:   CategoryInformational,
+		Severity:   SeverityPass,
+		Title:      "DKIM signature valid",
+		References: []string{RFC6376 + "#section-6"},
+	})
+	DKIMSignatureInvalid = register(Rule{
+		ID:             "MAIL-DKIM-021",
+		Component:      ComponentDKIM,
+		Category:       CategoryWeakness,
+		Severity:       SeverityHigh,
+		Title:          "DKIM signature does not verify",
+		Recommendation: "Signed header fields were changed after signing, or the signature was forged. Do not trust the signed identity.",
+		References:     []string{RFC6376 + "#section-6.1.3"},
+	})
+	DKIMBodyHashMismatch = register(Rule{
+		ID:             "MAIL-DKIM-022",
+		Component:      ComponentDKIM,
+		Category:       CategoryWeakness,
+		Severity:       SeverityHigh,
+		Title:          "DKIM body hash mismatch",
+		Recommendation: "The body was modified after signing (by a forwarder, footer injection, or an attacker). Compare with the original message if available.",
+		References:     []string{RFC6376 + "#section-6.1.3"},
+	})
+	DKIMVerifyPermError = register(Rule{
+		ID:             "MAIL-DKIM-023",
+		Component:      ComponentDKIM,
+		Category:       CategoryViolation,
+		Severity:       SeverityMedium,
+		Title:          "DKIM signature cannot be verified",
+		Recommendation: "The signature is malformed or its key is missing, revoked or unsuitable. See the description for the exact reason.",
+		References:     []string{RFC6376 + "#section-6.1"},
+	})
+	DKIMVerifyTempError = register(Rule{
+		ID:             "MAIL-DKIM-024",
+		Component:      ComponentDKIM,
+		Category:       CategoryInformational,
+		Severity:       SeverityMedium,
+		Title:          "DKIM key lookup failed temporarily",
+		Recommendation: "Retry the analysis; the result is unknown.",
+		References:     []string{RFC6376 + "#section-6.1.2"},
+	})
+	DKIMUnsigned = register(Rule{
+		ID:             "MAIL-DKIM-025",
+		Component:      ComponentDKIM,
+		Category:       CategoryWeakness,
+		Severity:       SeverityMedium,
+		Title:          "Message is not DKIM-signed",
+		Recommendation: "Without DKIM, DMARC can only pass through SPF, which breaks on forwarding.",
+		References:     []string{RFC6376},
+	})
+	DKIMInsecureAlgorithm = register(Rule{
+		ID:             "MAIL-DKIM-026",
+		Component:      ComponentDKIM,
+		Category:       CategoryWeakness,
+		Severity:       SeverityHigh,
+		Title:          "DKIM signature uses rsa-sha1",
+		Recommendation: "The signer must switch to rsa-sha256; rsa-sha1 signatures are not accepted.",
+		References:     []string{RFC8301 + "#section-3.1"},
+	})
+	DKIMBodyLength = register(Rule{
+		ID:             "MAIL-DKIM-027",
+		Component:      ComponentDKIM,
+		Category:       CategoryWeakness,
+		Severity:       SeverityMedium,
+		Title:          "DKIM signature covers only part of the body (l=)",
+		Recommendation: "Content after the signed length can be replaced or appended by anyone. Signers should not use l=.",
+		References:     []string{RFC6376 + "#section-8.2"},
+	})
+	DKIMUnsignedHeaders = register(Rule{
+		ID:             "MAIL-DKIM-028",
+		Component:      ComponentDKIM,
+		Category:       CategoryHardening,
+		Severity:       SeverityLow,
+		Title:          "DKIM signature does not cover important headers",
+		Recommendation: "Signers should include Subject, Date, To and Message-ID in h=.",
+		References:     []string{RFC6376 + "#section-5.4.1"},
+	})
+	DKIMExpired = register(Rule{
+		ID:             "MAIL-DKIM-029",
+		Component:      ComponentDKIM,
+		Category:       CategoryInformational,
+		Severity:       SeverityMedium,
+		Title:          "DKIM signature has expired",
+		Recommendation: "The signature's x= time has passed; it no longer authenticates the message.",
+		References:     []string{RFC6376 + "#section-3.5"},
+	})
+	DKIMTooManySignatures = register(Rule{
+		ID:             "MAIL-DKIM-030",
+		Component:      ComponentDKIM,
+		Category:       CategoryInformational,
+		Severity:       SeverityLow,
+		Title:          "Too many DKIM signatures",
+		Recommendation: "Only the first signatures were verified. Large numbers of signatures are used to exhaust verifiers.",
+		References:     []string{RFC6376 + "#section-6.1"},
+	})
+	DKIMHeaderOnlyValid = register(Rule{
+		ID:         "MAIL-DKIM-031",
+		Component:  ComponentDKIM,
+		Category:   CategoryInformational,
+		Severity:   SeverityInfo,
+		Title:      "DKIM header signature valid; body not checked",
+		References: []string{RFC6376 + "#section-6.1.3"},
+	})
+)
