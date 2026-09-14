@@ -96,6 +96,21 @@ MailAuthProbe. Newest entries at the bottom of each section.
   unconditionally (index out of range). Caught by the "bad instance" table
   case before the code was ever run on real input.
 
+## Static analysis
+
+- First staticcheck run (v0.8.1): one finding, an unused `knownTags` map left
+  over from an earlier DMARC parser draft. Removed.
+- First gosec run (v2.29.0): six findings, all in test infrastructure or
+  developer tools: unchecked `Close` errors in the test DNS server, two
+  integer conversions (a byte built from a bounds-checked escape value, and
+  the DNS ID split into bytes, now written with `binary.BigEndian`) and a
+  file read from a flag in `fixturegen`. Fixed or annotated with `#nosec`
+  and a reason.
+- govulncheck and OSV-Scanner report no known vulnerabilities in the module
+  graph (cobra, pflag, golang.org/x/net).
+- CI runs the tools with `go run module@version`; versions are pinned and
+  module checksums are verified against sum.golang.org.
+
 ## Fuzzing
 
 _No fuzzing campaigns yet._

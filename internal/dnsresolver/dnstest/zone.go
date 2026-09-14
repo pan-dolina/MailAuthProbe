@@ -196,7 +196,7 @@ func parseTXT(s string) (string, error) {
 					if n > 255 {
 						return "", fmt.Errorf("invalid escape \\%s", s[i+1:i+4])
 					}
-					b.WriteByte(byte(n))
+					b.WriteByte(byte(n)) // #nosec G115 -- n is at most 255, checked above
 					i += 4
 					continue
 				}

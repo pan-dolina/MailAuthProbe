@@ -135,14 +135,6 @@ var versionRE = regexp.MustCompile(`^v[ \t]*=[ \t]*DMARC1[ \t]*(;|$)`)
 // begins with the version tag "v=DMARC1".
 func IsDMARC(txt string) bool { return versionRE.MatchString(txt) }
 
-// knownTags are defined by RFC 7489 or by DMARCbis (np, psd, t), which
-// receivers may already implement.
-var knownTags = map[string]bool{
-	"v": true, "p": true, "sp": true, "pct": true, "adkim": true, "aspf": true,
-	"rua": true, "ruf": true, "fo": true, "rf": true, "ri": true,
-	"np": true, "psd": true, "t": true,
-}
-
 // Parse parses a DMARC record. It returns a *ParseError when the record
 // cannot be used for policy decisions; other problems are recorded in
 // Record.Issues.
@@ -279,6 +271,8 @@ func Parse(txt string) (*Record, error) {
 				issue(IssueInvalidValue, name, "t must be y or n, got %q", value)
 			}
 		default:
+			// np, psd and t (DMARCbis) are handled above; everything else
+			// is unknown.
 			issue(IssueUnknownTag, name, "unknown tag %q is ignored", name)
 		}
 	}

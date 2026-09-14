@@ -38,7 +38,7 @@ type keys struct {
 }
 
 func loadKeys(root string) (*keys, error) {
-	data, err := os.ReadFile(filepath.Join(root, "testdata", "keys", "test-rsa2048.pem"))
+	data, err := os.ReadFile(filepath.Join(root, "testdata", "keys", "test-rsa2048.pem")) // #nosec G304 -- developer tool reading the repository
 	if err != nil {
 		return nil, err
 	}

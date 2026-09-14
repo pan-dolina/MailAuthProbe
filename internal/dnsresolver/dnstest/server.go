@@ -38,7 +38,7 @@ func Listen(zone *Zone, addr string) (*Server, error) {
 		}
 		ln, err := net.Listen("tcp", pc.LocalAddr().String())
 		if err != nil {
-			pc.Close()
+			_ = pc.Close()
 			lastErr = err
 			if strings.HasSuffix(addr, ":0") {
 				continue
@@ -62,7 +62,7 @@ func (s *Server) Close() error {
 	err := errors.Join(s.pc.Close(), s.ln.Close())
 	s.mu.Lock()
 	for c := range s.conns {
-		c.Close()
+		_ = c.Close()
 	}
 	s.mu.Unlock()
 	s.wg.Wait()
@@ -100,7 +100,7 @@ func (s *Server) serveTCP() {
 				s.mu.Lock()
 				delete(s.conns, conn)
 				s.mu.Unlock()
-				conn.Close()
+				_ = conn.Close()
 			}()
 			for {
 				var l [2]byte
@@ -154,7 +154,7 @@ func (s *Server) handle(req []byte, udp bool) []byte {
 		return nil
 	case Malformed:
 		// Our ID followed by bytes that do not form a valid message.
-		return []byte{byte(q.ID >> 8), byte(q.ID), 0x81, 0x80, 0x00, 0x01, 0xff, 0xff, 0xde, 0xad}
+		return append(binary.BigEndian.AppendUint16(nil, q.ID), 0x81, 0x80, 0x00, 0x01, 0xff, 0xff, 0xde, 0xad)
 	case ServFail:
 		hdr.RCode = dnsmessage.RCodeServerFailure
 	case Refused:
