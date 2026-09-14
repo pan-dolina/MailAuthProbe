@@ -28,6 +28,36 @@ finding.
 | `MAIL-MX-016` | high | standard-violation | MX target is not a valid host name |
 | `MAIL-MX-017` | info | informational | Too many MX hosts to check |
 
+## spf
+
+| ID | Default severity | Category | Title |
+|----|------------------|----------|-------|
+| `MAIL-SPF-001` | medium | security-weakness | No SPF record |
+| `MAIL-SPF-002` | high | standard-violation | Multiple SPF records |
+| `MAIL-SPF-003` | high | standard-violation | SPF syntax error |
+| `MAIL-SPF-004` | high | standard-violation | SPF include or redirect loop |
+| `MAIL-SPF-005` | high | standard-violation | SPF exceeds the 10 DNS lookup limit |
+| `MAIL-SPF-006` | medium | standard-violation | SPF exceeds the void lookup limit |
+| `MAIL-SPF-007` | critical | security-weakness | SPF authorizes every host (+all) |
+| `MAIL-SPF-008` | medium | security-weakness | SPF ends with ?all (neutral) |
+| `MAIL-SPF-009` | low | hardening | SPF ends with ~all (softfail) |
+| `MAIL-SPF-010` | medium | security-weakness | SPF has no all mechanism or redirect |
+| `MAIL-SPF-011` | medium | security-weakness | SPF authorizes a very large address range |
+| `MAIL-SPF-012` | low | hardening | SPF uses the deprecated ptr mechanism |
+| `MAIL-SPF-013` | high | standard-violation | SPF include or redirect target has no SPF record |
+| `MAIL-SPF-014` | medium | informational | SPF lookup failed temporarily |
+| `MAIL-SPF-015` | low | hardening | SPF terms after all are never evaluated |
+| `MAIL-SPF-016` | low | hardening | SPF redirect is ignored because the record contains all |
+| `MAIL-SPF-017` | low | hardening | SPF is close to the 10 DNS lookup limit |
+| `MAIL-SPF-018` | low | hardening | SPF uses the discouraged p macro |
+| `MAIL-SPF-019` | info | informational | SPF publishes an explanation (exp) |
+| `MAIL-SPF-020` | info | informational | SPF contains an unknown modifier |
+| `MAIL-SPF-021` | high | standard-violation | SPF mx mechanism references more than 10 MX records |
+| `MAIL-SPF-022` | pass | informational | SPF record is valid |
+| `MAIL-SPF-023` | info | informational | SPF term depends on message data and cannot be followed statically |
+| `MAIL-SPF-024` | low | hardening | SPF record is longer than 450 octets |
+| `MAIL-SPF-025` | low | hardening | SPF mechanism references a name without records |
+
 ## dns
 
 | ID | Default severity | Category | Title |

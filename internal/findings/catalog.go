@@ -226,3 +226,227 @@ var (
 		References: []string{RFC5321 + "#section-5.1"},
 	})
 )
+
+// SPF rules.
+var (
+	SPFMissing = register(Rule{
+		ID:             "MAIL-SPF-001",
+		Component:      ComponentSPF,
+		Category:       CategoryWeakness,
+		Severity:       SeverityMedium,
+		Title:          "No SPF record",
+		Recommendation: "Publish an SPF record listing the hosts allowed to send for the domain. Domains that never send mail should publish \"v=spf1 -all\".",
+		References:     []string{RFC7208 + "#section-4.5"},
+	})
+	SPFMultiple = register(Rule{
+		ID:             "MAIL-SPF-002",
+		Component:      ComponentSPF,
+		Category:       CategoryViolation,
+		Severity:       SeverityHigh,
+		Title:          "Multiple SPF records",
+		Recommendation: "Merge all SPF policies into a single TXT record. With more than one record every SPF check returns permerror.",
+		References:     []string{RFC7208 + "#section-4.5"},
+	})
+	SPFSyntax = register(Rule{
+		ID:             "MAIL-SPF-003",
+		Component:      ComponentSPF,
+		Category:       CategoryViolation,
+		Severity:       SeverityHigh,
+		Title:          "SPF syntax error",
+		Recommendation: "Fix the invalid terms. Any syntax error makes the whole record evaluate to permerror.",
+		References:     []string{RFC7208 + "#section-4.6", RFC7208 + "#section-12"},
+	})
+	SPFLoop = register(Rule{
+		ID:             "MAIL-SPF-004",
+		Component:      ComponentSPF,
+		Category:       CategoryViolation,
+		Severity:       SeverityHigh,
+		Title:          "SPF include or redirect loop",
+		Recommendation: "Break the cycle in the include/redirect chain. Receivers stop at the lookup limit and return permerror.",
+		References:     []string{RFC7208 + "#section-4.6.4"},
+	})
+	SPFLookupLimit = register(Rule{
+		ID:             "MAIL-SPF-005",
+		Component:      ComponentSPF,
+		Category:       CategoryViolation,
+		Severity:       SeverityHigh,
+		Title:          "SPF exceeds the 10 DNS lookup limit",
+		Recommendation: "Reduce include, a, mx, ptr, exists and redirect terms: replace stable hosts with ip4/ip6 ranges and remove unused includes. Receivers return permerror once the limit is exceeded.",
+		References:     []string{RFC7208 + "#section-4.6.4"},
+	})
+	SPFVoidLimit = register(Rule{
+		ID:             "MAIL-SPF-006",
+		Component:      ComponentSPF,
+		Category:       CategoryViolation,
+		Severity:       SeverityMedium,
+		Title:          "SPF exceeds the void lookup limit",
+		Recommendation: "Remove mechanisms that reference names without records. More than two void lookups lead to permerror at many receivers.",
+		References:     []string{RFC7208 + "#section-4.6.4"},
+	})
+	SPFPassAll = register(Rule{
+		ID:             "MAIL-SPF-007",
+		Component:      ComponentSPF,
+		Category:       CategoryWeakness,
+		Severity:       SeverityCritical,
+		Title:          "SPF authorizes every host (+all)",
+		Recommendation: "Replace \"+all\" with \"-all\" or \"~all\". \"+all\" lets anyone on the Internet pass SPF for the domain.",
+		References:     []string{RFC7208 + "#section-5.1"},
+	})
+	SPFNeutralAll = register(Rule{
+		ID:             "MAIL-SPF-008",
+		Component:      ComponentSPF,
+		Category:       CategoryWeakness,
+		Severity:       SeverityMedium,
+		Title:          "SPF ends with ?all (neutral)",
+		Recommendation: "Use \"-all\" (or \"~all\" while monitoring) so that unauthorized hosts are not treated like unknown ones.",
+		References:     []string{RFC7208 + "#section-8.2"},
+	})
+	SPFSoftFailAll = register(Rule{
+		ID:             "MAIL-SPF-009",
+		Component:      ComponentSPF,
+		Category:       CategoryHardening,
+		Severity:       SeverityLow,
+		Title:          "SPF ends with ~all (softfail)",
+		Recommendation: "Once all legitimate senders are covered, consider \"-all\". With an enforcing DMARC policy \"~all\" is an acceptable choice.",
+		References:     []string{RFC7208 + "#section-8.5"},
+	})
+	SPFNoAll = register(Rule{
+		ID:             "MAIL-SPF-010",
+		Component:      ComponentSPF,
+		Category:       CategoryWeakness,
+		Severity:       SeverityMedium,
+		Title:          "SPF has no all mechanism or redirect",
+		Recommendation: "End the record with \"-all\" or \"~all\". Without it, unmatched hosts get the default neutral result.",
+		References:     []string{RFC7208 + "#section-4.7"},
+	})
+	SPFBroadRange = register(Rule{
+		ID:             "MAIL-SPF-011",
+		Component:      ComponentSPF,
+		Category:       CategoryWeakness,
+		Severity:       SeverityMedium,
+		Title:          "SPF authorizes a very large address range",
+		Recommendation: "Authorize only the addresses that actually send mail. Large ranges let unrelated hosts (other customers of the same network) pass SPF.",
+		References:     []string{RFC7208 + "#section-5.6"},
+	})
+	SPFPTR = register(Rule{
+		ID:             "MAIL-SPF-012",
+		Component:      ComponentSPF,
+		Category:       CategoryHardening,
+		Severity:       SeverityLow,
+		Title:          "SPF uses the deprecated ptr mechanism",
+		Recommendation: "Replace \"ptr\" with ip4/ip6 or a mechanisms. \"ptr\" is slow, unreliable and should not be published.",
+		References:     []string{RFC7208 + "#section-5.5"},
+	})
+	SPFIncludeNoRecord = register(Rule{
+		ID:             "MAIL-SPF-013",
+		Component:      ComponentSPF,
+		Category:       CategoryViolation,
+		Severity:       SeverityHigh,
+		Title:          "SPF include or redirect target has no SPF record",
+		Recommendation: "Remove the include/redirect or fix the target. An include of a domain without SPF evaluates to permerror.",
+		References:     []string{RFC7208 + "#section-5.2", RFC7208 + "#section-6.1"},
+	})
+	SPFTempError = register(Rule{
+		ID:             "MAIL-SPF-014",
+		Component:      ComponentSPF,
+		Category:       CategoryInformational,
+		Severity:       SeverityMedium,
+		Title:          "SPF lookup failed temporarily",
+		Recommendation: "A DNS lookup needed for SPF failed. Receivers would return temperror; check the name servers of the affected zone.",
+		References:     []string{RFC7208 + "#section-2.6.6"},
+	})
+	SPFTermsAfterAll = register(Rule{
+		ID:             "MAIL-SPF-015",
+		Component:      ComponentSPF,
+		Category:       CategoryHardening,
+		Severity:       SeverityLow,
+		Title:          "SPF terms after all are never evaluated",
+		Recommendation: "Move the mechanisms before \"all\" or remove them.",
+		References:     []string{RFC7208 + "#section-5.1"},
+	})
+	SPFRedirectIgnored = register(Rule{
+		ID:             "MAIL-SPF-016",
+		Component:      ComponentSPF,
+		Category:       CategoryHardening,
+		Severity:       SeverityLow,
+		Title:          "SPF redirect is ignored because the record contains all",
+		Recommendation: "Remove either the redirect modifier or the all mechanism.",
+		References:     []string{RFC7208 + "#section-6.1"},
+	})
+	SPFLookupsNearLimit = register(Rule{
+		ID:             "MAIL-SPF-017",
+		Component:      ComponentSPF,
+		Category:       CategoryHardening,
+		Severity:       SeverityLow,
+		Title:          "SPF is close to the 10 DNS lookup limit",
+		Recommendation: "A provider adding a single include to its own record will push the domain over the limit. Flatten or remove includes where possible.",
+		References:     []string{RFC7208 + "#section-4.6.4"},
+	})
+	SPFPMacro = register(Rule{
+		ID:             "MAIL-SPF-018",
+		Component:      ComponentSPF,
+		Category:       CategoryHardening,
+		Severity:       SeverityLow,
+		Title:          "SPF uses the discouraged p macro",
+		Recommendation: "Avoid the \"p\" macro; it requires reverse lookups and should not be used.",
+		References:     []string{RFC7208 + "#section-7.3"},
+	})
+	SPFExp = register(Rule{
+		ID:         "MAIL-SPF-019",
+		Component:  ComponentSPF,
+		Category:   CategoryInformational,
+		Severity:   SeverityInfo,
+		Title:      "SPF publishes an explanation (exp)",
+		References: []string{RFC7208 + "#section-6.2"},
+	})
+	SPFUnknownModifier = register(Rule{
+		ID:         "MAIL-SPF-020",
+		Component:  ComponentSPF,
+		Category:   CategoryInformational,
+		Severity:   SeverityInfo,
+		Title:      "SPF contains an unknown modifier",
+		References: []string{RFC7208 + "#section-6"},
+	})
+	SPFMXLimit = register(Rule{
+		ID:             "MAIL-SPF-021",
+		Component:      ComponentSPF,
+		Category:       CategoryViolation,
+		Severity:       SeverityHigh,
+		Title:          "SPF mx mechanism references more than 10 MX records",
+		Recommendation: "Use ip4/ip6 for the mail servers instead of \"mx\", or reduce the number of MX records.",
+		References:     []string{RFC7208 + "#section-4.6.4"},
+	})
+	SPFValid = register(Rule{
+		ID:        "MAIL-SPF-022",
+		Component: ComponentSPF,
+		Category:  CategoryInformational,
+		Severity:  SeverityPass,
+		Title:     "SPF record is valid",
+	})
+	SPFDynamic = register(Rule{
+		ID:         "MAIL-SPF-023",
+		Component:  ComponentSPF,
+		Category:   CategoryInformational,
+		Severity:   SeverityInfo,
+		Title:      "SPF term depends on message data and cannot be followed statically",
+		References: []string{RFC7208 + "#section-7"},
+	})
+	SPFRecordTooLong = register(Rule{
+		ID:             "MAIL-SPF-024",
+		Component:      ComponentSPF,
+		Category:       CategoryHardening,
+		Severity:       SeverityLow,
+		Title:          "SPF record is longer than 450 octets",
+		Recommendation: "Keep SPF records short so that the DNS response fits in 512 octets; long records force TCP fallback and fail with some resolvers.",
+		References:     []string{RFC7208 + "#section-3.4"},
+	})
+	SPFVoidTarget = register(Rule{
+		ID:             "MAIL-SPF-025",
+		Component:      ComponentSPF,
+		Category:       CategoryHardening,
+		Severity:       SeverityLow,
+		Title:          "SPF mechanism references a name without records",
+		Recommendation: "Remove mechanisms whose target has no address or MX records; they add a void lookup and never match.",
+		References:     []string{RFC7208 + "#section-4.6.4"},
+	})
+)
